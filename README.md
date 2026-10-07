@@ -33,7 +33,7 @@ A public, web-based visual analytics platform for understanding housing affordab
 
 | Member | Role |
 |---|---|
-| Dhritiben Patel | Project Manager & Narrative Lead |
+| Dhritiben Patel | Project Manager & Data Analysis Lead |
 | Romit Patel | Data Engineering Lead |
 | Pavan Rella | Analytics & Visualisation Lead |
 | Charmiben Patel | Front-end & Deployment Lead |
