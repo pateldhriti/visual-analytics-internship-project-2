@@ -1,0 +1,8 @@
+jupyterlab
+notebook
+ipykernel
+pandas
+sqlalchemy
+psycopg2-binary
+python-dotenv
+openpyxl
