@@ -1,7 +1,11 @@
+jupyter
 jupyterlab
 notebook
 ipykernel
 pandas
+numpy
+matplotlib
+seaborn
 sqlalchemy
 psycopg2-binary
 python-dotenv

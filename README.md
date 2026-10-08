@@ -41,3 +41,43 @@ A public, web-based visual analytics platform for understanding housing affordab
 Supervisor: Dr. Andreas Maniatis · Course Instructor: Dr. Prashanth C. Ranga
 
 See [docs/](docs/) for the full project proposal.
+
+## Project Structure
+
+```
+data/raw/        Original, unmodified downloads from StatsCan / CMHC
+data/staging/    Cleaned/reshaped data ready for loading into PostgreSQL
+etl/             Python ETL scripts (profiling, cleaning, loading)
+notebooks/       Jupyter notebooks for exploration and analysis
+sql/             SQL schema, views and analytical queries
+docs/            Project proposal and documentation
+web/             React front-end
+docker/          Docker/Compose files for local PostgreSQL + Superset
+```
+
+## Development Environment Setup
+
+**Prerequisites:** Python 3.12 (a 3.11/3.12 install is required — the project libraries target this range), Git, Docker Desktop (for the database/Superset stage, set up separately by the team).
+
+1. Create the virtual environment (only needed once):
+   ```
+   py -3.12 -m venv .venv
+   ```
+2. Activate it:
+   - PowerShell: `.venv\Scripts\Activate.ps1`
+   - Git Bash: `source .venv/Scripts/activate`
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+4. Register the Jupyter kernel for this project:
+   ```
+   python -m ipykernel install --user --name=windsor-housing --display-name "Windsor Housing Analytics"
+   ```
+5. Launch JupyterLab:
+   ```
+   jupyter lab
+   ```
+   In the notebook, select the **Windsor Housing Analytics** kernel (Kernel → Change Kernel), or open [notebooks/00_environment_check.ipynb](notebooks/00_environment_check.ipynb) which already targets it.
+
+Copy `.env.example` to `.env` and fill in local database credentials; `.env` is git-ignored and must never be committed.
