@@ -81,3 +81,24 @@ docker/          Docker/Compose files for local PostgreSQL + Superset
    In the notebook, select the **Windsor Housing Analytics** kernel (Kernel → Change Kernel), or open [notebooks/00_environment_check.ipynb](notebooks/00_environment_check.ipynb) which already targets it.
 
 Copy `.env.example` to `.env` and fill in local database credentials; `.env` is git-ignored and must never be committed.
+
+## Running the full stack (PostgreSQL + Redis + Superset)
+
+1. Fill in `.env` (see `.env.example`) including the `SUPERSET_*` values.
+2. Start the containers:
+   ```
+   cd docker
+   docker compose --env-file ../.env up -d
+   ```
+3. Load data into Postgres (from the project root, with `.venv` active):
+   ```
+   .venv\Scripts\python.exe etl\load_windsor_shelter_cost_to_postgres.py
+   .venv\Scripts\python.exe etl\load_windsor_shelter_cost_long_to_postgres.py
+   ```
+4. Connect Superset to the data and create the first chart:
+   ```
+   .venv\Scripts\python.exe etl\setup_superset_dashboard.py
+   ```
+5. Open Superset at [http://localhost:8088](http://localhost:8088) and log in with `SUPERSET_ADMIN_USER` / `SUPERSET_ADMIN_PASSWORD` from your `.env`.
+
+The first Superset start runs database migrations and can take a few minutes — check `docker logs windsor_housing_superset` if the login page isn't up yet.

@@ -9,15 +9,56 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SUPERSET_METADATA_DB: ${SUPERSET_METADATA_DB}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init-superset-db.sh:/docker-entrypoint-initdb.d/init-superset-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: windsor_housing_redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  superset:
+    image: apache/superset:3.1.0
+    container_name: windsor_housing_superset
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SUPERSET_METADATA_DB: ${SUPERSET_METADATA_DB}
+    ports:
+      - "${SUPERSET_PORT:-8088}:8088"
+    volumes:
+      - ./superset_config.py:/app/pythonpath/superset_config.py:ro
+      - supersetdata:/app/superset_home
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      sh -c "
+      superset db upgrade &&
+      superset fab create-admin --username $${SUPERSET_ADMIN_USER} --firstname Admin --lastname User --email admin@example.com --password $${SUPERSET_ADMIN_PASSWORD} || true &&
+      superset init &&
+      superset run -h 0.0.0.0 -p 8088
+      "
+
 volumes:
   pgdata:
+  redisdata:
+  supersetdata:
