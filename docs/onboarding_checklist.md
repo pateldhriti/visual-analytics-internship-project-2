@@ -6,7 +6,7 @@ For getting a new team laptop (Romit, Pavan, Charmiben) running against this rep
 
 - [ ] `git clone https://github.com/pateldhriti/visual-analytics-internship-project-2.git`
 - [ ] Confirm you're on `main`: `git branch --show-current`
-- [ ] Follow the team's git workflow: always branch before pushing unrelated work, raise a PR and merge through GitHub rather than pushing to `main` directly (now enforced by branch protection — direct pushes to `main` are rejected by GitHub itself).
+- [ ] Follow the team's git workflow: always branch before pushing unrelated work, raise a PR and merge through GitHub rather than pushing to `main` directly. This is a team practice, not a GitHub-enforced rule — branch protection on `main` only blocks deletion, not a direct push, so follow it by discipline.
 
 ## 2. Python environment
 
@@ -36,12 +36,9 @@ Follow **[README.md § Running the full stack](../README.md#running-the-full-sta
 
 - [ ] Run `notebooks/00_environment_check.ipynb` top to bottom — all imports succeed
 - [ ] Make a trivial commit (e.g., whitespace fix) on a throwaway branch and confirm the pre-commit hook actually runs
-- [ ] Confirm `git push` to `main` directly is rejected (branch protection working) — try `git push origin HEAD:main` and expect it to fail
 
-## What branch protection now enforces (as of this setup)
+## What branch protection on `main` actually enforces
 
-- No direct pushes to `main` — every change goes through a PR
-- No force-pushes to `main`
 - `main` cannot be deleted
 
-The repo owner (admin) can still merge PRs without a separate required review — this project's size doesn't need multi-approver gating yet, just the "no accidental direct push" guardrail.
+Force-pushes and direct pushes to `main` are both technically allowed by GitHub — the "always branch, then PR" workflow is a team practice everyone needs to follow by discipline, not something GitHub blocks you from skipping.
