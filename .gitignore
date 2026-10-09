@@ -222,3 +222,10 @@ __marimo__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Project data -- raw downloads and processed extracts stay local only.
+# Keep the top-level folders tracked via .gitkeep.
+data/raw/*
+data/staging/*
+!data/raw/.gitkeep
+!data/staging/.gitkeep
