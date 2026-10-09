@@ -2,13 +2,21 @@
 Connect Superset to the Postgres housing data and create one chart,
 proving the Docker + Postgres + Superset stack works end-to-end.
 
-Creates (if not already present):
+Creates (if not already present) and keeps up to date:
 - A database connection to the housing_windsor database (table
   windsor_shelter_cost_long)
 - A dataset on windsor_shelter_cost_long
-- One bar chart: households spending 30%+ of income on shelter costs,
-  by tenure (Owner vs Renter) -- answers Story 1 Q1
+- One bar chart: share of households spending 30%+ of income on shelter
+  costs, by tenure (Owner vs Renter) -- answers Story 1 Q1
   (see docs/story1_questions_and_measures.md)
+
+The chart shows a percentage, not raw counts -- the share burdened is the
+actual story; raw counts conflate burden with population size (there are
+simply more owner households in Windsor). Colors are the validated 2-slot
+categorical palette from the dataviz skill (see
+references/palette.md -- slot 1 blue, slot 2 orange), chosen for identity
+(tenure), not severity -- CVD-checked via
+dataviz/scripts/validate_palette.js before use.
 
 Requires Superset running (docker compose up superset) and a .env file with
 SUPERSET_ADMIN_USER/SUPERSET_ADMIN_PASSWORD/POSTGRES_* (see .env.example).
@@ -17,6 +25,7 @@ Run from the project virtual environment:
     .venv\\Scripts\\python.exe etl\\setup_superset_dashboard.py
 """
 
+import json
 import os
 from pathlib import Path
 
@@ -28,10 +37,23 @@ SUPERSET_URL = "http://localhost:8088"
 
 DATABASE_NAME = "Windsor Housing Data"
 DATASET_TABLE = "windsor_shelter_cost_long"
-CHART_NAME = "Households spending 30%+ on shelter costs, by tenure"
+CHART_NAME = "Share of households spending 30%+ on shelter costs, by tenure"
+CHART_DESCRIPTION = (
+    "Story 1 Q1: how does the affordability burden differ between owners and "
+    "renters? Windsor CMA, 2021 Census. Restricted to the Total-suitability / "
+    "Total-dwelling-condition / point-estimate baseline -- see "
+    "docs/shelter_cost_audit.md."
+)
+
+# Validated 2-slot categorical palette (dataviz skill, references/palette.md).
+# Assigned by identity (tenure), not by which value is "worse" -- color
+# follows the entity, never its rank.
+LABEL_COLORS = {"Owner": "#2a78d6", "Renter": "#eb6834"}
 
 # Baseline filters -- see docs/shelter_cost_audit.md and
-# docs/story1_questions_and_measures.md for why each is needed.
+# docs/story1_questions_and_measures.md for why each is needed. The ratio
+# filter is NOT here: the metric itself needs both ratio values in scope
+# (see PERCENT_BURDENED_SQL below), so it can't be filtered out upstream.
 BASELINE_ADHOC_FILTERS = [
     {"clause": "WHERE", "subject": "housing_suitability", "operator": "==",
      "comparator": "Total - Housing suitability", "expressionType": "SIMPLE"},
@@ -43,11 +65,17 @@ BASELINE_ADHOC_FILTERS = [
      "comparator": "Total - Total income of household", "expressionType": "SIMPLE"},
     {"clause": "WHERE", "subject": "household_type", "operator": "==",
      "comparator": "Total - Household type including census family structure", "expressionType": "SIMPLE"},
-    {"clause": "WHERE", "subject": "shelter_cost_ratio", "operator": "==",
-     "comparator": "Spending 30% or more of income on shelter costs", "expressionType": "SIMPLE"},
     {"clause": "WHERE", "subject": "tenure", "operator": "!=",
      "comparator": "Total", "expressionType": "SIMPLE"},
 ]
+
+# Share of households spending 30%+ of income on shelter, as a 0-1 fraction
+# (formatted as a percentage by y_axis_format below, not multiplied here).
+PERCENT_BURDENED_SQL = (
+    "SUM(CASE WHEN shelter_cost_ratio = 'Spending 30% or more of income on shelter costs' "
+    "THEN value ELSE 0 END) / NULLIF(SUM(CASE WHEN shelter_cost_ratio = "
+    "'Total - Shelter-cost-to-income ratio' THEN value ELSE 0 END), 0)"
+)
 
 
 def get_session() -> tuple[requests.Session, dict]:
@@ -122,30 +150,49 @@ def ensure_dataset(session, headers, database_id: int) -> int:
     return resp.json()["id"]
 
 
-def ensure_chart(session, headers, dataset_id: int) -> int:
-    existing = find_existing(session, headers, "chart", "slice_name", CHART_NAME)
-    if existing:
-        return existing
-
-    params = {
+def build_chart_params(dataset_id: int) -> dict:
+    return {
         "datasource": f"{dataset_id}__table",
         "viz_type": "dist_bar",
         "groupby": ["tenure"],
-        "metrics": [{"expressionType": "SQL", "sqlExpression": "SUM(value)", "label": "Households"}],
+        "metrics": [{
+            "expressionType": "SQL",
+            "sqlExpression": PERCENT_BURDENED_SQL,
+            "label": "Share spending 30%+ on shelter",
+        }],
         "adhoc_filters": BASELINE_ADHOC_FILTERS,
         "row_limit": 10,
+        "order_bars": True,
+        "color_scheme": "supersetColors",
+        "label_colors": LABEL_COLORS,
+        "show_legend": True,
+        "show_bar_value": True,
+        "bar_stacked": False,
+        "rich_tooltip": True,
+        "y_axis_format": ".1%",
+        "x_axis_label": "Tenure",
+        "y_axis_label": "Share of households spending 30%+ on shelter",
     }
-    resp = session.post(
-        f"{SUPERSET_URL}/api/v1/chart/",
-        headers=headers,
-        json={
-            "slice_name": CHART_NAME,
-            "viz_type": "dist_bar",
-            "datasource_id": dataset_id,
-            "datasource_type": "table",
-            "params": str(params).replace("'", '"'),
-        },
-    )
+
+
+def ensure_chart(session, headers, dataset_id: int) -> int:
+    params_json = json.dumps(build_chart_params(dataset_id))
+    body = {
+        "slice_name": CHART_NAME,
+        "description": CHART_DESCRIPTION,
+        "viz_type": "dist_bar",
+        "datasource_id": dataset_id,
+        "datasource_type": "table",
+        "params": params_json,
+    }
+
+    existing = find_existing(session, headers, "chart", "slice_name", CHART_NAME)
+    if existing:
+        resp = session.put(f"{SUPERSET_URL}/api/v1/chart/{existing}", headers=headers, json=body)
+        resp.raise_for_status()
+        return existing
+
+    resp = session.post(f"{SUPERSET_URL}/api/v1/chart/", headers=headers, json=body)
     resp.raise_for_status()
     return resp.json()["id"]
 
@@ -161,5 +208,5 @@ if __name__ == "__main__":
     print(f"Dataset ready: id={dataset_id}")
 
     chart_id = ensure_chart(session, headers, dataset_id)
-    print(f"Chart ready: id={chart_id}")
+    print(f"Chart ready (created or updated): id={chart_id}")
     print(f"View it at: {SUPERSET_URL}/explore/?slice_id={chart_id}")
