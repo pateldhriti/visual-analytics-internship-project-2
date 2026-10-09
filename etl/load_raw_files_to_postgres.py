@@ -1,6 +1,13 @@
 """
 Load every raw source file under data/raw/ (CSV and Excel) into a Postgres
-`staging` schema, as-is -- no cleaning, filtering, or column interpretation.
+`raw` schema, as-is -- no cleaning, filtering, or column interpretation.
+
+Named `raw`, not `staging`, deliberately: the data/staging/ *folder* already
+means "cleaned data ready to load" in this project (see
+etl/extract_windsor_shelter_cost.py's output). A Postgres schema called
+`staging` holding unprocessed data would mean the opposite of that folder's
+name under a shared word -- see docs/data_architecture.md for the full
+picture of how this schema relates to `public` and `warehouse`.
 
 This is the raw landing layer: every row/sheet lands with generic column
 names (col_1, col_2, ...) plus _source_file (and _source_sheet for Excel)
@@ -28,7 +35,7 @@ on each run, so re-running just refreshes the data and the _loaded_at tag --
 never duplicates or errors on a second run.
 
 Run from the project virtual environment:
-    .venv\\Scripts\\python.exe etl\\load_raw_staging.py
+    .venv\\Scripts\\python.exe etl\\load_raw_files_to_postgres.py
 """
 
 import csv
@@ -45,7 +52,7 @@ from load_windsor_shelter_cost_to_postgres import get_engine
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
-SCHEMA = "staging"
+SCHEMA = "raw"
 READ_CHUNK_SIZE = 200_000
 # Postgres caps a single query at 65,535 bound parameters. The widest table
 # here has ~30 columns after tagging, so 1,000 rows/batch (~30,000 params)
