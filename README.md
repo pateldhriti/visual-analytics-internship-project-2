@@ -79,6 +79,10 @@ docker/          Docker/Compose files for local PostgreSQL + Superset
    jupyter lab
    ```
    In the notebook, select the **Windsor Housing Analytics** kernel (Kernel → Change Kernel), or open [notebooks/00_environment_check.ipynb](notebooks/00_environment_check.ipynb) which already targets it.
+6. Install the pre-commit hooks (runs automatically on every `git commit` — trailing whitespace, end-of-file, YAML syntax, merge-conflict markers, and blocks accidentally committing files over 5MB):
+   ```
+   pre-commit install
+   ```
 
 Copy `.env.example` to `.env` and fill in local database credentials; `.env` is git-ignored and must never be committed.
 
