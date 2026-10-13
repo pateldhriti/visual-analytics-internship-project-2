@@ -67,7 +67,19 @@ def ensure_schema(engine) -> None:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}"))
 
 
-def load_csv_fast(path: Path, engine, table_name: str, loaded_at: str) -> int:
+def detect_encoding(path: Path) -> str:
+    """StatCan/CMHC CSVs are usually utf-8-sig, but some (e.g. the Census
+    Profile data CSV) are cp1252. Sniff the first 1MB rather than assuming."""
+    with open(path, "rb") as f:
+        sample = f.read(1_000_000)
+    try:
+        sample.decode("utf-8-sig")
+        return "utf-8-sig"
+    except UnicodeDecodeError:
+        return "cp1252"
+
+
+def load_csv_fast(path: Path, engine, table_name: str, loaded_at: str, encoding: str) -> int:
     """Well-formed CSV: read in chunks, bulk-load via Postgres COPY.
 
     Row-by-row/multi-row INSERT (even batched) is far too slow for a
@@ -81,7 +93,7 @@ def load_csv_fast(path: Path, engine, table_name: str, loaded_at: str) -> int:
     raw_conn = engine.raw_connection()
     try:
         cur = raw_conn.cursor()
-        reader = pd.read_csv(path, dtype=str, encoding="utf-8-sig", chunksize=READ_CHUNK_SIZE)
+        reader = pd.read_csv(path, dtype=str, encoding=encoding, chunksize=READ_CHUNK_SIZE)
         table_created = False
         for chunk in reader:
             chunk["_source_file"] = path.name
@@ -101,11 +113,11 @@ def load_csv_fast(path: Path, engine, table_name: str, loaded_at: str) -> int:
     return total
 
 
-def load_csv_lenient(path: Path, engine, table_name: str, loaded_at: str) -> int:
+def load_csv_lenient(path: Path, engine, table_name: str, loaded_at: str, encoding: str) -> int:
     """Ragged CSV fallback: every row as raw fields via the csv module, padded
     to the file's max column count, generic column names. Loads the whole
     file into memory -- only called for files under LENIENT_MAX_BYTES."""
-    with open(path, encoding="utf-8-sig", newline="") as f:
+    with open(path, encoding=encoding, newline="") as f:
         rows = list(csv.reader(f))
     max_cols = max((len(r) for r in rows), default=0)
     col_names = [f"col_{i + 1}" for i in range(max_cols)]
@@ -120,19 +132,20 @@ def load_csv_lenient(path: Path, engine, table_name: str, loaded_at: str) -> int
 
 def load_csv(path: Path, engine, loaded_at: str) -> dict:
     table_name = sanitize_table_name(path.stem)
+    encoding = detect_encoding(path)
     try:
-        rows = load_csv_fast(path, engine, table_name, loaded_at)
+        rows = load_csv_fast(path, engine, table_name, loaded_at, encoding)
         return {"file": str(path.relative_to(PROJECT_ROOT)), "table": f"{SCHEMA}.{table_name}",
-                "rows": rows, "method": "fast (well-formed)"}
+                "rows": rows, "method": f"fast (well-formed, {encoding})"}
     except Exception as exc:
         if path.stat().st_size > LENIENT_MAX_BYTES:
             return {"file": str(path.relative_to(PROJECT_ROOT)), "table": None,
                      "rows": 0, "method": f"SKIPPED -- fast path failed ({exc}) and file "
                      f"exceeds {LENIENT_MAX_BYTES // (1024*1024)}MB, too large for the "
                      f"whole-file-in-memory lenient fallback"}
-        rows = load_csv_lenient(path, engine, table_name, loaded_at)
+        rows = load_csv_lenient(path, engine, table_name, loaded_at, encoding)
         return {"file": str(path.relative_to(PROJECT_ROOT)), "table": f"{SCHEMA}.{table_name}",
-                "rows": rows, "method": "lenient (ragged rows)"}
+                "rows": rows, "method": f"lenient (ragged rows, {encoding})"}
 
 
 def load_excel(path: Path, engine, loaded_at: str) -> list[dict]:
