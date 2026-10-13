@@ -1,10 +1,10 @@
 -- Conceptual ER model: conformed dimensions + one fact table per source.
 --
--- Scope: only the 2 sources actually profiled so far (StatCan shelter-cost
--- 98-10-0252-01, CMHC Windsor RMS 2025). The Census Profile (98-401) and
--- CMHC starts/completions sources from the proposal are not modeled here --
--- nobody has downloaded/profiled those files yet, so their fact table
--- schemas would be guesses, not a real model.
+-- Scope: the 3 sources profiled so far (StatCan shelter-cost 98-10-0252-01,
+-- CMHC Windsor RMS 2025, StatCan Census Profile 98-401-X2021002). The CMHC
+-- starts/completions source from the proposal is not modeled here -- nobody
+-- has profiled that workbook yet, so its fact table schema would be a
+-- guess, not a real model.
 --
 -- Not every one of the 8 listed dimensions applies to every source --
 -- that's a real property of these two surveys, not an omission:
@@ -131,4 +131,31 @@ CREATE TABLE warehouse.fact_rental_market (
     value               NUMERIC,
     reliability_letter  TEXT,
     yoy_trend           TEXT
+);
+
+-- Source: StatCan 98-401-X2021002 (Census Profile, 2021 - CMAs and CAs)
+-- Grain: one row per (geography, period, characteristic, measure_type, sex)
+-- combination. characteristic_id/characteristic_name are degenerate
+-- dimensions (local attributes): unlike tenure/income_band in the other two
+-- fact tables, this source's "Owner"/"Renter"/income-bracket breakdowns are
+-- each their own CHARACTERISTIC_ID row (e.g. "Owner" and "Renter" are two
+-- separate characteristics under one "by tenure" total), not a column that
+-- varies against a shared dim_tenure/dim_income_band -- so no FK to either
+-- dimension here, to avoid forcing a false conformance (same reasoning as
+-- the income_band `scheme` column and the dwelling_condition/dwelling_type
+-- distinction noted above). measure_type ('count' | 'rate') and sex
+-- ('total' | 'men' | 'women') come from melting the source's 6 value/symbol
+-- column pairs; most characteristics only populate sex = 'total' (no sex
+-- breakdown exists for household-level stats like income or tenure), which
+-- is reflected as a null value + symbol '...' row rather than being dropped.
+CREATE TABLE warehouse.fact_census_profile (
+    fact_id              BIGSERIAL PRIMARY KEY,
+    geography_key        TEXT NOT NULL REFERENCES warehouse.dim_geography (geography_key),
+    period_key           INT  NOT NULL REFERENCES warehouse.dim_period (period_key),
+    characteristic_id    INT  NOT NULL,
+    characteristic_name  TEXT NOT NULL,
+    measure_type         TEXT NOT NULL,  -- 'count' | 'rate'
+    sex                  TEXT NOT NULL,  -- 'total' | 'men' | 'women'
+    value                NUMERIC,
+    symbol               TEXT
 );
