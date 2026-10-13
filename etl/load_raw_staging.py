@@ -175,7 +175,15 @@ if __name__ == "__main__":
         print(f"  {result['file']} -> {result['table']} ({result['rows']} rows, {result['method']})")
 
     for path in excel_files:
-        for result in load_excel(path, engine, loaded_at):
+        try:
+            results = load_excel(path, engine, loaded_at)
+        except Exception as exc:
+            result = {"file": str(path.relative_to(PROJECT_ROOT)), "sheet": None,
+                      "table": None, "rows": 0}
+            summary.append(result)
+            print(f"  {result['file']} -> SKIPPED -- could not be read ({exc})")
+            continue
+        for result in results:
             summary.append(result)
             print(f"  {result['file']} [{result['sheet']}] -> {result['table']} ({result['rows']} rows)")
 
