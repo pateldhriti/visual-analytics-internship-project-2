@@ -106,3 +106,10 @@ Copy `.env.example` to `.env` and fill in local database credentials; `.env` is 
 5. Open Superset at [http://localhost:8088](http://localhost:8088) and log in with `SUPERSET_ADMIN_USER` / `SUPERSET_ADMIN_PASSWORD` from your `.env`.
 
 The first Superset start runs database migrations and can take a few minutes — check `docker logs windsor_housing_superset` if the login page isn't up yet.
+
+## Other database scripts
+
+- `etl/load_raw_files_to_postgres.py` — loads every raw file under `data/raw/` (CSV and Excel, as-is) into Postgres's `raw` schema
+- `etl/create_warehouse_schema.py` — creates and seeds the conceptual dimensional model (`warehouse` schema)
+
+See **[docs/data_architecture.md](docs/data_architecture.md)** for how the `public`, `raw`, and `warehouse` schemas relate (and what's still unreconciled between them).
