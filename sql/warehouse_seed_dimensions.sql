@@ -7,10 +7,16 @@
 -- the full set of geographies/periods that exist in the raw source files.
 
 -- ---------- dim_geography ----------
+-- '2021S0503559' is Windsor CMA's 2021 census DGUID -- the same code in
+-- both the shelter-cost table and the Census Profile table (98-401), since
+-- both are 2021 Census products using the same standard geography. Reused
+-- as-is by fact_census_profile; no separate geography row needed for it.
 INSERT INTO warehouse.dim_geography (geography_key, geography_name, geography_level) VALUES
     ('2021S0503559', 'Windsor (CMA), Ont.', 'CMA');
 
 -- ---------- dim_period ----------
+-- The '2021' census_year row is shared by fact_shelter_cost and
+-- fact_census_profile -- both are 2021 Census products.
 INSERT INTO warehouse.dim_period (period_label, period_type, period_year, period_month) VALUES
     ('2021',   'census_year',   2021, NULL),
     ('Oct-24', 'survey_month',  2024, 10),
