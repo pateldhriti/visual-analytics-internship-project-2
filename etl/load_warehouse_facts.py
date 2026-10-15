@@ -5,22 +5,22 @@ only proved the schema works via a single rolled-back smoke-test row per
 fact table (see docs/conceptual_er_model.md) -- this script does the actual
 bulk load.
 
-Loads two of the three fact tables (the ones with reshaped staging data
-ready):
-  - fact_shelter_cost  <- data/staging/windsor_shelter_cost_long.csv (90,720 rows)
+Loads all three fact tables:
+  - fact_shelter_cost   <- data/staging/windsor_shelter_cost_long.csv (90,720 rows)
   - fact_census_profile <- data/staging/windsor_census_profile_long.csv (360 rows)
-
-fact_rental_market is NOT loaded here: the CMHC Windsor RMS workbook has
-been profiled (docs/cmhc_rms_sheet_catalogue.md) but never actually
-extracted into a clean staging file -- that's a separate, larger task
-(29 sheets, several different layouts), not something to improvise as a
-side effect of this script.
+  - fact_rental_market  <- data/staging/windsor_rental_market.csv (1,395 rows),
+    from etl/extract_windsor_rms.py's 9 sheets. Tenure is always 'Renter'
+    (this source is rental-only, per docs/conceptual_er_model.md).
+    income_band_key is only set for Table 3.1.8's quintile rows
+    (metric_type 'quintile_universe' / 'quintile_vacancy_rate'); every
+    other metric_type has it NULL -- "not applicable", not missing.
 
 Every dimension key is resolved by joining on real values already verified
 to match the seeded dimension tables exactly (geography DGUID, period
-label, income-band label text, tenure name) -- not assumed or guessed.
+label, income-band label text, tenure name, zone label, bedroom-type
+label) -- not assumed or guessed.
 
-Safe to re-run: both fact tables are truncated before loading.
+Safe to re-run: all three fact tables are truncated before loading.
 
 Run from the project virtual environment (after etl/create_warehouse_schema.py):
     .venv\\Scripts\\python.exe etl\\load_warehouse_facts.py
@@ -37,6 +37,7 @@ from load_windsor_shelter_cost_to_postgres import get_engine
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SHELTER_COST_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_shelter_cost_long.csv"
 CENSUS_PROFILE_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_census_profile_long.csv"
+RENTAL_MARKET_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv"
 
 
 def fetch_dim(engine, table: str, key_col: str, *value_cols: str) -> pd.DataFrame:
@@ -123,11 +124,73 @@ def load_census_profile_facts(engine) -> dict:
     return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
 
 
+def load_rental_market_facts(engine) -> dict:
+    # keep_default_na=False + na_values=[''] : pandas' default na_values
+    # list includes the literal string "N/A", which is also a real
+    # dim_income_band label here (Table 3.1.8's "N/A" quintile row) -- left
+    # at the default, read_csv silently turns that label into a true NaN,
+    # breaking its income_band_key join. Only an actually-empty field
+    # should become NaN.
+    source = pd.read_csv(RENTAL_MARKET_CSV, dtype=str, keep_default_na=False, na_values=[""])
+
+    zone = fetch_dim(engine, "dim_zone", "zone_key", "zone_label")
+    period = fetch_dim(engine, "dim_period", "period_key", "period_label")
+    bedroom_type = fetch_dim(engine, "dim_bedroom_type", "bedroom_type_key", "bedroom_type_label")
+    dwelling_type = fetch_dim(engine, "dim_dwelling_type", "dwelling_type_key", "dwelling_type_label")
+    tenure = fetch_dim(engine, "dim_tenure", "tenure_key", "tenure_name")
+    renter_key = int(tenure.loc[tenure["tenure_name"] == "Renter", "tenure_key"].iloc[0])
+    income_band = fetch_dim(engine, "dim_income_band", "income_band_key", "scheme", "band_label")
+    income_band = income_band[income_band["scheme"] == "cmhc_quintile"]
+
+    df = source.copy()
+    df = df.merge(zone, left_on="zone", right_on="zone_label", how="left")
+    df = df.merge(period, left_on="period_label", right_on="period_label", how="left")
+    df = df.merge(bedroom_type, left_on="bedroom_type", right_on="bedroom_type_label", how="left")
+    df = df.merge(dwelling_type, left_on="dwelling_type", right_on="dwelling_type_label", how="left")
+    # income_quintile is only populated for Table 3.1.8 rows (quintile_universe /
+    # quintile_vacancy_rate); every other metric_type has NaN here, which
+    # correctly produces a NaN income_band_key (NULL) via the left merge --
+    # "not applicable to this metric", not an unmatched/missing value.
+    df = df.merge(income_band, left_on="income_quintile", right_on="band_label", how="left")
+    # Nullable integer dtype: a plain float column would write NaN rows as
+    # "16.0" to the COPY buffer, which Postgres rejects for an INT column --
+    # Int64 writes a true blank field (-> SQL NULL) instead.
+    df["income_band_key"] = df["income_band_key"].astype("Int64")
+    is_quintile_metric = df["income_quintile"].notna()
+
+    unmatched = {
+        "zone": int(df["zone_key"].isna().sum()),
+        "period": int(df["period_key"].isna().sum()),
+        "bedroom_type": int(df["bedroom_type_key"].isna().sum()),
+        "dwelling_type": int(df["dwelling_type_key"].isna().sum()),
+        "income_band (quintile rows only)": int((is_quintile_metric & df["income_band_key"].isna()).sum()),
+    }
+
+    out = pd.DataFrame({
+        "zone_key": df["zone_key"],
+        "period_key": df["period_key"],
+        "bedroom_type_key": df["bedroom_type_key"],
+        "dwelling_type_key": df["dwelling_type_key"],
+        "tenure_key": renter_key,
+        "income_band_key": df["income_band_key"],
+        "metric_type": df["metric_type"],
+        "value": pd.to_numeric(df["value"], errors="coerce"),
+        "reliability_letter": df["reliability_letter"],
+        "yoy_trend": df["yoy_trend"],
+    })
+
+    rows = copy_dataframe(engine, out, "fact_rental_market")
+    return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
+
+
 if __name__ == "__main__":
     engine = get_engine()
 
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE warehouse.fact_shelter_cost, warehouse.fact_census_profile"))
+        conn.execute(text(
+            "TRUNCATE warehouse.fact_shelter_cost, warehouse.fact_census_profile, "
+            "warehouse.fact_rental_market"
+        ))
 
     print("Loading fact_shelter_cost...")
     shelter_stats = load_shelter_cost_facts(engine)
@@ -137,6 +200,11 @@ if __name__ == "__main__":
     print("Loading fact_census_profile...")
     census_stats = load_census_profile_facts(engine)
     for key, value in census_stats.items():
+        print(f"  {key}: {value}")
+
+    print("Loading fact_rental_market...")
+    rental_stats = load_rental_market_facts(engine)
+    for key, value in rental_stats.items():
         print(f"  {key}: {value}")
 
     print()

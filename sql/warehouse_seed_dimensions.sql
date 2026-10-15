@@ -47,12 +47,18 @@ INSERT INTO warehouse.dim_income_band (scheme, member_id, band_label) VALUES
 
 -- scheme = cmhc_quintile: from CMHC Table 3.1.8's Income Quintile column
 -- (N/A covers agricultural-operation / zero-or-negative-income households).
+-- member_id 6 'Total' is the table's own all-quintiles-combined row -- kept
+-- as a real seeded member (not NULL) so it stays distinguishable from
+-- income_band_key = NULL, which means "not applicable to this metric" on
+-- fact_rental_market rows that aren't quintile-based at all.
 INSERT INTO warehouse.dim_income_band (scheme, member_id, band_label) VALUES
     ('cmhc_quintile', 0, 'N/A'),
     ('cmhc_quintile', 1, 'Q1'),
     ('cmhc_quintile', 2, 'Q2'),
     ('cmhc_quintile', 3, 'Q3'),
-    ('cmhc_quintile', 4, 'Q4');
+    ('cmhc_quintile', 4, 'Q4'),
+    ('cmhc_quintile', 5, 'Q5'),
+    ('cmhc_quintile', 6, 'Total');
 
 -- ---------- dim_household_type ----------
 -- All 16 real StatCan member IDs, with parent_member_id preserving the
