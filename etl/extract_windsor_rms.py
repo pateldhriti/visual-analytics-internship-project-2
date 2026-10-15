@@ -71,27 +71,41 @@ QUINTILE_LABELS = ["N/A", "Q1", "Q2", "Q3", "Q4", "Q5", "Total"]
 # sheet name -> (metric_type, dwelling_type, layout)
 SHEETS = {
     "Table 3.1.1": ("vacancy_rate", "Combined", "rate"),
-    "Table 3.1.2": ("average_rent", "Combined", "rate"),
+    "Table 3.1.2": ("average_rent", "Combined", "rate_no_yoy"),
     "Table 3.1.3": ("universe", "Combined", "universe"),
     "Table 3.1.6": ("turnover_rate", "Combined", "rate"),
     "Table 1.1.1": ("vacancy_rate", "Apartment", "rate"),
-    "Table 1.1.2": ("average_rent", "Apartment", "rate"),
+    "Table 1.1.2": ("average_rent", "Apartment", "rate_no_yoy"),
 }
 
 
-def parse_rate_sheet(ws, metric_type: str, dwelling_type: str) -> list[dict]:
-    """5-column bedroom groups: Oct-24 value/reliability, Oct-25 value/reliability, YoY."""
+def parse_rate_sheet(ws, metric_type: str, dwelling_type: str, has_yoy: bool = True) -> list[dict]:
+    """Bedroom groups of Oct-24 value/reliability, Oct-25 value/reliability,
+    and -- only for vacancy/turnover tables -- a trailing YoY column.
+
+    Average-rent tables (3.1.2, 1.1.2) have NO YoY column, making their
+    bedroom groups 4 columns wide instead of 5 -- confirmed by reading
+    Windsor CMA's real row in Table 1.1.2 (2BR Oct-25 = 1454, matching the
+    Canada RMS comparison table's independently-sourced figure) and in
+    Table 3.1.2's header (4-wide groups: Studio at col 2, 1BR at col 6,
+    4 apart, vs. 5 apart on the vacancy/turnover tables). Passing
+    has_yoy=True (the vacancy_rate/turnover_rate default) against one of
+    these tables silently reads every bedroom group 1 column short,
+    misattributing the next group's Oct-24 value as this group's Oct-25
+    value -- caught by cross-checking against the Canada RMS comparison
+    table's independently-extracted Windsor figure."""
+    group_width = 5 if has_yoy else 4
     rows = []
     for i in range(ZONE_ROWS):
         r = FIRST_ZONE_ROW + i
         zone = ws.cell(row=r, column=1).value
         for b, bedroom_type in enumerate(BEDROOM_TYPES):
-            base_col = 2 + b * 5
+            base_col = 2 + b * group_width
             oct24_value = ws.cell(row=r, column=base_col).value
             oct24_reliability = ws.cell(row=r, column=base_col + 1).value
             oct25_value = ws.cell(row=r, column=base_col + 2).value
             oct25_reliability = ws.cell(row=r, column=base_col + 3).value
-            yoy_trend = ws.cell(row=r, column=base_col + 4).value
+            yoy_trend = ws.cell(row=r, column=base_col + 4).value if has_yoy else None
             rows.append({
                 "metric_type": metric_type, "dwelling_type": dwelling_type,
                 "zone": zone, "bedroom_type": bedroom_type,
@@ -240,7 +254,9 @@ def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> d
     for sheet_name, (metric_type, dwelling_type, layout) in SHEETS.items():
         ws = wb[sheet_name]
         if layout == "rate":
-            all_rows.extend(parse_rate_sheet(ws, metric_type, dwelling_type))
+            all_rows.extend(parse_rate_sheet(ws, metric_type, dwelling_type, has_yoy=True))
+        elif layout == "rate_no_yoy":
+            all_rows.extend(parse_rate_sheet(ws, metric_type, dwelling_type, has_yoy=False))
         else:
             all_rows.extend(parse_universe_sheet(ws, metric_type, dwelling_type))
 
