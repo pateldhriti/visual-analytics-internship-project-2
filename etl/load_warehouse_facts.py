@@ -14,13 +14,13 @@ Loads all three fact tables, from four staging CSVs:
       income_band_key is only set for Table 3.1.8's quintile rows
       (metric_type 'quintile_universe' / 'quintile_vacancy_rate'); every
       other metric_type has it NULL -- "not applicable", not missing.
-    - data/staging/rms_canada_comparison.csv (32 rows extracted, 24
+    - data/staging/rms_canada_comparison.csv (32 rows extracted, 28
       loaded), from etl/extract_rms_canada_comparison.py -- 3 comparator
-      CMAs (London, Kitchener-Cambridge-Waterloo, Toronto), resolving to
-      dim_zone's zone_level='comparator_cma' rows. The extraction also
-      covers Windsor (8 rows) as a cross-check against the Windsor-
-      specific workbook, but those rows are deliberately not loaded here
-      -- see load_rms_canada_comparison_facts()'s docstring.
+      CMAs (London, Kitchener-Cambridge-Waterloo, Toronto) in full, plus
+      Windsor's turnover_rate and pct_change_rent rows only (not
+      vacancy_rate/average_rent, which duplicate the Windsor-specific
+      workbook's own Apartment-scope tables) -- see
+      load_rms_canada_comparison_facts()'s docstring for exactly why.
   Tenure is always 'Renter' for both rental-market sources (this data is
   rental-only, per docs/conceptual_er_model.md).
 
@@ -194,22 +194,29 @@ def load_rental_market_facts(engine) -> dict:
 
 
 def load_rms_canada_comparison_facts(engine) -> dict:
-    """The 3 comparator CMAs from the national RMS workbook's Table 1.0,
-    into the same fact_rental_market table -- zone_key resolves to
-    dim_zone's zone_level='comparator_cma' rows.
+    """Windsor (partially) + the 3 comparator CMAs from the national RMS
+    workbook's Table 1.0, into the same fact_rental_market table --
+    zone_key resolves to dim_zone's zone_level='comparator_cma' rows (or
+    the existing 'Windsor CMA' cma_total row).
 
-    The extraction CSV also includes a 'Windsor CMA' row (kept there as a
-    cross-check -- Table 1.0's apartment-only overall vacancy rate for
-    Windsor, 3.7% Oct-25, independently confirms the same real-world figure
-    as the Windsor-specific workbook's Table 1.1.1). It is deliberately NOT
-    loaded here: Windsor is already in fact_rental_market from
-    load_rental_market_facts(), at a richer grain (all bedroom types, not
-    just this table's single overall 'Total' rate). Loading it again would
-    silently double Windsor's row count for the same real metric -- correct
-    individually, but double-counting for anyone aggregating without
-    filtering by source."""
+    Windsor's vacancy_rate and average_rent rows here ARE genuine
+    duplicates of Windsor-specific extraction already loaded
+    (etl/extract_windsor_rms.py's Table 1.1.1/1.1.2, same Apartment scope)
+    -- excluded, so the real metric isn't double-counted.
+
+    Windsor's turnover_rate and pct_change_rent rows here are NOT
+    duplicates: etl/extract_windsor_rms.py never extracted an
+    apartment-only turnover table for Windsor (no Table 1.1.6 in its
+    SHEETS config) or any percentage-change-of-rent table at all (1.1.5/
+    2.1.5/3.1.5 were explicitly out of scope -- see
+    docs/cmhc_rms_sheet_catalogue.md). Excluding ALL of Windsor's rows
+    here (an earlier version of this function did) silently dropped these
+    two real, unique metrics -- caught because
+    warehouse.v_story4_affordability_gap (sql/story4_views.sql) came back
+    with no Windsor row at all."""
     source = pd.read_csv(RMS_CANADA_COMPARISON_CSV, dtype=str)
-    source = source[source["centre"] != "Windsor CMA"]
+    duplicated_for_windsor = source["metric_type"].isin(["vacancy_rate", "average_rent"])
+    source = source[~((source["centre"] == "Windsor CMA") & duplicated_for_windsor)]
 
     zone = fetch_dim(engine, "dim_zone", "zone_key", "zone_label")
     period = fetch_dim(engine, "dim_period", "period_key", "period_label")
