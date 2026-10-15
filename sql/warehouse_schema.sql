@@ -1,10 +1,8 @@
 -- Conceptual ER model: conformed dimensions + one fact table per source.
 --
--- Scope: the 3 sources profiled so far (StatCan shelter-cost 98-10-0252-01,
--- CMHC Windsor RMS 2025, StatCan Census Profile 98-401-X2021002). The CMHC
--- starts/completions source from the proposal is not modeled here -- nobody
--- has profiled that workbook yet, so its fact table schema would be a
--- guess, not a real model.
+-- Scope: the 4 sources profiled so far (StatCan shelter-cost 98-10-0252-01,
+-- CMHC Windsor RMS 2025, StatCan Census Profile 98-401-X2021002, CMHC
+-- Quarterly Starts/Completions/Under Construction by Canada-Provinces).
 --
 -- Not every one of the 8 listed dimensions applies to every source --
 -- that's a real property of these two surveys, not an omission:
@@ -158,4 +156,30 @@ CREATE TABLE warehouse.fact_census_profile (
     sex                  TEXT NOT NULL,  -- 'total' | 'men' | 'women'
     value                NUMERIC,
     symbol               TEXT
+);
+
+-- Source: CMHC Quarterly Starts, Completions, Units Under Construction by
+-- (Canada, Provinces) -- etl/extract_cmhc_starts_completions.py
+-- Grain: one row per (province, period_type, period_label, activity,
+-- dwelling_type) combination.
+-- province and dwelling_type are both degenerate (local text) columns,
+-- deliberately NOT FKs to dim_zone or dim_dwelling_type:
+--   - This source has no CMA-level or DGUID-level geography at all (only
+--     Ontario/Canada provincial-national totals) -- not the same grain as
+--     dim_zone's CMHC sub-CMA zones or dim_geography's StatCan CMAs.
+--     Forcing a shared dimension here would be a false conformance, same
+--     reasoning as this schema's other local-attribute decisions.
+--   - dwelling_type here ('Singles' | 'Semis' | 'Row' | 'Apartment and
+--     Other' | 'Total') is a DIFFERENT classification scheme than
+--     dim_dwelling_type's CMHC RMS categories ('Apartment' | 'Row
+--     (Townhouse)' | 'Combined') -- different category boundaries, not
+--     the same taxonomy despite the similar name.
+CREATE TABLE warehouse.fact_starts_completions (
+    fact_id       BIGSERIAL PRIMARY KEY,
+    province      TEXT NOT NULL,  -- 'Ontario' | 'Canada'
+    period_type   TEXT NOT NULL,  -- 'quarter' | 'ytd'
+    period_label  TEXT NOT NULL,  -- e.g. 'Second Quarter 2026'
+    activity      TEXT NOT NULL,  -- 'Starts' | 'Completions' | 'Under Construction'
+    dwelling_type TEXT NOT NULL,
+    units         NUMERIC
 );

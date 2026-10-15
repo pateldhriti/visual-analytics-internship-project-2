@@ -48,6 +48,7 @@ SHELTER_COST_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_shelter_cos
 CENSUS_PROFILE_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_census_profile_long.csv"
 RENTAL_MARKET_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv"
 RMS_CANADA_COMPARISON_CSV = PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv"
+STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "ontario_canada_starts_completions.csv"
 
 
 def fetch_dim(engine, table: str, key_col: str, *value_cols: str) -> pd.DataFrame:
@@ -255,13 +256,33 @@ def load_rms_canada_comparison_facts(engine) -> dict:
     return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
 
 
+def load_starts_completions_facts(engine) -> dict:
+    """No dimension keys to resolve -- province and dwelling_type are both
+    degenerate text columns on fact_starts_completions (see
+    sql/warehouse_schema.sql for why), so this is a straight copy, not a
+    join-and-resolve like the other loaders."""
+    source = pd.read_csv(STARTS_COMPLETIONS_CSV, dtype=str)
+
+    out = pd.DataFrame({
+        "province": source["province"],
+        "period_type": source["period_type"],
+        "period_label": source["period_label"],
+        "activity": source["activity"],
+        "dwelling_type": source["dwelling_type"],
+        "units": pd.to_numeric(source["units"], errors="coerce"),
+    })
+
+    rows = copy_dataframe(engine, out, "fact_starts_completions")
+    return {"source_rows": len(source), "loaded_rows": rows}
+
+
 if __name__ == "__main__":
     engine = get_engine()
 
     with engine.begin() as conn:
         conn.execute(text(
             "TRUNCATE warehouse.fact_shelter_cost, warehouse.fact_census_profile, "
-            "warehouse.fact_rental_market"
+            "warehouse.fact_rental_market, warehouse.fact_starts_completions"
         ))
 
     print("Loading fact_shelter_cost...")
@@ -284,8 +305,13 @@ if __name__ == "__main__":
     for key, value in comparison_stats.items():
         print(f"  {key}: {value}")
 
+    print("Loading fact_starts_completions...")
+    starts_stats = load_starts_completions_facts(engine)
+    for key, value in starts_stats.items():
+        print(f"  {key}: {value}")
+
     print()
     with engine.connect() as conn:
-        for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market"):
+        for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market", "fact_starts_completions"):
             count = conn.execute(text(f'SELECT COUNT(*) FROM warehouse."{table}"')).scalar()
             print(f"warehouse.{table}: {count} rows")
