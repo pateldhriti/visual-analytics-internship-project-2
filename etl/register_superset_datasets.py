@@ -82,10 +82,27 @@ def ensure_dataset(session, headers, database_id: int, table_name: str) -> int:
 
 
 def set_metrics(session, headers, dataset_id: int, metrics: list[dict]) -> None:
+    """Create-or-update each metric by name. Superset's dataset PUT treats
+    a metric object without an "id" as a brand-new metric -- re-running
+    this with the same metric_name but no id fails with 422 "One or more
+    metrics already exist" instead of updating it in place. Fetching the
+    dataset's current metrics first and attaching each existing metric's
+    real id (by matching metric_name) is what makes this safe to re-run."""
+    existing_resp = session.get(f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}", headers=headers)
+    existing_resp.raise_for_status()
+    existing_by_name = {m["metric_name"]: m["id"] for m in existing_resp.json()["result"]["metrics"]}
+
+    merged_metrics = []
+    for metric in metrics:
+        merged = dict(metric)
+        if metric["metric_name"] in existing_by_name:
+            merged["id"] = existing_by_name[metric["metric_name"]]
+        merged_metrics.append(merged)
+
     resp = session.put(
         f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}",
         headers=headers,
-        json={"metrics": metrics},
+        json={"metrics": merged_metrics},
     )
     resp.raise_for_status()
 
