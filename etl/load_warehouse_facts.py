@@ -5,15 +5,24 @@ only proved the schema works via a single rolled-back smoke-test row per
 fact table (see docs/conceptual_er_model.md) -- this script does the actual
 bulk load.
 
-Loads all three fact tables:
+Loads all three fact tables, from four staging CSVs:
   - fact_shelter_cost   <- data/staging/windsor_shelter_cost_long.csv (90,720 rows)
   - fact_census_profile <- data/staging/windsor_census_profile_long.csv (360 rows)
-  - fact_rental_market  <- data/staging/windsor_rental_market.csv (1,395 rows),
-    from etl/extract_windsor_rms.py's 9 sheets. Tenure is always 'Renter'
-    (this source is rental-only, per docs/conceptual_er_model.md).
-    income_band_key is only set for Table 3.1.8's quintile rows
-    (metric_type 'quintile_universe' / 'quintile_vacancy_rate'); every
-    other metric_type has it NULL -- "not applicable", not missing.
+  - fact_rental_market  <- two sources, same fact table:
+    - data/staging/windsor_rental_market.csv (1,395 rows), from
+      etl/extract_windsor_rms.py's 9 Windsor-specific sheets.
+      income_band_key is only set for Table 3.1.8's quintile rows
+      (metric_type 'quintile_universe' / 'quintile_vacancy_rate'); every
+      other metric_type has it NULL -- "not applicable", not missing.
+    - data/staging/rms_canada_comparison.csv (32 rows extracted, 24
+      loaded), from etl/extract_rms_canada_comparison.py -- 3 comparator
+      CMAs (London, Kitchener-Cambridge-Waterloo, Toronto), resolving to
+      dim_zone's zone_level='comparator_cma' rows. The extraction also
+      covers Windsor (8 rows) as a cross-check against the Windsor-
+      specific workbook, but those rows are deliberately not loaded here
+      -- see load_rms_canada_comparison_facts()'s docstring.
+  Tenure is always 'Renter' for both rental-market sources (this data is
+  rental-only, per docs/conceptual_er_model.md).
 
 Every dimension key is resolved by joining on real values already verified
 to match the seeded dimension tables exactly (geography DGUID, period
@@ -38,6 +47,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SHELTER_COST_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_shelter_cost_long.csv"
 CENSUS_PROFILE_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_census_profile_long.csv"
 RENTAL_MARKET_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv"
+RMS_CANADA_COMPARISON_CSV = PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv"
 
 
 def fetch_dim(engine, table: str, key_col: str, *value_cols: str) -> pd.DataFrame:
@@ -183,6 +193,61 @@ def load_rental_market_facts(engine) -> dict:
     return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
 
 
+def load_rms_canada_comparison_facts(engine) -> dict:
+    """The 3 comparator CMAs from the national RMS workbook's Table 1.0,
+    into the same fact_rental_market table -- zone_key resolves to
+    dim_zone's zone_level='comparator_cma' rows.
+
+    The extraction CSV also includes a 'Windsor CMA' row (kept there as a
+    cross-check -- Table 1.0's apartment-only overall vacancy rate for
+    Windsor, 3.7% Oct-25, independently confirms the same real-world figure
+    as the Windsor-specific workbook's Table 1.1.1). It is deliberately NOT
+    loaded here: Windsor is already in fact_rental_market from
+    load_rental_market_facts(), at a richer grain (all bedroom types, not
+    just this table's single overall 'Total' rate). Loading it again would
+    silently double Windsor's row count for the same real metric -- correct
+    individually, but double-counting for anyone aggregating without
+    filtering by source."""
+    source = pd.read_csv(RMS_CANADA_COMPARISON_CSV, dtype=str)
+    source = source[source["centre"] != "Windsor CMA"]
+
+    zone = fetch_dim(engine, "dim_zone", "zone_key", "zone_label")
+    period = fetch_dim(engine, "dim_period", "period_key", "period_label")
+    bedroom_type = fetch_dim(engine, "dim_bedroom_type", "bedroom_type_key", "bedroom_type_label")
+    dwelling_type = fetch_dim(engine, "dim_dwelling_type", "dwelling_type_key", "dwelling_type_label")
+    tenure = fetch_dim(engine, "dim_tenure", "tenure_key", "tenure_name")
+    renter_key = int(tenure.loc[tenure["tenure_name"] == "Renter", "tenure_key"].iloc[0])
+
+    df = source.copy()
+    df = df.merge(zone, left_on="centre", right_on="zone_label", how="left")
+    df = df.merge(period, left_on="period_label", right_on="period_label", how="left")
+    df = df.merge(bedroom_type, left_on="bedroom_type", right_on="bedroom_type_label", how="left")
+    df = df.merge(dwelling_type, left_on="dwelling_type", right_on="dwelling_type_label", how="left")
+
+    unmatched = {
+        "zone": int(df["zone_key"].isna().sum()),
+        "period": int(df["period_key"].isna().sum()),
+        "bedroom_type": int(df["bedroom_type_key"].isna().sum()),
+        "dwelling_type": int(df["dwelling_type_key"].isna().sum()),
+    }
+
+    out = pd.DataFrame({
+        "zone_key": df["zone_key"],
+        "period_key": df["period_key"],
+        "bedroom_type_key": df["bedroom_type_key"],
+        "dwelling_type_key": df["dwelling_type_key"],
+        "tenure_key": renter_key,
+        "income_band_key": None,
+        "metric_type": df["metric_type"],
+        "value": pd.to_numeric(df["value"], errors="coerce"),
+        "reliability_letter": df["reliability_letter"],
+        "yoy_trend": df["yoy_trend"],
+    })
+
+    rows = copy_dataframe(engine, out, "fact_rental_market")
+    return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
+
+
 if __name__ == "__main__":
     engine = get_engine()
 
@@ -202,9 +267,14 @@ if __name__ == "__main__":
     for key, value in census_stats.items():
         print(f"  {key}: {value}")
 
-    print("Loading fact_rental_market...")
+    print("Loading fact_rental_market (Windsor)...")
     rental_stats = load_rental_market_facts(engine)
     for key, value in rental_stats.items():
+        print(f"  {key}: {value}")
+
+    print("Loading fact_rental_market (Canada comparison CMAs)...")
+    comparison_stats = load_rms_canada_comparison_facts(engine)
+    for key, value in comparison_stats.items():
         print(f"  {key}: {value}")
 
     print()
