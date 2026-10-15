@@ -127,7 +127,7 @@ erDiagram
 ## Fact table grains
 
 - **`fact_shelter_cost`** — one row per (geography × period × income_band × household_type × housing_suitability × dwelling_condition × statistic × shelter_cost_ratio × tenure) combination. `housing_suitability`, `dwelling_condition`, `statistic`, `shelter_cost_ratio` are degenerate dimensions (local text columns) — none are among this task's 8 listed shared dimensions, so they aren't broken out into their own tables.
-- **`fact_rental_market`** — one row per (zone × period × bedroom_type × dwelling_type × tenure × metric_type) combination, with `income_band_key` nullable (populated only for Table 3.1.8-sourced rows — vacancy by income quintile). `metric_type` unifies CMHC's several metric tables (vacancy rate, average rent, universe, turnover, etc.) into one fact table, per the task's "one fact table per source" instruction, rather than one fact table per CMHC metric sheet.
+- **`fact_rental_market`** — one row per (zone × period × bedroom_type × dwelling_type × tenure × metric_type) combination, with `income_band_key` nullable (populated only for `metric_type` in `quintile_universe`/`quintile_vacancy_rate`, from Table 3.1.8). `metric_type` unifies CMHC's several metric tables into one fact table (per the task's "one fact table per source" instruction) rather than one fact table per sheet: `vacancy_rate`, `average_rent`, `universe`, `turnover_rate` (standard zone × bedroom-type tables); `new_stock_universe`/`new_stock_vacancy_rate`/`new_stock_average_rent` (Table 3.1.7, stock completed July 2022-June 2025, single snapshot); `rent_vacant_units`/`rent_occupied_units` (Table 3.1.9, single snapshot); `quintile_universe`/`quintile_vacancy_rate` (Table 3.1.8). For the three single-snapshot sources (3.1.7, 3.1.8, 3.1.9 — none compare Oct-24 to Oct-25), `period_key` is fixed to `Oct-25`, the edition's current survey date. `yoy_trend` is repurposed for Table 3.1.9's Y/N significance flag (comparing vacant- vs occupied-unit rent, not year-over-year) — both are a short "how do these two values compare" signal, just from different kinds of comparison.
 - **`fact_census_profile`** — one row per (geography × period × characteristic_id × measure_type × sex) combination. `characteristic_id`/`characteristic_name` are degenerate dimensions (`etl/extract_windsor_census_profile.py` narrows the source's full 2,631-characteristic set down to a curated 60 covering population, income, tenure, and shelter cost). `measure_type` ('count' | 'rate') and `sex` ('total' | 'men' | 'women') come from `etl/reshape_census_profile_long.py` melting the source's 6 value/symbol column pairs into rows — most characteristics only populate `sex = 'total'` (household-level stats like income or tenure have no sex breakdown), reflected as a null `value` + symbol `'...'` row rather than being dropped.
 
 ## What's seeded vs. what's still pending
@@ -136,18 +136,22 @@ erDiagram
 - `dim_geography`: Windsor CMA (the only geography this project has actually extracted so far)
 - `dim_period`: 2021 census year, Oct-24 and Oct-25 CMHC survey periods
 - `dim_tenure`: Total, Owner, Renter
-- `dim_income_band`: 14 StatCan brackets + 5 CMHC quintiles (19 rows)
+- `dim_income_band`: 14 StatCan brackets + 7 CMHC quintile-scheme members (N/A, Q1-Q5, Total) (21 rows). Q5 was missing from the original seed (only N/A-Q4 existed) — fixed here while adding Table 3.1.8's extraction, since that table's data surfaced the gap.
 - `dim_household_type`: all 16 real StatCan categories, with `parent_member_id` preserving the hierarchy — this is also where the household-type label collision documented in the audit note lives (member 5 and 10 both render as "Without children" under different parent branches; the surrogate key disambiguates them even though the label alone doesn't). Verified by querying both collision pairs back out with their parent labels.
 - `dim_bedroom_type`: Studio, 1BR, 2BR, 3BR+, Total
 - `dim_zone`: all 7 real zones + 2 published aggregates
 - `dim_dwelling_type`: Apartment, Row (Townhouse), Combined
 
-**Verified working, not just created:** inserted one real, already-confirmed value into each fact table inside a transaction (Owner households spending 30%+ = 13,005, matching every prior calculation of this number this session; Windsor CMA combined vacancy rate = 5.9%, from Table 3.1.1; Windsor CMA population, 2021 = 422,630, from `fact_census_profile`) — all resolved through every FK correctly — then rolled back, since actually populating the fact tables is a separate ETL task, not part of this one.
+**Populated for real**, via `etl/load_warehouse_facts.py` (not just a smoke test anymore):
+- `fact_shelter_cost`: 90,720 rows, 0 unmatched dimension keys.
+- `fact_census_profile`: 360 rows, 0 unmatched dimension keys.
+- `fact_rental_market`: 1,395 rows (9 of the RMS workbook's 29 sheets — see `docs/cmhc_rms_sheet_catalogue.md`'s "Open items" for exactly which), 0 unmatched dimension keys, including the Table 3.1.8 income-quintile bridge resolving through `dim_income_band`'s `cmhc_quintile` scheme.
+
+Independently re-queried (not just trusted from load counts) against the live data: Owner households spending 30%+ on shelter costs = 13,005; Windsor population, 2021 = 422,630; Windsor CMA combined vacancy rate (Total bedroom type, Oct-25) = 3.6%. That last number corrects an earlier claim in this doc of "5.9%" from before real data was loaded — 5.9% was actually the *Studio* bedroom type's Oct-25 rate for Windsor CMA, not Total; the smoke test that produced it wasn't checking against a real query, just a single rolled-back insert.
 
 **Pending:**
 - Review with Pavan — not done yet.
-- Actual fact-table population (this task only proves the schema works, via the rolled-back smoke test above). For `fact_census_profile`, the source data is ready to load: `data/staging/windsor_census_profile_long.csv` (360 rows, verified 0 mismatches against the wide extract).
-- CMHC starts/completions source, once profiled.
+- The other 20 RMS sheets (Table 1.4 and everything the catalogue's recommendation excluded), and the CMHC starts/completions source (extracted into `data/staging/ontario_canada_starts_completions.csv` but has no fact table yet — see `etl/extract_cmhc_starts_completions.py`).
 
 ## Files
 

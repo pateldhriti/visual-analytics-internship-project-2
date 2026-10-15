@@ -1,6 +1,6 @@
 # CMHC Windsor RMS 2025 — Sheet Catalogue
 
-**Source file:** `data/raw/cmhc_rms/rmr-windsor-2025-en.xlsx` — CMHC Rental Market Survey, Windsor CMA, 2025 edition (data as of October 2025, compared to October 2024).
+**Source file:** `data/raw/cmhc/rmr-windsor-2025-en.xlsx` — CMHC Rental Market Survey, Windsor CMA, 2025 edition (data as of October 2025, compared to October 2024).
 **29 sheets total**: 1 Table of Contents + 28 data tables, confirmed by reading the workbook directly (not assumed from the filename or any external description).
 
 ## Common layout template
@@ -106,5 +106,5 @@ The proposal's Story 2 ("What is happening in Windsor's rental market?") asks ab
 
 ## Open items / not yet done
 
-- This catalogue documents structure, not values — no data has been extracted or loaded yet. That's a separate ETL task once the 8-10 sheet selection is confirmed.
-- Table 3.1.8's 81-row zone × quintile structure will need its own parsing logic distinct from the other tables' simpler zone-only rows.
+- **Extraction now exists**: `etl/extract_windsor_rms.py` reads 9 of these sheets directly into `data/staging/windsor_rental_market.csv`, and `etl/load_warehouse_facts.py` loads it into `warehouse.fact_rental_market` (1,395 rows, verified against real cell values). Covered: 3.1.1, 3.1.2, 3.1.3, 3.1.6, 3.1.7, 3.1.8, 3.1.9 (all 7 "Core Story 2 + bridge" tables from the recommendation above) plus 1.1.1, 1.1.2 (apartment comparison cut). Table 3.1.8's 63-row zone × quintile structure (9 zones × 7 quintile-scheme rows: N/A, Q1-Q5, Total) got its own parser, as anticipated below.
+- **Not yet extracted**: Table 1.4 (optional 10th, rent-quartile vacancy) and everything excluded by the recommendation above (section 2.x row/townhouse-only, year-of-construction/structure-size cuts, percentage-change-of-rent tables).
