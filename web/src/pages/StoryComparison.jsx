@@ -1,6 +1,8 @@
+import PageContainer from "../components/PageContainer.jsx";
+
 export default function StoryComparison() {
   return (
-    <div className="page">
+    <PageContainer>
       <p className="story-label">Story 4</p>
       <h1>How does Windsor compare?</h1>
       <ul>
@@ -12,6 +14,6 @@ export default function StoryComparison() {
       <p className="placeholder-note">
         Embedded dashboard and full narrative go here &mdash; scaffold placeholder only.
       </p>
-    </div>
+    </PageContainer>
   );
 }

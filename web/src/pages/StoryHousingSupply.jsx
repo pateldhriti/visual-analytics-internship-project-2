@@ -1,6 +1,8 @@
+import PageContainer from "../components/PageContainer.jsx";
+
 export default function StoryHousingSupply() {
   return (
-    <div className="page">
+    <PageContainer>
       <p className="story-label">Story 3</p>
       <h1>What does housing supply look like?</h1>
       <ul>
@@ -15,6 +17,6 @@ export default function StoryHousingSupply() {
       <p className="placeholder-note">
         Embedded dashboard and full narrative go here &mdash; scaffold placeholder only.
       </p>
-    </div>
+    </PageContainer>
   );
 }
