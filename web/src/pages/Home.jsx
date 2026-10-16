@@ -97,9 +97,7 @@ export default function Home() {
       >
         <p className="story-grid-hint">Click a story to see a real headline number.</p>
         {STORIES.map((story) => (
-          <motion.div key={story.number} variants={cardVariants}>
-            <StoryCard {...story} />
-          </motion.div>
+          <StoryCard key={story.number} {...story} variants={cardVariants} />
         ))}
       </motion.section>
     </div>

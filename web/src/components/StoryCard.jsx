@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import useSpotlight from "../hooks/useSpotlight.js";
 
-export default function StoryCard({ number, title, questions, detail }) {
+export default function StoryCard({ number, title, questions, detail, variants }) {
   const [open, setOpen] = useState(false);
   const spotlight = useSpotlight();
 
@@ -10,6 +10,7 @@ export default function StoryCard({ number, title, questions, detail }) {
     <motion.article
       className={`story-card ${spotlight.className} ${open ? "story-card--open" : ""}`}
       onMouseMove={spotlight.onMouseMove}
+      variants={variants}
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
     >

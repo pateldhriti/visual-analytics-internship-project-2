@@ -479,6 +479,14 @@ main {
 }
 
 .story-card {
+  /* Fills the grid row's stretched height (the default CSS Grid
+     align-items behaviour) instead of collapsing to its own content
+     height -- without this, cards in the same row with different
+     content lengths visually mismatch even though the grid row itself
+     is the same height for both. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
