@@ -1,0 +1,10 @@
+# Force LF line endings for text files regardless of each developer's
+# local git autocrlf setting. Without this, Windows checkouts get CRLF
+# while Mac/Linux checkouts get LF -- the same committed content then
+# fails `prettier --check` (which defaults to enforcing LF) on Windows
+# machines even though nothing is actually different content-wise. This
+# project is explicitly cross-platform (Docker setup tested on Windows
+# and Mac per the project proposal), so normalizing to one line ending
+# in the repository itself is the correct fix, not making tooling match
+# one platform's default.
+* text=auto eol=lf
