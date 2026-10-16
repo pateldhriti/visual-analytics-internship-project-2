@@ -1,4 +1,6 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
+import useSpotlight from "../hooks/useSpotlight.js";
 
 const DATASETS = [
   {
@@ -55,6 +57,61 @@ const DATASETS = [
 
 const PUBLISHERS = ["All", "Statistics Canada", "Canada Mortgage and Housing Corporation (CMHC)"];
 
+function SourceCard({ d }) {
+  const spotlight = useSpotlight();
+  return (
+    <motion.article
+      className={`source-card ${spotlight.className}`}
+      onMouseMove={spotlight.onMouseMove}
+      layout
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.18 }}
+      whileHover={{ y: -3 }}
+    >
+      <span
+        className={`source-badge ${
+          d.publisher === "Statistics Canada" ? "source-badge--statcan" : "source-badge--cmhc"
+        }`}
+      >
+        {d.publisher === "Statistics Canada" ? "Statistics Canada" : "CMHC"}
+      </span>
+      <h3>
+        <a href={d.url} target="_blank" rel="noreferrer">
+          {d.name}
+        </a>
+      </h3>
+      <dl>
+        <div>
+          <dt>Publisher</dt>
+          <dd>{d.publisher}</dd>
+        </div>
+        <div>
+          <dt>Catalogue / edition</dt>
+          <dd>{d.catalogue}</dd>
+        </div>
+        <div>
+          <dt>Release date</dt>
+          <dd>{d.releaseDate}</dd>
+        </div>
+        <div>
+          <dt>Licence</dt>
+          <dd>
+            <a href={d.licenceUrl} target="_blank" rel="noreferrer">
+              {d.licence}
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt>Used for</dt>
+          <dd>{d.usedFor}</dd>
+        </div>
+      </dl>
+    </motion.article>
+  );
+}
+
 export default function Sources() {
   const [filter, setFilter] = useState("All");
   const [query, setQuery] = useState("");
@@ -89,7 +146,16 @@ export default function Sources() {
               className={`pill ${filter === p ? "pill--active" : ""}`}
               onClick={() => setFilter(p)}
             >
-              {p === "Canada Mortgage and Housing Corporation (CMHC)" ? "CMHC" : p}
+              {filter === p && (
+                <motion.span
+                  className="pill-bg"
+                  layoutId="pill-bg"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="pill-label">
+                {p === "Canada Mortgage and Housing Corporation (CMHC)" ? "CMHC" : p}
+              </span>
             </button>
           ))}
         </div>
@@ -108,51 +174,22 @@ export default function Sources() {
       </p>
 
       <section className="sources-list">
-        {filtered.map((d) => (
-          <article className="source-card" key={d.name}>
-            <span
-              className={`source-badge ${
-                d.publisher === "Statistics Canada" ? "source-badge--statcan" : "source-badge--cmhc"
-              }`}
+        <AnimatePresence mode="popLayout">
+          {filtered.map((d) => (
+            <SourceCard d={d} key={d.name} />
+          ))}
+          {filtered.length === 0 && (
+            <motion.p
+              key="empty"
+              className="sources-empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              {d.publisher === "Statistics Canada" ? "Statistics Canada" : "CMHC"}
-            </span>
-            <h3>
-              <a href={d.url} target="_blank" rel="noreferrer">
-                {d.name}
-              </a>
-            </h3>
-            <dl>
-              <div>
-                <dt>Publisher</dt>
-                <dd>{d.publisher}</dd>
-              </div>
-              <div>
-                <dt>Catalogue / edition</dt>
-                <dd>{d.catalogue}</dd>
-              </div>
-              <div>
-                <dt>Release date</dt>
-                <dd>{d.releaseDate}</dd>
-              </div>
-              <div>
-                <dt>Licence</dt>
-                <dd>
-                  <a href={d.licenceUrl} target="_blank" rel="noreferrer">
-                    {d.licence}
-                  </a>
-                </dd>
-              </div>
-              <div>
-                <dt>Used for</dt>
-                <dd>{d.usedFor}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-        {filtered.length === 0 && (
-          <p className="sources-empty">No datasets match &ldquo;{query}&rdquo;.</p>
-        )}
+              No datasets match &ldquo;{query}&rdquo;.
+            </motion.p>
+          )}
+        </AnimatePresence>
       </section>
     </div>
   );

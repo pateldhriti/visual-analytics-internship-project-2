@@ -1,5 +1,16 @@
+import { motion } from "framer-motion";
 import KpiStrip from "../components/KpiStrip.jsx";
 import StoryCard from "../components/StoryCard.jsx";
+
+const gridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
+};
 
 // Detail text uses only numbers already verified against the live
 // database this session -- see docs/story1_questions_and_measures.md,
@@ -77,12 +88,20 @@ export default function Home() {
       <KpiStrip />
 
       <h2 className="section-heading">Four connected stories</h2>
-      <section className="story-grid">
+      <motion.section
+        className="story-grid"
+        variants={gridVariants}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.15 }}
+      >
         <p className="story-grid-hint">Click a story to see a real headline number.</p>
         {STORIES.map((story) => (
-          <StoryCard key={story.number} {...story} />
+          <motion.div key={story.number} variants={cardVariants}>
+            <StoryCard {...story} />
+          </motion.div>
         ))}
-      </section>
+      </motion.section>
     </div>
   );
 }
