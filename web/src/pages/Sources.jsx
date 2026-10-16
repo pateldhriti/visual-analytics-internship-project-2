@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react";
+
 const DATASETS = [
   {
     name: "Census Profile, 2021 — Census Metropolitan Areas and Census Agglomerations",
@@ -51,7 +53,21 @@ const DATASETS = [
   },
 ];
 
+const PUBLISHERS = ["All", "Statistics Canada", "Canada Mortgage and Housing Corporation (CMHC)"];
+
 export default function Sources() {
+  const [filter, setFilter] = useState("All");
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    return DATASETS.filter((d) => {
+      const matchesPublisher = filter === "All" || d.publisher === filter;
+      const matchesQuery =
+        query.trim() === "" || d.name.toLowerCase().includes(query.trim().toLowerCase());
+      return matchesPublisher && matchesQuery;
+    });
+  }, [filter, query]);
+
   return (
     <div className="page page-sources">
       <section className="hero hero--narrow">
@@ -63,8 +79,35 @@ export default function Sources() {
         </p>
       </section>
 
+      <section className="sources-controls">
+        <div className="sources-filter-pills">
+          {PUBLISHERS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              className={`pill ${filter === p ? "pill--active" : ""}`}
+              onClick={() => setFilter(p)}
+            >
+              {p === "Canada Mortgage and Housing Corporation (CMHC)" ? "CMHC" : p}
+            </button>
+          ))}
+        </div>
+        <input
+          type="search"
+          className="sources-search"
+          placeholder="Search datasets..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search datasets"
+        />
+      </section>
+
+      <p className="sources-count">
+        {filtered.length} of {DATASETS.length} dataset{DATASETS.length === 1 ? "" : "s"}
+      </p>
+
       <section className="sources-list">
-        {DATASETS.map((d) => (
+        {filtered.map((d) => (
           <article className="source-card" key={d.name}>
             <h3>
               <a href={d.url} target="_blank" rel="noreferrer">
@@ -99,6 +142,9 @@ export default function Sources() {
             </dl>
           </article>
         ))}
+        {filtered.length === 0 && (
+          <p className="sources-empty">No datasets match &ldquo;{query}&rdquo;.</p>
+        )}
       </section>
     </div>
   );
