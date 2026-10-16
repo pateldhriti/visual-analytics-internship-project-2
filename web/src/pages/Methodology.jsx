@@ -1,6 +1,8 @@
+import PageContainer from "../components/PageContainer.jsx";
+
 export default function Methodology() {
   return (
-    <div className="page">
+    <PageContainer>
       <h1>Methodology</h1>
       <p>
         Every figure on this site traces back to an official Statistics Canada or CMHC download. Raw
@@ -20,6 +22,6 @@ export default function Methodology() {
         Full methodology write-up (data quality checks, known limitations, refresh process) goes
         here &mdash; scaffold placeholder only.
       </p>
-    </div>
+    </PageContainer>
   );
 }

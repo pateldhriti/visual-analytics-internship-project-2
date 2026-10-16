@@ -1,6 +1,8 @@
+import PageContainer from "../components/PageContainer.jsx";
+
 export default function StoryRentalMarket() {
   return (
-    <div className="page">
+    <PageContainer>
       <p className="story-label">Story 2</p>
       <h1>What is happening in Windsor&rsquo;s rental market?</h1>
       <ul>
@@ -12,6 +14,6 @@ export default function StoryRentalMarket() {
       <p className="placeholder-note">
         Embedded dashboard and full narrative go here &mdash; scaffold placeholder only.
       </p>
-    </div>
+    </PageContainer>
   );
 }

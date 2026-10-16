@@ -1,6 +1,8 @@
+import PageContainer from "../components/PageContainer.jsx";
+
 export default function StoryAffordability() {
   return (
-    <div className="page">
+    <PageContainer>
       <p className="story-label">Story 1</p>
       <h1>Who faces the greatest housing affordability pressure?</h1>
       <ul>
@@ -10,6 +12,6 @@ export default function StoryAffordability() {
       <p className="placeholder-note">
         Embedded dashboard and full narrative go here &mdash; scaffold placeholder only.
       </p>
-    </div>
+    </PageContainer>
   );
 }
