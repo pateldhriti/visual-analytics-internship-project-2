@@ -1,5 +1,16 @@
+import { motion } from "framer-motion";
 import KpiStrip from "../components/KpiStrip.jsx";
 import StoryCard from "../components/StoryCard.jsx";
+
+const gridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
+};
 
 // Detail text uses only numbers already verified against the live
 // database this session -- see docs/story1_questions_and_measures.md,
@@ -59,7 +70,11 @@ export default function Home() {
   return (
     <div className="page page-home">
       <section className="hero">
-        <h1>Housing affordability and market trends in Windsor, CMA</h1>
+        <span className="eyebrow">Windsor CMA &middot; Official Open Data</span>
+        <h1>
+          Housing affordability and <span className="accent-text">market trends</span> in
+          Windsor
+        </h1>
         <p>
           A public, web-based look at housing affordability and housing-market conditions
           in the Windsor Census Metropolitan Area, built entirely from official Canadian open
@@ -72,12 +87,19 @@ export default function Home() {
 
       <KpiStrip />
 
-      <section className="story-grid">
+      <h2 className="section-heading">Four connected stories</h2>
+      <motion.section
+        className="story-grid"
+        variants={gridVariants}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.15 }}
+      >
         <p className="story-grid-hint">Click a story to see a real headline number.</p>
         {STORIES.map((story) => (
-          <StoryCard key={story.number} {...story} />
+          <StoryCard key={story.number} {...story} variants={cardVariants} />
         ))}
-      </section>
+      </motion.section>
     </div>
   );
 }

@@ -3,11 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b63ce" />
     <title>Windsor Housing Analytics</title>
     <meta
       name="description"
       content="Visual analytics of housing affordability and housing-market conditions in Windsor CMA, built from official Statistics Canada and CMHC open data."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Set the theme before React mounts so there's no flash of the wrong
+      // theme on load. Persists the viewer's explicit choice; otherwise
+      // follows the OS preference live (see ThemeToggle.jsx).
+      (function () {
+        var stored = localStorage.getItem("theme");
+        var theme =
+          stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
