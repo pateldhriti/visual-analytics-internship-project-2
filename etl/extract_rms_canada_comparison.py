@@ -5,11 +5,17 @@ Privately Initiated Apartment Structures of Three Units and Over -
 Provinces and Major Centres"), ready to load into the same
 warehouse.fact_rental_market table the Windsor-specific extraction uses.
 
-Comparator CMAs chosen: London CMA and Kitchener-Cambridge-Waterloo CMA
-(the standard Southwestern Ontario peer set Windsor is usually compared
-against) plus Toronto CMA (the major reference market). This is a judgment
-call -- nothing in this project recorded a prior "chosen CMAs" decision --
-flagged here and in the extraction output rather than decided silently.
+Comparator CMAs chosen: London CMA, Kitchener-Cambridge-Waterloo CMA,
+Hamilton CMA, and St. Catharines-Niagara CMA. See
+docs/comparator_cmas_justification.md for the full selection
+methodology (real 2021 Census population data, not estimated, plus
+confirmation each one is on CMHC's actual "major centres" Rental Market
+Report list alongside Windsor -- i.e. each one genuinely has the same
+kind of full RMS 2025 workbook Windsor does, not just this one summary
+row). Toronto CMA was in an earlier version of this list but has been
+removed: at 6.2M population (14.7x Windsor), it fails "comparable by
+size" outright -- it was never a size peer, just a different kind of
+reference point that doesn't belong in this specific comparator set.
 
 IMPORTANT SCOPE NOTE: Table 1.0 covers privately initiated APARTMENT
 structures only (3+ units) -- not the Row+Apartment Combined scope the
@@ -39,10 +45,16 @@ SOURCE_XLSX = PROJECT_ROOT / "data" / "raw" / "cmhc" / "rmr-canada-2025-en.xlsx"
 OUTPUT_CSV = PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv"
 
 # CMA label (as it appears in column A) -> kept as-is in the output;
-# matched against dim_zone after this script's caller seeds these 3 as new
+# matched against dim_zone after this script's caller seeds these as new
 # zone_level = 'comparator_cma' rows (Windsor CMA is already seeded as
 # zone_level = 'cma_total' and is included here for a same-table check).
-CENTRES = ["Windsor CMA", "London CMA", "Kitchener-Cambridge-Waterloo CMA", "Toronto CMA"]
+CENTRES = [
+    "Windsor CMA",
+    "London CMA",
+    "Kitchener-Cambridge-Waterloo CMA",
+    "Hamilton CMA",
+    "St. Catharines-Niagara CMA",
+]
 
 
 def find_centre_rows(ws) -> dict:
