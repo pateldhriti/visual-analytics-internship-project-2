@@ -59,7 +59,11 @@ export default function Home() {
   return (
     <div className="page page-home">
       <section className="hero">
-        <h1>Housing affordability and market trends in Windsor, CMA</h1>
+        <span className="eyebrow">Windsor CMA &middot; Official Open Data</span>
+        <h1>
+          Housing affordability and <span className="accent-text">market trends</span> in
+          Windsor
+        </h1>
         <p>
           A public, web-based look at housing affordability and housing-market conditions
           in the Windsor Census Metropolitan Area, built entirely from official Canadian open
@@ -72,6 +76,7 @@ export default function Home() {
 
       <KpiStrip />
 
+      <h2 className="section-heading">Four connected stories</h2>
       <section className="story-grid">
         <p className="story-grid-hint">Click a story to see a real headline number.</p>
         {STORIES.map((story) => (

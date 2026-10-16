@@ -71,6 +71,7 @@ export default function Sources() {
   return (
     <div className="page page-sources">
       <section className="hero hero--narrow">
+        <span className="eyebrow">Traceability</span>
         <h1>Data Sources</h1>
         <p>
           Every dataset used in this project comes directly from Statistics Canada or CMHC.
@@ -109,6 +110,13 @@ export default function Sources() {
       <section className="sources-list">
         {filtered.map((d) => (
           <article className="source-card" key={d.name}>
+            <span
+              className={`source-badge ${
+                d.publisher === "Statistics Canada" ? "source-badge--statcan" : "source-badge--cmhc"
+              }`}
+            >
+              {d.publisher === "Statistics Canada" ? "Statistics Canada" : "CMHC"}
+            </span>
             <h3>
               <a href={d.url} target="_blank" rel="noreferrer">
                 {d.name}
