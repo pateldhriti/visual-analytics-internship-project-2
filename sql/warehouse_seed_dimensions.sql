@@ -111,14 +111,21 @@ INSERT INTO warehouse.dim_zone (zone_label, zone_level) VALUES
 -- finest geographic unit a given rental-market metric is reported at.
 -- 'Windsor CMA' itself is NOT re-seeded here -- it already exists as the
 -- zone_level = 'cma_total' row above and is reused as-is.
--- London and Kitchener-Cambridge-Waterloo were chosen as Windsor's
--- standard Southwestern Ontario peer set; Toronto as the major reference
--- market. No prior "chosen CMAs" decision was found recorded anywhere in
--- this project, so this is a judgment call, not a confirmed requirement.
+-- 4 real Ontario comparators, confirmed on two criteria (not a judgment
+-- call) -- see docs/comparator_cmas_justification.md: real 2021 Census
+-- population within roughly +2.6% to +36.3% of Windsor's 422,630 (the
+-- closest same-province CMAs that aren't an order of magnitude off), and
+-- each confirmed on CMHC's own "major centres" Rental Market Report list
+-- alongside Windsor (i.e. each genuinely gets the same kind of full RMS
+-- 2025 workbook Windsor does). An earlier version of this seed used
+-- Toronto CMA instead of Hamilton/St. Catharines-Niagara -- replaced:
+-- Toronto is 14.7x Windsor's population, which fails "comparable by
+-- size" outright regardless of its RMS-table status.
 INSERT INTO warehouse.dim_zone (zone_label, zone_level) VALUES
     ('London CMA', 'comparator_cma'),
     ('Kitchener-Cambridge-Waterloo CMA', 'comparator_cma'),
-    ('Toronto CMA', 'comparator_cma');
+    ('Hamilton CMA', 'comparator_cma'),
+    ('St. Catharines-Niagara CMA', 'comparator_cma');
 
 -- ---------- dim_dwelling_type ----------
 -- CMHC's three workbook sections: 1.x = Apartment only, 2.x = Row
