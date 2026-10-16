@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Windsor Housing Analytics — Low-Fidelity Wireframes</title>
+    <style>
+      /* Deliberately low-fidelity: grayscale only, no brand colors, no real
+         typography hierarchy, no icons. Boxes and labels only -- this is a
+         structure/layout document, not a visual design. See
+         web/src/index.css for the actual implemented design tokens, which
+         this intentionally does not reuse. */
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #e8e8e8;
+        color: #333;
+      }
+      .intro {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 24px 20px 0;
+      }
+      .intro h1 {
+        font-size: 1.3rem;
+      }
+      .intro p {
+        font-size: 0.9rem;
+        color: #555;
+      }
+      .screen {
+        max-width: 760px;
+        margin: 24px auto 48px;
+        background: #fff;
+        border: 2px solid #999;
+      }
+      .screen-label {
+        background: #999;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 6px 12px;
+      }
+      .wf-box {
+        border: 1px dashed #aaa;
+        background: #f2f2f2;
+        margin: 10px;
+        padding: 12px;
+        font-size: 0.8rem;
+        color: #666;
+        text-align: center;
+      }
+      .wf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ddd;
+        border: 1px solid #aaa;
+        margin: 10px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+      }
+      .wf-header-links {
+        display: flex;
+        gap: 10px;
+      }
+      .wf-header-links span {
+        border: 1px solid #bbb;
+        padding: 3px 8px;
+        background: #eee;
+      }
+      .wf-hero {
+        height: 100px;
+      }
+      .wf-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 0 10px;
+      }
+      .wf-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 0 10px;
+      }
+      .wf-card {
+        border: 1px dashed #aaa;
+        background: #f2f2f2;
+        padding: 16px 10px;
+        font-size: 0.78rem;
+        color: #666;
+        text-align: center;
+      }
+      .wf-dashboard {
+        height: 260px;
+        border: 1px dashed #888;
+        background: repeating-linear-gradient(
+          45deg,
+          #eee,
+          #eee 10px,
+          #e4e4e4 10px,
+          #e4e4e4 20px
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px;
+        font-size: 0.85rem;
+        color: #555;
+        font-weight: bold;
+      }
+      .wf-footer {
+        border: 1px solid #aaa;
+        background: #ddd;
+        margin: 10px;
+        padding: 10px;
+        text-align: center;
+        font-size: 0.75rem;
+        color: #777;
+      }
+      .status-note {
+        max-width: 760px;
+        margin: 0 auto 40px;
+        padding: 10px 20px;
+        font-size: 0.8rem;
+        color: #a33;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="intro">
+      <h1>Windsor Housing Analytics — Wireframes v1</h1>
+      <p>
+        Low-fidelity, grayscale, box-and-label only — structure and content hierarchy, not
+        visual design. Covers the 3 screens the task asks for: Home, a story page with an
+        embedded dashboard, and Methodology.
+      </p>
+    </div>
+
+    <!-- ============ HOME ============ -->
+    <div class="screen">
+      <div class="screen-label">Screen 1 — Home</div>
+      <div class="wf-header">
+        <span>[Logo / Site Name]</span>
+        <div class="wf-header-links">
+          <span>Home</span><span>Story 1</span><span>Story 2</span><span>Story 3</span
+          ><span>Story 4</span><span>Methodology</span>
+        </div>
+      </div>
+      <div class="wf-box wf-hero">[Hero: headline + 1-2 sentence intro]</div>
+      <div class="wf-grid-4">
+        <div class="wf-card">[KPI stat]</div>
+        <div class="wf-card">[KPI stat]</div>
+        <div class="wf-card">[KPI stat]</div>
+        <div class="wf-card">[KPI stat]</div>
+      </div>
+      <div class="wf-grid-2" style="margin-top: 10px">
+        <div class="wf-card" style="padding: 24px 10px">[Story 1 card: title + link]</div>
+        <div class="wf-card" style="padding: 24px 10px">[Story 2 card: title + link]</div>
+        <div class="wf-card" style="padding: 24px 10px">[Story 3 card: title + link]</div>
+        <div class="wf-card" style="padding: 24px 10px">[Story 4 card: title + link]</div>
+      </div>
+      <div class="wf-footer">[Footer: data-source attribution + methodology link]</div>
+    </div>
+
+    <!-- ============ STORY PAGE WITH EMBEDDED DASHBOARD ============ -->
+    <div class="screen">
+      <div class="screen-label">Screen 2 — Story page (example: Story 2, rental market)</div>
+      <div class="wf-header">
+        <span>[Logo / Site Name]</span>
+        <div class="wf-header-links">
+          <span>Home</span><span>Story 1</span><span style="font-weight: bold">Story 2</span
+          ><span>Story 3</span><span>Story 4</span><span>Methodology</span>
+        </div>
+      </div>
+      <div class="wf-box">[Story label + title: "What is happening in Windsor's rental market?"]</div>
+      <div class="wf-box">[Guiding questions list — 1-2 bullets]</div>
+      <div class="wf-dashboard">[Embedded Apache Superset dashboard — iframe]</div>
+      <div class="wf-box" style="text-align: left">
+        [Narrative text block: 2-3 paragraphs explaining what the dashboard shows, written in
+        plain language, referencing real figures]
+      </div>
+      <div class="wf-box">[Data source note: which tables feed this dashboard, link to Methodology]</div>
+      <div class="wf-footer">[Footer: data-source attribution + methodology link]</div>
+    </div>
+
+    <!-- ============ METHODOLOGY ============ -->
+    <div class="screen">
+      <div class="screen-label">Screen 3 — Methodology</div>
+      <div class="wf-header">
+        <span>[Logo / Site Name]</span>
+        <div class="wf-header-links">
+          <span>Home</span><span>Story 1</span><span>Story 2</span><span>Story 3</span
+          ><span>Story 4</span><span style="font-weight: bold">Methodology</span>
+        </div>
+      </div>
+      <div class="wf-box">[Page title: "Methodology"]</div>
+      <div class="wf-box" style="text-align: left">
+        [Intro paragraph: how data flows from raw download to chart]
+      </div>
+      <div class="wf-grid-2">
+        <div class="wf-card" style="text-align: left">[Tech stack list: Python, PostgreSQL, Superset, React, Docker]</div>
+        <div class="wf-card" style="text-align: left">[Data sources list — links to each dataset's Data Sources entry]</div>
+      </div>
+      <div class="wf-box" style="text-align: left">
+        [Known limitations section — e.g. geography mismatches, single-period snapshots,
+        anything flagged as a real gap elsewhere in docs/]
+      </div>
+      <div class="wf-footer">[Footer: data-source attribution]</div>
+    </div>
+
+    <p class="status-note">
+      Status: v1 drafted. NOT yet reviewed in a team meeting -- that review is a real
+      collaborative step that hasn't happened; this file is ready for that conversation, not a
+      substitute for it.
+    </p>
+  </body>
+</html>
