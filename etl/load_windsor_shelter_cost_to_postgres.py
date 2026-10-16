@@ -25,6 +25,14 @@ STAGING_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_shelter_cost.csv"
 TABLE_NAME = "windsor_shelter_cost"
 CHUNK_SIZE = 10_000
 
+# Confirmed numeric value columns (post-rename) -- converted explicitly so
+# they load as NUMERIC, not TEXT (see docs/peer_test_affordability_etl.md
+# problem 1: without this, any SQL sum/average/comparison against these
+# columns needs an explicit CAST). Matches what
+# load_windsor_shelter_cost_long_to_postgres.py already does for its
+# equivalent single `value` column.
+NUMERIC_COLUMNS = ["tenure_total", "tenure_owner", "tenure_renter"]
+
 # Explicit rename map (source CSV header -> SQL-friendly column name). This
 # script is specific to this one table's known columns, so an explicit map is
 # clearer and less error-prone than a generic sanitizing regex.
@@ -69,6 +77,8 @@ def load(csv_path: Path = STAGING_CSV, table_name: str = TABLE_NAME) -> dict:
     reader = pd.read_csv(csv_path, dtype=str, encoding="utf-8", chunksize=CHUNK_SIZE)
     for i, chunk in enumerate(reader):
         chunk = chunk.rename(columns=COLUMN_RENAME)
+        for col in NUMERIC_COLUMNS:
+            chunk[col] = pd.to_numeric(chunk[col], errors="coerce")
         chunk.to_sql(
             table_name,
             engine,
