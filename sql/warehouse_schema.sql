@@ -105,7 +105,10 @@ CREATE TABLE warehouse.fact_shelter_cost (
     statistic           TEXT NOT NULL,
     shelter_cost_ratio  TEXT NOT NULL,
     value               NUMERIC,
-    symbol              TEXT,
+    symbol              TEXT,  -- raw StatCan symbol, kept as-is for traceability
+    data_quality_flag   TEXT,  -- symbol translated to a standard label: 'not_available' |
+                               -- 'not_applicable' | 'use_with_caution' | 'too_unreliable' |
+                               -- 'revised' | 'suppressed'; NULL when symbol is NULL
     source_coordinate   TEXT  -- original StatCan Coordinate, for traceability
 );
 

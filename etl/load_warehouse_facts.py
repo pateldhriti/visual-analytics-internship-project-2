@@ -83,7 +83,7 @@ def load_shelter_cost_facts(engine) -> dict:
     income_band = income_band[income_band["scheme"] == "statcan_bracket"]
 
     df = source.copy()
-    df = df.merge(period, left_on="REF_DATE", right_on="period_label", how="left")
+    df = df.merge(period, left_on="ref_date", right_on="period_label", how="left")
     df = df.merge(tenure, left_on="tenure", right_on="tenure_name", how="left")
     df = df.merge(income_band, left_on="income_group", right_on="band_label", how="left")
 
@@ -94,7 +94,7 @@ def load_shelter_cost_facts(engine) -> dict:
     }
 
     out = pd.DataFrame({
-        "geography_key": df["DGUID"],
+        "geography_key": df["dguid"],
         "period_key": df["period_key"],
         "income_band_key": df["income_band_key"],
         "household_type_key": df["household_type_member_id"],
@@ -105,7 +105,8 @@ def load_shelter_cost_facts(engine) -> dict:
         "shelter_cost_ratio": df["shelter_cost_ratio"],
         "value": pd.to_numeric(df["value"], errors="coerce"),
         "symbol": df["symbol"],
-        "source_coordinate": df["Coordinate"],
+        "data_quality_flag": df["data_quality_flag"],
+        "source_coordinate": df["source_coordinate"],
     })
 
     rows = copy_dataframe(engine, out, "fact_shelter_cost")

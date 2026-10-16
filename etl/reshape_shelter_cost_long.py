@@ -43,6 +43,18 @@ TENURE_COLUMNS = {
     "Renter": ("Tenure (3):Renter[3]", "Symbol.2"),
 }
 
+# StatCan's Symbol Legend for this table (data/raw/shelter_cost/98100252_MetaData.csv),
+# translated to standard snake_case labels -- the raw single-letter/dot codes
+# require the metadata legend to interpret; this flag column doesn't.
+SYMBOL_FLAG_MAP = {
+    "..": "not_available",
+    "...": "not_applicable",
+    "E": "use_with_caution",
+    "F": "too_unreliable",
+    "r": "revised",
+    "x": "suppressed",
+}
+
 
 def load_source(source_csv: Path = SOURCE_CSV) -> pd.DataFrame:
     """Load the full wide extract (all 30,240 rows, no filtering)."""
@@ -73,8 +85,19 @@ def reshape_long(source: pd.DataFrame) -> pd.DataFrame:
         frames.append(part)
 
     long_df = pd.concat(frames, ignore_index=True)
-    return long_df.rename(
+
+    # Standard snake_case column names throughout -- StatCan's own 4 columns
+    # (REF_DATE, GEO, DGUID, Coordinate) were previously left un-renamed,
+    # which required double-quoting to query in Postgres (see
+    # docs/peer_test_affordability_etl.md problem 2); matches the rename this
+    # script already does for its other 6 columns and what
+    # load_windsor_shelter_cost_to_postgres.py already does for the wide table.
+    long_df = long_df.rename(
         columns={
+            "REF_DATE": "ref_date",
+            "GEO": "geo",
+            "DGUID": "dguid",
+            "Coordinate": "source_coordinate",
             INCOME_COL: "income_group",
             HOUSEHOLD_COL: "household_type",
             SUITABILITY_COL: "housing_suitability",
@@ -83,6 +106,17 @@ def reshape_long(source: pd.DataFrame) -> pd.DataFrame:
             RATIO_COL: "shelter_cost_ratio",
         }
     )
+
+    # Standardized data-quality flag: NULL wherever value is a real number,
+    # otherwise the symbol translated to a readable label. Fails loud (not
+    # silently) on any symbol this table hasn't published before, rather
+    # than letting an unrecognized code pass through unflagged.
+    unmapped = set(long_df["symbol"].dropna().unique()) - set(SYMBOL_FLAG_MAP)
+    if unmapped:
+        raise ValueError(f"Unrecognized StatCan symbol(s), add to SYMBOL_FLAG_MAP: {sorted(unmapped)}")
+    long_df["data_quality_flag"] = long_df["symbol"].map(SYMBOL_FLAG_MAP)
+
+    return long_df
 
 
 def expected_row_count(source: pd.DataFrame) -> tuple[int, dict]:
@@ -134,7 +168,7 @@ def verify_preserves_original(source: pd.DataFrame, long_df: pd.DataFrame) -> di
     for _, row in sample.iterrows():
         for tenure_label, (value_col, symbol_col) in TENURE_COLUMNS.items():
             match = long_df[
-                (long_df["Coordinate"] == row["Coordinate"]) & (long_df["tenure"] == tenure_label)
+                (long_df["source_coordinate"] == row["Coordinate"]) & (long_df["tenure"] == tenure_label)
             ]
             if len(match) != 1:
                 mismatches.append((row["Coordinate"], tenure_label, "missing or duplicated"))
