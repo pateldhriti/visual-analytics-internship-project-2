@@ -1,0 +1,22 @@
+{
+  "statcan/98-401-X2021002_eng_CSV.zip": {
+    "sha256": "fd4c3000e3598ee9227c5093be5a239785487dfcf16933d28a7d6a218ed1f68c",
+    "bytes": 6959053
+  },
+  "statcan/9810025201_databaseLoadingData (1).csv": {
+    "sha256": "ed2686602af802aafdda0342380c176ec609f000336501acd174d9e3dbf1659a",
+    "bytes": 765692
+  },
+  "cmhc/rmr-windsor-2025-en.xlsx": {
+    "sha256": "b8ef8ef9e518dbc8c3a8c12b2e7c82c70a8bc685897704c41ae4553deb581d37",
+    "bytes": 96317
+  },
+  "cmhc/rmr-canada-2025-en.xlsx": {
+    "sha256": "ac2f4157917a6efed405f6da67751ef3c32d378f27fdff602f99a12d84d813ea",
+    "bytes": 74401
+  },
+  "cmhc/provincial-starts-completions-dwelling-type-08-26-en.xlsx": {
+    "sha256": "5c261613b14997680467cd6894868aa57b368eb65dd35f8bc705fa718c5065e8",
+    "bytes": 48160
+  }
+}

@@ -48,6 +48,8 @@ See [docs/](docs/) for the full project proposal.
 data/raw/        Original, unmodified downloads from StatsCan / CMHC
 data/staging/    Cleaned/reshaped data ready for loading into PostgreSQL
 etl/             Python ETL scripts (profiling, cleaning, loading)
+tests/           Tests for the current cleaning pipeline
+legacy/          Superseded earlier pipeline — do not use (see legacy/README.md)
 notebooks/       Jupyter notebooks for exploration and analysis
 sql/             SQL schema, views and analytical queries
 docs/            Project proposal and documentation
@@ -85,6 +87,33 @@ docker/          Docker/Compose files for local PostgreSQL + Superset
    ```
 
 Copy `.env.example` to `.env` and fill in local database credentials; `.env` is git-ignored and must never be committed.
+
+## Data cleaning pipeline
+
+Builds the five cleaned files in `data/staging/` from the five official raw files in `data/raw/`
+(which are never modified). Run from the project root:
+
+1. Clean (checks the raw files against `etl/raw_manifest.json`, writes `data/staging/` and
+   `docs/DATA_CLEANING_REPORT.md`):
+   ```
+   .venv\Scripts\python.exe etl\run_cleaning_pipeline.py
+   ```
+2. Validate (writes `docs/DATA_CLEANING_VALIDATION.md`, whose first line is
+   `DATA CLEANING STATUS: PASS` or `FAIL`; exits non-zero on FAIL):
+   ```
+   .venv\Scripts\python.exe etl\validate_cleaned_data.py
+   ```
+3. Tests (runs the pipeline into a temp folder, so `data/staging/` is not touched):
+   ```
+   .venv\Scripts\python.exe -m pytest -q
+   ```
+
+The cleaning code is `etl/run_cleaning_pipeline.py`, `etl/validate_cleaned_data.py`,
+`etl/cleaning_common.py` and the `etl/clean_*.py` modules.
+
+**Do not use the legacy pipeline.** The older `extract_*` / `reshape_*` scripts, `run_affordability_etl.py`,
+`validate_supply_data.py` and `test_affordability_etl.py` are in [legacy/](legacy/README.md). They
+expect different raw files and would overwrite the cleaned outputs with an old format.
 
 ## Running the full stack (PostgreSQL + Redis + Superset)
 
