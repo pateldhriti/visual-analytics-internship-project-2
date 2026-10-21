@@ -26,6 +26,74 @@ CACHE_CONFIG = {
 
 DATA_CACHE_CONFIG = CACHE_CONFIG
 
+# Public role + anonymous viewing, for embedding charts/dashboards on the
+# React site without requiring a login.
+#
+# PUBLIC_ROLE_LIKE_GAMMA copies Gamma's base permission set (can_read on
+# Chart/Dashboard/Dataset list screens, etc.) onto the Public role -- the
+# role Superset auto-assigns to any unauthenticated request. This alone
+# does NOT grant access to any actual data: Gamma (and so Public) starts
+# with zero `datasource_access` grants by design, the same secure-by-
+# default model Gamma itself uses. Each dataset that should be publicly
+# viewable needs its own explicit grant, added in PUBLIC_DATASOURCE_NAMES
+# below -- nothing is public unless listed here.
+PUBLIC_ROLE_LIKE_GAMMA = True
+
+# Dataset names (as Superset's own `view_menu.name` on their
+# datasource_access permission -- "[<database_name>].[<table>](id:N)") that
+# the Public role should be able to view. Currently just the Story 1
+# shelter-cost chart's dataset; add a name here (exactly matching Superset's
+# own PV naming) whenever another chart/dashboard needs to be public.
+PUBLIC_DATASOURCE_NAMES = [
+    "[Windsor Housing Data].[windsor_shelter_cost_long](id:1)",
+]
+
+
+def FLASK_APP_MUTATOR(app):
+    """Grants the Public role can_read on Chart/Dashboard/Dataset plus
+    datasource_access on each name in PUBLIC_DATASOURCE_NAMES. Runs on every
+    app startup; safe to re-run -- add_permission_role() is a no-op if the
+    role already has that permission (verified: ran this grant twice against
+    a live instance, permission list was identical both times, no
+    duplicates).
+
+    PUBLIC_ROLE_LIKE_GAMMA (above) only syncs Gamma's base permissions, not
+    per-dataset access -- this is the piece that does the per-dataset grant,
+    since there's no REST API for it and the alternative (editing Superset's
+    FAB tables by hand through the UI on every fresh environment) isn't
+    repeatable.
+    """
+    with app.app_context():
+        from superset import security_manager as sm
+        from superset.extensions import db
+
+        public_role = sm.find_role("Public")
+        if public_role is None:
+            return
+
+        for perm_name, view_name in [
+            ("can_read", "Chart"),
+            ("can_read", "Dashboard"),
+            ("can_read", "Dataset"),
+        ]:
+            pv = sm.find_permission_view_menu(perm_name, view_name)
+            if pv is not None:
+                sm.add_permission_role(public_role, pv)
+
+        pv_model = sm.permissionview_model
+        for datasource_name in PUBLIC_DATASOURCE_NAMES:
+            pv = (
+                sm.get_session.query(pv_model)
+                .join(pv_model.permission)
+                .join(pv_model.view_menu)
+                .filter_by(name=datasource_name)
+                .first()
+            )
+            if pv is not None:
+                sm.add_permission_role(public_role, pv)
+
+        db.session.commit()
+
 # One shared colour palette for the whole project, selectable in any
 # chart's "Color Scheme" dropdown. 8-slot CVD-safe categorical palette
 # from the dataviz skill's validated reference instance
