@@ -56,11 +56,22 @@ def fetch_dim(engine, table: str, key_col: str, *value_cols: str) -> pd.DataFram
     return pd.read_sql(f"SELECT {cols} FROM warehouse.{table}", engine)
 
 
-def copy_dataframe(engine, df: pd.DataFrame, table: str) -> int:
+def copy_dataframe(engine, df: pd.DataFrame, table: str, raw_conn=None) -> int:
     """Bulk-load via Postgres COPY -- the only tractable approach at
     90k+ rows (see load_raw_files_to_postgres.py's load_csv_fast docstring
-    for why row-by-row/batched INSERT is far too slow at this scale)."""
-    raw_conn = engine.raw_connection()
+    for why row-by-row/batched INSERT is far too slow at this scale).
+
+    If `raw_conn` is given, the COPY runs on that connection and the caller
+    owns commit/rollback/close (so a truncate done earlier on the same
+    connection rolls back together with a failed COPY, instead of a
+    separately-committed truncate surviving a load failure -- see
+    docs/code_review_affordability_etl.md finding 1). With no `raw_conn`,
+    behaves exactly as before: opens, commits, and closes its own
+    connection, for every other existing call site.
+    """
+    owns_conn = raw_conn is None
+    if owns_conn:
+        raw_conn = engine.raw_connection()
     try:
         cur = raw_conn.cursor()
         buf = io.StringIO()
@@ -68,13 +79,18 @@ def copy_dataframe(engine, df: pd.DataFrame, table: str) -> int:
         buf.seek(0)
         cols = ", ".join(f'"{c}"' for c in df.columns)
         cur.copy_expert(f'COPY warehouse."{table}" ({cols}) FROM STDIN WITH (FORMAT csv)', buf)
-        raw_conn.commit()
+        if owns_conn:
+            raw_conn.commit()
     finally:
-        raw_conn.close()
+        if owns_conn:
+            raw_conn.close()
     return len(df)
 
 
-def load_shelter_cost_facts(engine) -> dict:
+def load_shelter_cost_facts(engine, raw_conn=None) -> dict:
+    """`raw_conn`, if given, is forwarded to copy_dataframe() so the COPY
+    shares a connection/transaction with whatever the caller already did on
+    it (e.g. a truncate) -- see copy_dataframe()'s docstring."""
     source = pd.read_csv(SHELTER_COST_LONG_CSV, dtype=str)
 
     period = fetch_dim(engine, "dim_period", "period_key", "period_label")
@@ -109,7 +125,7 @@ def load_shelter_cost_facts(engine) -> dict:
         "source_coordinate": df["source_coordinate"],
     })
 
-    rows = copy_dataframe(engine, out, "fact_shelter_cost")
+    rows = copy_dataframe(engine, out, "fact_shelter_cost", raw_conn=raw_conn)
     return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
 
 
