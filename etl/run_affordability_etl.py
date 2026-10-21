@@ -25,8 +25,6 @@ Run from the project virtual environment:
 
 import logging
 
-from sqlalchemy import text
-
 import extract_windsor_shelter_cost as extract_stage
 import reshape_shelter_cost_long as reshape_stage
 from load_warehouse_facts import load_shelter_cost_facts
@@ -61,11 +59,25 @@ def run() -> dict:
 
     logger.info("Stage 3/3: load into warehouse.fact_shelter_cost")
     engine = get_engine()
-    with engine.begin() as conn:
-        conn.execute(text("TRUNCATE warehouse.fact_shelter_cost"))
-    load_stats = load_shelter_cost_facts(engine)
-    if any(load_stats["unmatched_dimension_keys"].values()):
-        raise RuntimeError(f"Unmatched dimension keys on load: {load_stats['unmatched_dimension_keys']}")
+    # Truncate and load share one connection/transaction, committed once at
+    # the end -- a failure partway through the load rolls the truncate back
+    # too, instead of leaving the table empty (see
+    # docs/code_review_affordability_etl.md finding 1: these were two
+    # separately-committed transactions before, so a load failure after a
+    # successful truncate left Superset's table empty rather than falling
+    # back to the last good data).
+    raw_conn = engine.raw_connection()
+    try:
+        raw_conn.cursor().execute("TRUNCATE warehouse.fact_shelter_cost")
+        load_stats = load_shelter_cost_facts(engine, raw_conn=raw_conn)
+        if any(load_stats["unmatched_dimension_keys"].values()):
+            raise RuntimeError(f"Unmatched dimension keys on load: {load_stats['unmatched_dimension_keys']}")
+        raw_conn.commit()
+    except Exception:
+        raw_conn.rollback()
+        raise
+    finally:
+        raw_conn.close()
     logger.info("Stage 3/3 complete: %d rows loaded into warehouse.fact_shelter_cost",
                 load_stats["loaded_rows"])
 
