@@ -41,7 +41,7 @@ CREATE TABLE warehouse.dim_geography (
 CREATE TABLE warehouse.dim_period (
     period_key   SERIAL PRIMARY KEY,
     period_label TEXT NOT NULL UNIQUE, -- e.g. '2021', 'Oct-24'
-    period_type  TEXT NOT NULL,        -- 'census_year' | 'survey_month'
+    period_type  TEXT NOT NULL CHECK (period_type IN ('census_year', 'survey_month')),
     period_year  INT NOT NULL,
     period_month INT                   -- NULL for census_year rows
 );
@@ -74,7 +74,8 @@ CREATE TABLE warehouse.dim_bedroom_type (
 CREATE TABLE warehouse.dim_zone (
     zone_key   SERIAL PRIMARY KEY,
     zone_label TEXT NOT NULL UNIQUE,
-    zone_level TEXT NOT NULL  -- 'zone' | 'city_subtotal' | 'cma_total'
+    zone_level TEXT NOT NULL
+        CHECK (zone_level IN ('zone', 'city_subtotal', 'cma_total', 'comparator_cma'))
 );
 
 CREATE TABLE warehouse.dim_dwelling_type (
@@ -106,11 +107,27 @@ CREATE TABLE warehouse.fact_shelter_cost (
     shelter_cost_ratio  TEXT NOT NULL,
     value               NUMERIC,
     symbol              TEXT,  -- raw StatCan symbol, kept as-is for traceability
-    data_quality_flag   TEXT,  -- symbol translated to a standard label: 'not_available' |
-                               -- 'not_applicable' | 'use_with_caution' | 'too_unreliable' |
-                               -- 'revised' | 'suppressed'; NULL when symbol is NULL
-    source_coordinate   TEXT  -- original StatCan Coordinate, for traceability
+    data_quality_flag   TEXT   -- symbol translated to a standard label; NULL when symbol is NULL
+        CHECK (data_quality_flag IN ('not_available', 'not_applicable', 'use_with_caution',
+                                      'too_unreliable', 'revised', 'suppressed')),
+    source_coordinate   TEXT,  -- original StatCan Coordinate, for traceability
+    -- Enforces this table's own documented grain (see comment above): guards
+    -- against the loader ever double-inserting the same combination. Verified
+    -- against 0 drops needed on the real 90,720-row load before adding this.
+    UNIQUE (geography_key, period_key, income_band_key, household_type_key, tenure_key,
+            housing_suitability, dwelling_condition, statistic, shelter_cost_ratio)
 );
+
+-- One index per FK column: Postgres indexes a FOREIGN KEY's *referenced*
+-- (dimension-side) column automatically via that column's PRIMARY KEY, but
+-- never the *referencing* (fact-side) column itself -- without these, every
+-- join or filter from a fact table back to one dimension (e.g. "all rows
+-- for tenure = Renter") would be a full table scan.
+CREATE INDEX idx_fact_shelter_cost_geography ON warehouse.fact_shelter_cost (geography_key);
+CREATE INDEX idx_fact_shelter_cost_period ON warehouse.fact_shelter_cost (period_key);
+CREATE INDEX idx_fact_shelter_cost_income_band ON warehouse.fact_shelter_cost (income_band_key);
+CREATE INDEX idx_fact_shelter_cost_household_type ON warehouse.fact_shelter_cost (household_type_key);
+CREATE INDEX idx_fact_shelter_cost_tenure ON warehouse.fact_shelter_cost (tenure_key);
 
 -- Source: CMHC Windsor RMS 2025
 -- Grain: one row per (zone, period, bedroom_type, dwelling_type, tenure,
@@ -128,11 +145,33 @@ CREATE TABLE warehouse.fact_rental_market (
     dwelling_type_key  INT  NOT NULL REFERENCES warehouse.dim_dwelling_type (dwelling_type_key),
     tenure_key         INT  NOT NULL REFERENCES warehouse.dim_tenure (tenure_key),
     income_band_key    INT  REFERENCES warehouse.dim_income_band (income_band_key),
-    metric_type        TEXT NOT NULL,  -- 'vacancy_rate' | 'average_rent' | 'universe' | 'turnover' | ...
+    -- Not CHECK-constrained, unlike this schema's other categorical columns:
+    -- genuinely open-ended by design, not an oversight. Only 12 of the RMS
+    -- workbook's 29 sheets are extracted so far (docs/cmhc_rms_sheet_
+    -- catalogue.md); every additional sheet adds a new real metric_type
+    -- value, so a fixed CHECK list here would need editing on every future
+    -- extraction rather than actually catching bad data.
+    metric_type        TEXT NOT NULL,
     value               NUMERIC,
     reliability_letter  TEXT,
-    yoy_trend           TEXT
+    yoy_trend           TEXT,
+    -- income_band_key is nullable (NULL for every metric_type except the
+    -- Table 3.1.8 quintile rows) -- SQL's standard UNIQUE semantics treat
+    -- every NULL as distinct from every other NULL, so this constraint does
+    -- NOT catch a duplicate among same-NULL rows. Documented, not a gap
+    -- introduced here: the real loader-level duplicate check is
+    -- etl/load_warehouse_facts.py's own row-count verification against the
+    -- source CSV, which this schema change doesn't replace.
+    UNIQUE (zone_key, period_key, bedroom_type_key, dwelling_type_key, tenure_key,
+            income_band_key, metric_type)
 );
+
+CREATE INDEX idx_fact_rental_market_zone ON warehouse.fact_rental_market (zone_key);
+CREATE INDEX idx_fact_rental_market_period ON warehouse.fact_rental_market (period_key);
+CREATE INDEX idx_fact_rental_market_bedroom_type ON warehouse.fact_rental_market (bedroom_type_key);
+CREATE INDEX idx_fact_rental_market_dwelling_type ON warehouse.fact_rental_market (dwelling_type_key);
+CREATE INDEX idx_fact_rental_market_tenure ON warehouse.fact_rental_market (tenure_key);
+CREATE INDEX idx_fact_rental_market_income_band ON warehouse.fact_rental_market (income_band_key);
 
 -- Source: StatCan 98-401-X2021002 (Census Profile, 2021 - CMAs and CAs)
 -- Grain: one row per (geography, period, characteristic, measure_type, sex)
@@ -155,11 +194,15 @@ CREATE TABLE warehouse.fact_census_profile (
     period_key           INT  NOT NULL REFERENCES warehouse.dim_period (period_key),
     characteristic_id    INT  NOT NULL,
     characteristic_name  TEXT NOT NULL,
-    measure_type         TEXT NOT NULL,  -- 'count' | 'rate'
-    sex                  TEXT NOT NULL,  -- 'total' | 'men' | 'women'
+    measure_type         TEXT NOT NULL CHECK (measure_type IN ('count', 'rate')),
+    sex                  TEXT NOT NULL CHECK (sex IN ('total', 'men', 'women')),
     value                NUMERIC,
-    symbol               TEXT
+    symbol               TEXT,
+    UNIQUE (geography_key, period_key, characteristic_id, measure_type, sex)
 );
+
+CREATE INDEX idx_fact_census_profile_geography ON warehouse.fact_census_profile (geography_key);
+CREATE INDEX idx_fact_census_profile_period ON warehouse.fact_census_profile (period_key);
 
 -- Source: CMHC Quarterly Starts, Completions, Units Under Construction by
 -- (Canada, Provinces) -- etl/extract_cmhc_starts_completions.py
@@ -179,10 +222,15 @@ CREATE TABLE warehouse.fact_census_profile (
 --     the same taxonomy despite the similar name.
 CREATE TABLE warehouse.fact_starts_completions (
     fact_id       BIGSERIAL PRIMARY KEY,
-    province      TEXT NOT NULL,  -- 'Ontario' | 'Canada'
-    period_type   TEXT NOT NULL,  -- 'quarter' | 'ytd'
+    province      TEXT NOT NULL CHECK (province IN ('Ontario', 'Canada')),
+    period_type   TEXT NOT NULL CHECK (period_type IN ('quarter', 'ytd')),
     period_label  TEXT NOT NULL,  -- e.g. 'Second Quarter 2026'
-    activity      TEXT NOT NULL,  -- 'Starts' | 'Completions' | 'Under Construction'
+    activity      TEXT NOT NULL
+        CHECK (activity IN ('Starts', 'Completions', 'Under Construction')),
     dwelling_type TEXT NOT NULL,
-    units         NUMERIC
+    units         NUMERIC,
+    -- No FK columns to index here -- province/dwelling_type are deliberately
+    -- local text, not references to dim_zone/dim_dwelling_type (see comment
+    -- above on why forcing that conformance would be false).
+    UNIQUE (province, period_type, period_label, activity, dwelling_type)
 );
