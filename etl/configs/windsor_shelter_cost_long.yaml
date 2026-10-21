@@ -1,0 +1,26 @@
+# Dataset config for etl/etl_framework.py -- the long Windsor shelter-cost
+# staging extract (data/staging/windsor_shelter_cost_long.csv, produced by
+# etl/reshape_shelter_cost_long.py). Already snake_case on disk (see that
+# script's own rename step), so no column_rename needed here.
+name: windsor_shelter_cost_long
+csv_path: data/staging/windsor_shelter_cost_long.csv
+schema: public
+table: windsor_shelter_cost_long
+expected_columns:
+  - ref_date
+  - geo
+  - dguid
+  - income_group
+  - household_type
+  - household_type_member_id
+  - housing_suitability
+  - dwelling_condition
+  - statistic
+  - shelter_cost_ratio
+  - source_coordinate
+  - tenure
+  - value
+  - symbol
+  - data_quality_flag
+numeric_columns:
+  - value
