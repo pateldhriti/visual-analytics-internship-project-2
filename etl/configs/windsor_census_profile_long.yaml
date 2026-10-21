@@ -1,0 +1,26 @@
+# Dataset config for etl/etl_framework.py -- the long Windsor Census Profile
+# extract (data/staging/windsor_census_profile_long.csv, produced by
+# etl/extract_windsor_census_profile.py + etl/reshape_census_profile_long.py).
+# 60 curated characteristics x 6 (measure_type x sex) combinations = 360 rows.
+name: windsor_census_profile_long
+csv_path: data/staging/windsor_census_profile_long.csv
+schema: public
+table: windsor_census_profile_long
+expected_columns:
+  - CENSUS_YEAR
+  - DGUID
+  - ALT_GEO_CODE
+  - GEO_LEVEL
+  - GEO_NAME
+  - TNR_SF
+  - TNR_LF
+  - DATA_QUALITY_FLAG
+  - CHARACTERISTIC_ID
+  - CHARACTERISTIC_NAME
+  - CHARACTERISTIC_NOTE
+  - measure_type
+  - sex
+  - value
+  - symbol
+numeric_columns:
+  - value
