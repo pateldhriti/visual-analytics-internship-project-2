@@ -1,0 +1,105 @@
+erDiagram
+    dim_geography ||--o{ fact_shelter_cost : "geography_key"
+    dim_geography ||--o{ fact_census_profile : "geography_key"
+    dim_period ||--o{ fact_shelter_cost : "period_key"
+    dim_period ||--o{ fact_rental_market : "period_key"
+    dim_period ||--o{ fact_census_profile : "period_key"
+    dim_tenure ||--o{ fact_shelter_cost : "tenure_key"
+    dim_tenure ||--o{ fact_rental_market : "tenure_key"
+    dim_income_band ||--o{ fact_shelter_cost : "income_band_key"
+    dim_income_band |o--o{ fact_rental_market : "income_band_key (nullable)"
+    dim_household_type ||--o{ fact_shelter_cost : "household_type_key"
+    dim_household_type |o--o{ dim_household_type : "parent_member_id"
+    dim_zone ||--o{ fact_rental_market : "zone_key"
+    dim_bedroom_type ||--o{ fact_rental_market : "bedroom_type_key"
+    dim_dwelling_type ||--o{ fact_rental_market : "dwelling_type_key"
+
+    dim_geography {
+        text geography_key PK
+        text geography_name
+        text geography_level
+    }
+    dim_period {
+        serial period_key PK
+        text period_label UK
+        text period_type "CHECK census_year|survey_month"
+        int period_year
+        int period_month
+    }
+    dim_tenure {
+        serial tenure_key PK
+        text tenure_name UK
+    }
+    dim_income_band {
+        serial income_band_key PK
+        text scheme "statcan_bracket|cmhc_quintile"
+        int member_id
+        text band_label
+    }
+    dim_household_type {
+        int household_type_key PK
+        text household_type_label
+        int parent_member_id FK
+    }
+    dim_bedroom_type {
+        serial bedroom_type_key PK
+        text bedroom_type_label UK
+    }
+    dim_zone {
+        serial zone_key PK
+        text zone_label UK
+        text zone_level "CHECK zone|city_subtotal|cma_total|comparator_cma"
+    }
+    dim_dwelling_type {
+        serial dwelling_type_key PK
+        text dwelling_type_label UK
+    }
+    fact_shelter_cost {
+        bigserial fact_id PK
+        text geography_key FK
+        int period_key FK
+        int income_band_key FK
+        int household_type_key FK
+        int tenure_key FK
+        text housing_suitability
+        text dwelling_condition
+        text statistic
+        text shelter_cost_ratio
+        numeric value
+        text symbol
+        text data_quality_flag "CHECK 6 standard labels"
+        text source_coordinate
+    }
+    fact_rental_market {
+        bigserial fact_id PK
+        int zone_key FK
+        int period_key FK
+        int bedroom_type_key FK
+        int dwelling_type_key FK
+        int tenure_key FK
+        int income_band_key FK "nullable"
+        text metric_type
+        numeric value
+        text reliability_letter
+        text yoy_trend
+    }
+    fact_census_profile {
+        bigserial fact_id PK
+        text geography_key FK
+        int period_key FK
+        int characteristic_id
+        text characteristic_name
+        text measure_type "CHECK count|rate"
+        text sex "CHECK total|men|women"
+        numeric value
+        text symbol
+    }
+    fact_starts_completions {
+        bigserial fact_id PK
+        text province "CHECK Ontario|Canada"
+        text period_type "CHECK quarter|ytd"
+        text period_label
+        text activity "CHECK Starts|Completions|Under Construction"
+        text dwelling_type
+        numeric units
+    }
