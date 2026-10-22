@@ -1,0 +1,22 @@
+# Dataset config for etl/etl_framework.py -- the long-format CMHC starts/
+# completions extract (data/staging/ontario_canada_starts_completions.csv,
+# produced by etl/extract_cmhc_starts_completions.py). Already long and
+# already snake_case on disk (the extract script melts dwelling types and
+# parses period_year/period_quarter itself), so no column_rename needed.
+name: ontario_canada_starts_completions
+csv_path: data/staging/ontario_canada_starts_completions.csv
+schema: public
+table: ontario_canada_starts_completions
+expected_columns:
+  - period_type
+  - period_label
+  - activity
+  - province
+  - dwelling_type
+  - units
+  - period_year
+  - period_quarter
+numeric_columns:
+  - units
+  - period_year
+  - period_quarter
