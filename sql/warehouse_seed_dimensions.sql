@@ -17,8 +17,16 @@ INSERT INTO warehouse.dim_geography (geography_key, geography_name, geography_le
 -- ---------- dim_period ----------
 -- The '2021' census_year row is shared by fact_shelter_cost and
 -- fact_census_profile -- both are 2021 Census products.
+-- Oct-20 through Oct-23 added for the historical Windsor RMS editions
+-- (etl/extract_windsor_rms_historical.py) -- real downloaded editions,
+-- confirmed 2015-2020 aren't reachable the same way (see that script's
+-- module docstring).
 INSERT INTO warehouse.dim_period (period_label, period_type, period_year, period_month) VALUES
     ('2021',   'census_year',   2021, NULL),
+    ('Oct-20', 'survey_month',  2020, 10),
+    ('Oct-21', 'survey_month',  2021, 10),
+    ('Oct-22', 'survey_month',  2022, 10),
+    ('Oct-23', 'survey_month',  2023, 10),
     ('Oct-24', 'survey_month',  2024, 10),
     ('Oct-25', 'survey_month',  2025, 10);
 

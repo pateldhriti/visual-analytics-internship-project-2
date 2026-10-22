@@ -47,6 +47,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SHELTER_COST_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_shelter_cost_long.csv"
 CENSUS_PROFILE_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_census_profile_long.csv"
 RENTAL_MARKET_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv"
+RENTAL_MARKET_HISTORICAL_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market_historical.csv"
 RMS_CANADA_COMPARISON_CSV = PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv"
 STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "ontario_canada_starts_completions.csv"
 
@@ -211,6 +212,51 @@ def load_rental_market_facts(engine) -> dict:
     return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
 
 
+def load_historical_rental_market_facts(engine) -> dict:
+    """Oct-20 through Oct-23, from etl/extract_windsor_rms_historical.py --
+    same fact_rental_market table, same 6 metric_types as the 2025-edition
+    loader above, no income_quintile column (that script only extracts the
+    6 time-series sheets, not Table 3.1.8). tenure is always 'Renter', same
+    reasoning as load_rental_market_facts()."""
+    source = pd.read_csv(RENTAL_MARKET_HISTORICAL_CSV, dtype=str)
+
+    zone = fetch_dim(engine, "dim_zone", "zone_key", "zone_label")
+    period = fetch_dim(engine, "dim_period", "period_key", "period_label")
+    bedroom_type = fetch_dim(engine, "dim_bedroom_type", "bedroom_type_key", "bedroom_type_label")
+    dwelling_type = fetch_dim(engine, "dim_dwelling_type", "dwelling_type_key", "dwelling_type_label")
+    tenure = fetch_dim(engine, "dim_tenure", "tenure_key", "tenure_name")
+    renter_key = int(tenure.loc[tenure["tenure_name"] == "Renter", "tenure_key"].iloc[0])
+
+    df = source.copy()
+    df = df.merge(zone, left_on="zone", right_on="zone_label", how="left")
+    df = df.merge(period, left_on="period_label", right_on="period_label", how="left")
+    df = df.merge(bedroom_type, left_on="bedroom_type", right_on="bedroom_type_label", how="left")
+    df = df.merge(dwelling_type, left_on="dwelling_type", right_on="dwelling_type_label", how="left")
+
+    unmatched = {
+        "zone": int(df["zone_key"].isna().sum()),
+        "period": int(df["period_key"].isna().sum()),
+        "bedroom_type": int(df["bedroom_type_key"].isna().sum()),
+        "dwelling_type": int(df["dwelling_type_key"].isna().sum()),
+    }
+
+    out = pd.DataFrame({
+        "zone_key": df["zone_key"],
+        "period_key": df["period_key"],
+        "bedroom_type_key": df["bedroom_type_key"],
+        "dwelling_type_key": df["dwelling_type_key"],
+        "tenure_key": renter_key,
+        "income_band_key": None,
+        "metric_type": df["metric_type"],
+        "value": pd.to_numeric(df["value"], errors="coerce"),
+        "reliability_letter": df["reliability_letter"],
+        "yoy_trend": df["yoy_trend"],
+    })
+
+    rows = copy_dataframe(engine, out, "fact_rental_market")
+    return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
+
+
 def load_rms_canada_comparison_facts(engine) -> dict:
     """Windsor (partially) + the 3 comparator CMAs from the national RMS
     workbook's Table 1.0, into the same fact_rental_market table --
@@ -320,6 +366,11 @@ if __name__ == "__main__":
     print("Loading fact_rental_market (Canada comparison CMAs)...")
     comparison_stats = load_rms_canada_comparison_facts(engine)
     for key, value in comparison_stats.items():
+        print(f"  {key}: {value}")
+
+    print("Loading fact_rental_market (historical Windsor, Oct-20 to Oct-23)...")
+    historical_stats = load_historical_rental_market_facts(engine)
+    for key, value in historical_stats.items():
         print(f"  {key}: {value}")
 
     print("Loading fact_starts_completions...")
