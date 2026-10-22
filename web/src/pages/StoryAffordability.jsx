@@ -30,6 +30,30 @@ const NARRATIVE = [
     "question, not assumed to be 100%+ spenders without a source for that label.",
 ];
 
+const DEFINITIONS = [
+  {
+    term: "Shelter-cost-to-income ratio",
+    text: "Share of household income spent on shelter costs -- rent or mortgage payments, utilities, and property tax where applicable.",
+  },
+  {
+    term: "30% threshold",
+    text: "StatCan's standard affordability line. Households spending 30% or more of income on shelter are considered cost-burdened.",
+  },
+  {
+    term: "“Not applicable” households",
+    text: "Households with no computable ratio at all -- zero or negative income, or an agricultural-operation dwelling. Excluded from the burden-rate denominator.",
+  },
+  {
+    term: "Household type",
+    text: "Census family structure (e.g. one-person, couple with/without children) -- 16 real categories, 2 label pairs disambiguated by StatCan's own member ID.",
+  },
+];
+
+const LIMITATIONS = [
+  "8.8% of burdened households (2,535 of 28,745) aren't accounted for by any StatCan sub-category this table publishes -- flagged openly, not assumed into any one bucket.",
+  "This is a single 2021 Census snapshot, not a time series -- it can't show whether the burden is rising or falling over time.",
+];
+
 export default function StoryAffordability() {
   return (
     <StoryPage
@@ -40,6 +64,8 @@ export default function StoryAffordability() {
         "How different is the burden for renters and owners?",
       ]}
       narrative={NARRATIVE}
+      definitions={DEFINITIONS}
+      limitations={LIMITATIONS}
       source="StatCan 98-10-0252-01, Shelter-cost-to-income ratio by tenure (Windsor CMA, 2021 Census) -- warehouse.fact_shelter_cost"
     />
   );
