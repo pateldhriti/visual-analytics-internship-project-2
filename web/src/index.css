@@ -86,6 +86,31 @@ main {
   font-style: italic;
 }
 
+.story-questions {
+  color: var(--ink-2);
+}
+
+.story-dashboard-slot {
+  margin-top: 24px;
+}
+
+.story-narrative {
+  margin-top: 24px;
+  max-width: 68ch;
+}
+
+.story-narrative p {
+  margin: 0 0 16px;
+}
+
+.story-source-line {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
 /* ============================================================
    Header + responsive nav
    ============================================================ */
