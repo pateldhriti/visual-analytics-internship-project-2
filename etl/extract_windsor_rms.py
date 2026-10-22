@@ -244,6 +244,19 @@ def clean_value(raw):
     return raw
 
 
+def clean_reliability(raw):
+    """Table 3.1.7's suppressed-rent cells have their adjacent reliability
+    cell set to a literal single-space string in the raw workbook, not left
+    empty or '**' like every other suppressed cell's reliability column --
+    confirmed directly against the raw cell (row 6, col 6 = ' ', the paired
+    value cell = '**'). Found by etl/validate_rental_market_data.py's
+    reliability-letter check (43 rows had this). Whitespace-only -> None,
+    same meaning as a genuinely empty cell."""
+    if isinstance(raw, str) and raw.strip() == "":
+        return None
+    return raw
+
+
 def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> dict:
     if not source_xlsx.exists():
         raise FileNotFoundError(f"Source workbook not found: {source_xlsx}")
@@ -272,6 +285,7 @@ def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> d
 
     df = pd.DataFrame(all_rows)
     df["value"] = pd.to_numeric(df["value"].map(clean_value), errors="coerce")
+    df["reliability_letter"] = df["reliability_letter"].map(clean_reliability)
 
     expected_rows = (
         expected_standard_rows

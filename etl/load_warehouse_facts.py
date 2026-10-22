@@ -383,3 +383,19 @@ if __name__ == "__main__":
         for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market", "fact_starts_completions"):
             count = conn.execute(text(f'SELECT COUNT(*) FROM warehouse."{table}"')).scalar()
             print(f"warehouse.{table}: {count} rows")
+
+    # Validation report produced on every load, not a separate manual step --
+    # etl/validate_rental_market_data.py re-checks the table that was just
+    # loaded (row counts, rent/vacancy ranges, duplicate keys, reliability
+    # letters) and writes its section of docs/data_quality_report.md.
+    print()
+    print("Running rental-market data-quality checks...")
+    import validate_rental_market_data as rmv
+    live_rental_df = rmv.fetch_live_fact_rental_market(engine)
+    rmv.update_report(rmv.render_section(
+        rmv.check_row_counts(live_rental_df),
+        rmv.check_ranges(live_rental_df),
+        rmv.check_duplicate_keys(live_rental_df),
+        rmv.check_reliability_letters(live_rental_df),
+    ))
+    print(f"  Written: {rmv.REPORT_MD}")
