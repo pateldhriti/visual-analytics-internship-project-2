@@ -40,5 +40,12 @@ Follow **[README.md § Running the full stack](../README.md#running-the-full-sta
 ## What branch protection on `main` actually enforces
 
 - `main` cannot be deleted
+- A pull request can't be merged through GitHub's own merge button/API until 3 CI checks pass
+  (`.github/workflows/ci.yml`: pre-commit hooks, `pytest` on `etl/`, web lint + format + build) —
+  added in `docs/hosting_decision.md`'s companion PR. Check `gh pr checks <number>` or the PR page
+  before merging.
 
-Force-pushes and direct pushes to `main` are both technically allowed by GitHub — the "always branch, then PR" workflow is a team practice everyone needs to follow by discipline, not something GitHub blocks you from skipping.
+Force-pushes and direct pushes to `main` are both still technically allowed by GitHub, and neither
+is blocked by the required status checks above (those only gate merges done *through* GitHub) — the
+"always branch, then PR" workflow is a team practice everyone needs to follow by discipline, not
+something GitHub blocks you from skipping entirely.
