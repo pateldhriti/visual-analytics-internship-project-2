@@ -10,6 +10,13 @@ import os
 
 SECRET_KEY = os.environ["SUPERSET_SECRET_KEY"]
 
+# Embedded SDK spike (docs/embedding_spike.md) -- enables the guest-token
+# endpoint and embedDashboard()'s iframe. GUEST_TOKEN_JWT_SECRET signs those
+# tokens; must be a real secret (see .env.example), not left at Superset's
+# own unsafe default.
+FEATURE_FLAGS = {"EMBEDDED_SUPERSET": True}
+GUEST_TOKEN_JWT_SECRET = os.environ["GUEST_TOKEN_JWT_SECRET"]
+
 SQLALCHEMY_DATABASE_URI = (
     f"postgresql+psycopg2://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}"
     f"@postgres:5432/{os.environ['SUPERSET_METADATA_DB']}"
