@@ -15,15 +15,15 @@
 
 - **Columns:** `tenure`, `shelter_cost_ratio`, `value`
 - **Filter:** baseline slice (rule 1) + `income_group = "Total - Total income of household"`, `household_type = "Total - Household type including census family structure"`
-- **Formula:** `value[ratio="Spending 30% or more..."] / value[ratio="Total - Shelter-cost-to-income ratio"] * 100`, computed separately per `tenure`
-- **Verified result:** Owner 10.9% (13,005 / 119,125) vs. Renter 34.5% (15,735 / 45,605) — renters are burdened more than 3x as often as owners.
+- **Formula:** `value[ratio="Spending 30% or more..."] / (value[ratio="Spending less than 30%..."] + value[ratio="Spending 30% or more..."]) * 100`, computed separately per `tenure` — denominator deliberately excludes the `"Not applicable"` row (households with no computable ratio at all: zero/negative income, or an agricultural-operation dwelling), matching how StatCan computes its own published rate; the raw `"Total - Shelter-cost-to-income ratio"` row includes those households and gives a slightly wrong answer — see `docs/story1_validation.md`.
+- **Verified result:** Owner 10.9% (13,005 / 118,940) vs. Renter 34.8% (15,735 / 45,280) — renters are burdened more than 3x as often as owners. Exact match to StatCan's own published Census Profile rate (characteristics 1484/1492, cited in the project proposal) — reproduced and confirmed in `docs/story1_validation.md`, not just close.
 
 ### Q2. Which household income bracket faces the greatest burden?
 
 - **Columns:** `income_group`, `shelter_cost_ratio`, `value`
 - **Filter:** baseline slice (rule 1) + `household_type = "Total - ..."`, `tenure = "Total"`, **excluding** the Median/Average income rows
-- **Formula:** per `income_group`, same % formula as Q1, ranked descending
-- **Verified result (top 3):** $10,000–$19,999: 76.4%; Under $10,000: 73.6%; $20,000–$29,999: 56.2% — burden drops sharply as income rises, as expected, but worth showing because it quantifies exactly how sharply.
+- **Formula:** per `income_group`, same % formula as Q1 (corrected denominator), ranked descending
+- **Verified result (top 3):** **Under $10,000: 93.1%**; $10,000–$19,999: 76.5%; $20,000–$29,999: 56.2% — burden drops sharply as income rises, as expected. Corrected via `docs/story1_validation.md`: the original (uncorrected-denominator) version of this answer had Under-$10,000 in *second* place at 73.6%, behind $10,000–$19,999 — the lowest bracket has the largest share of "Not applicable" (zero/negative-income) households, so it was the most affected by the denominator bug, enough to change the ranking, not just the number.
 
 ### Q3. Within the "spending 30%+" group, how much is in the most extreme range, and what's left over?
 
@@ -36,8 +36,8 @@
 
 - **Columns:** `household_type`, `household_type_member_id`, `shelter_cost_ratio`, `value`
 - **Filter:** baseline slice (rule 1) + `income_group = "Total - ..."`, `tenure = "Total"`
-- **Formula:** per `(household_type, household_type_member_id)`, same % formula as Q1, ranked descending
-- **Verified result (top 3):** Non-census-family one-person households: 32.7%; non-census-family households overall: 30.9%; one-parent families (no additional persons): 23.2% — all well above the Windsor-wide baseline of 17.4%.
+- **Formula:** per `(household_type, household_type_member_id)`, same % formula as Q1 (corrected denominator), ranked descending
+- **Verified result (top 3):** Non-census-family one-person households: 32.9%; non-census-family households overall: 31.1%; one-parent families (no additional persons): 23.3% — all well above the Windsor-wide baseline of 17.5%. Corrected via `docs/story1_validation.md`; the shift from the original figures (32.7%/30.9%/23.2%/17.4%) is small here — household type doesn't concentrate "Not applicable" households as sharply as the lowest income bracket does.
 
 ### Q5. How many households fall outside the ratio calculation entirely?
 

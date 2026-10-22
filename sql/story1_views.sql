@@ -13,6 +13,18 @@
 -- to 'Number of private households' (not a confidence-interval bound).
 -- Skipping this filter makes every (income, household, tenure, ratio)
 -- combination appear 27x instead of once -- see docs/shelter_cost_audit.md.
+--
+-- total_households is the sum of the 'Spending less than 30%' and
+-- 'Spending 30% or more' rows -- deliberately NOT the raw 'Total -
+-- Shelter-cost-to-income ratio' row, which also includes 'Not applicable'
+-- households (zero/negative income or an agricultural-operation dwelling --
+-- see 98100252_MetaData.csv note 9). Those households have no computable
+-- ratio at all, so StatCan's own published rate excludes them from its
+-- denominator too. Confirmed by reproducing StatCan's own Census Profile
+-- figures exactly (docs/story1_validation.md): using the raw Total as the
+-- denominator gives Owner 10.9% / Renter 34.5%; excluding 'Not applicable'
+-- gives Owner 10.9% / Renter 34.8% -- an exact match to the published
+-- Census Profile characteristics 1484/1492, not just closer.
 
 CREATE SCHEMA IF NOT EXISTS warehouse;
 
@@ -25,12 +37,14 @@ SELECT
     t.tenure_name AS tenure,
     SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
              THEN f.value ELSE 0 END) AS burdened_households,
-    SUM(CASE WHEN f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio'
+    SUM(CASE WHEN f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                     'Spending 30% or more of income on shelter costs')
              THEN f.value ELSE 0 END) AS total_households,
     ROUND(
         100.0 * SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
                           THEN f.value ELSE 0 END)
-        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio'
+        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                          'Spending 30% or more of income on shelter costs')
                           THEN f.value ELSE 0 END), 0),
         1
     ) AS burden_rate_pct
@@ -57,12 +71,14 @@ SELECT
     ib.member_id AS income_band_sort_order,
     SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
              THEN f.value ELSE 0 END) AS burdened_households,
-    SUM(CASE WHEN f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio'
+    SUM(CASE WHEN f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                     'Spending 30% or more of income on shelter costs')
              THEN f.value ELSE 0 END) AS total_households,
     ROUND(
         100.0 * SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
                           THEN f.value ELSE 0 END)
-        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio'
+        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                          'Spending 30% or more of income on shelter costs')
                           THEN f.value ELSE 0 END), 0),
         1
     ) AS burden_rate_pct
@@ -92,12 +108,14 @@ SELECT
     ht.parent_member_id,
     SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
              THEN f.value ELSE 0 END) AS burdened_households,
-    SUM(CASE WHEN f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio'
+    SUM(CASE WHEN f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                     'Spending 30% or more of income on shelter costs')
              THEN f.value ELSE 0 END) AS total_households,
     ROUND(
         100.0 * SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
                           THEN f.value ELSE 0 END)
-        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio'
+        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                          'Spending 30% or more of income on shelter costs')
                           THEN f.value ELSE 0 END), 0),
         1
     ) AS burden_rate_pct
