@@ -39,17 +39,24 @@ export default function Methodology() {
       </p>
 
       <h2>Stack</h2>
-      <ul>
-        <li>Data sources: Statistics Canada, CMHC</li>
-        <li>Data processing: Python (pandas, SQLAlchemy)</li>
-        <li>Database: PostgreSQL</li>
-        <li>Analytics: Apache Superset</li>
-        <li>Front end: React</li>
-        <li>Containerisation: Docker</li>
-      </ul>
+      <div className="methodology-grid">
+        {[
+          ["Data sources", "Statistics Canada, CMHC"],
+          ["Data processing", "Python (pandas, SQLAlchemy)"],
+          ["Database", "PostgreSQL"],
+          ["Analytics", "Apache Superset"],
+          ["Front end", "React"],
+          ["Containerisation", "Docker"],
+        ].map(([label, value]) => (
+          <div className="card methodology-card" key={label}>
+            <p className="definition-term">{label}</p>
+            <p className="definition-text">{value}</p>
+          </div>
+        ))}
+      </div>
 
       <h2>Data sources</h2>
-      <ul>
+      <ul className="source-list">
         {SOURCES.map((s) => (
           <li key={s.url}>
             <a href={s.url} target="_blank" rel="noreferrer">
@@ -61,33 +68,36 @@ export default function Methodology() {
       </ul>
 
       <h2>Known limitations</h2>
-      <ul>
-        <li>
-          Sources span different reporting years &mdash; the 2021 Census, 2025 CMHC rental-market
-          data, and 2026 construction data are shown side by side for context, not joined directly:
-          they&rsquo;re connected only where geography and time period make the comparison valid.
-        </li>
-        <li>
-          Housing-supply figures (starts, completions, units under construction) are Ontario- and
-          Canada-wide only &mdash; CMHC&rsquo;s source table has no Windsor-specific breakdown, so
-          there&rsquo;s no Windsor-only starts/completions figure anywhere on this site yet.
-        </li>
-        <li>
-          Only one quarter of supply data has been extracted so far (Second Quarter 2026) &mdash;
-          not a multi-year time series, so trend questions (&ldquo;is Windsor building enough
-          housing over time?&rdquo;) can&rsquo;t be answered from this data yet.
-        </li>
-        <li>
-          The Story 4 affordability-gap index (rent growth vs. renter income growth) isn&rsquo;t
-          computed: no source extracted so far contains a renter-income time series to compute a
-          real growth rate from, so that figure is left blank rather than estimated.
-        </li>
-        <li>
-          Within the shelter-cost-burden breakdown (Story 1), about 8.8% of burdened households
-          aren&rsquo;t accounted for by any published StatCan sub-category &mdash; flagged as an
-          open data-quality question, not silently assumed into any one bucket.
-        </li>
-      </ul>
+      <div className="limitations-note">
+        <ul style={{ margin: 0, paddingLeft: 18 }}>
+          <li>
+            Sources span different reporting years &mdash; the 2021 Census, 2025 CMHC rental-market
+            data, and 2026 construction data are shown side by side for context, not joined
+            directly: they&rsquo;re connected only where geography and time period make the
+            comparison valid.
+          </li>
+          <li>
+            Housing-supply figures (starts, completions, units under construction) are Ontario- and
+            Canada-wide only &mdash; CMHC&rsquo;s source table has no Windsor-specific breakdown, so
+            there&rsquo;s no Windsor-only starts/completions figure anywhere on this site yet.
+          </li>
+          <li>
+            Only one quarter of supply data has been extracted so far (Second Quarter 2026) &mdash;
+            not a multi-year time series, so trend questions (&ldquo;is Windsor building enough
+            housing over time?&rdquo;) can&rsquo;t be answered from this data yet.
+          </li>
+          <li>
+            The Story 4 affordability-gap index (rent growth vs. renter income growth) isn&rsquo;t
+            computed: no source extracted so far contains a renter-income time series to compute a
+            real growth rate from, so that figure is left blank rather than estimated.
+          </li>
+          <li>
+            Within the shelter-cost-burden breakdown (Story 1), about 8.8% of burdened households
+            aren&rsquo;t accounted for by any published StatCan sub-category &mdash; flagged as an
+            open data-quality question, not silently assumed into any one bucket.
+          </li>
+        </ul>
+      </div>
     </PageContainer>
   );
 }

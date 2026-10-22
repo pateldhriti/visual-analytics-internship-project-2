@@ -17,6 +17,26 @@ const NARRATIVE = [
     "construction in Ontario right now, over 11 times the quarter's own completions.",
 ];
 
+const DEFINITIONS = [
+  {
+    term: "Housing starts",
+    text: "New residential units where construction began during the quarter, by dwelling type.",
+  },
+  {
+    term: "Completions",
+    text: "Units where construction finished during the quarter -- lags starts by the length of the construction project, so completions below starts in one quarter doesn't by itself mean a slowdown.",
+  },
+  {
+    term: "Units under construction",
+    text: "The running total of started-but-not-yet-completed units at quarter end -- a measure of pipeline scale, not of that quarter's own activity.",
+  },
+];
+
+const LIMITATIONS = [
+  "These figures are Ontario- and Canada-wide only -- CMHC's source table has no Windsor-specific breakdown, so there's no Windsor-only starts/completions figure here yet.",
+  "Only one quarter (Second Quarter 2026) has been extracted so far -- not a multi-year time series, so trend questions can't be answered from this data yet.",
+];
+
 export default function StoryHousingSupply() {
   return (
     <StoryPage
@@ -27,6 +47,8 @@ export default function StoryHousingSupply() {
         "How can supply activity be interpreted alongside Windsor population and household context?",
       ]}
       narrative={NARRATIVE}
+      definitions={DEFINITIONS}
+      limitations={LIMITATIONS}
       source="CMHC Quarterly Starts, Completions, Units Under Construction (Ontario/Canada, Second Quarter 2026) -- warehouse.fact_starts_completions"
     />
   );
