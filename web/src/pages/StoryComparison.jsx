@@ -1,19 +1,14 @@
-import PageContainer from "../components/PageContainer.jsx";
+import StoryPage from "../components/StoryPage.jsx";
 
 export default function StoryComparison() {
   return (
-    <PageContainer>
-      <p className="story-label">Story 4</p>
-      <h1>How does Windsor compare?</h1>
-      <ul>
-        <li>
-          Where compatible data exists, how does Windsor compare with selected Canadian CMAs on
-          rental indicators?
-        </li>
-      </ul>
-      <p className="placeholder-note">
-        Embedded dashboard and full narrative go here &mdash; scaffold placeholder only.
-      </p>
-    </PageContainer>
+    <StoryPage
+      storyLabel="Story 4"
+      title="How does Windsor compare?"
+      questions={[
+        "Where compatible data exists, how does Windsor compare with selected Canadian CMAs on rental indicators?",
+      ]}
+      source="CMHC Rental Market Survey, Canada 2025 (Windsor + 4 comparator CMAs, Oct-25) -- warehouse.fact_rental_market"
+    />
   );
 }
