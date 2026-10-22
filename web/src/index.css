@@ -1,5 +1,9 @@
 /* ============================================================
    Design tokens -- Windsor Housing Analytics, light theme
+   One consistent theme across every page (header, hero, stories,
+   methodology) -- no page-level light/dark scoping. The accent
+   palette (violet/blue/cyan/teal) stays vibrant on the light
+   surface instead of reverting to flat navy.
    ============================================================ */
 :root {
   --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -7,15 +11,20 @@
   /* Brand palette -- fixed by design direction, not derived */
   --bg: #f7f9fc;
   --surface: #ffffff;
-  --surface-2: #eef2f7;
-  --border: #e2e8f0;
+  --surface-2: #eef1f8;
+  --border: #e1e6f0;
 
-  --navy: #17324d;
-  --teal: #138a83;
-  --blue: #3478b9;
+  --violet: #7c6aed;
+  --blue: #2f6fd1;
+  --cyan: #0891a8;
+  --teal: #0d9488;
 
-  --ink: #172b3a;
-  --ink-muted: #617184;
+  --ink: #172338;
+  --ink-muted: #5c6a84;
+
+  /* Glass surface used by the hero's floating panels */
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-bg-hover: rgba(255, 255, 255, 0.94);
 
   /* Status (real data gaps/limitations, not decorative) */
   --flag-bg: #fdf6ec;
@@ -24,9 +33,10 @@
 
   --radius-sm: 6px;
   --radius-md: 10px;
+  --radius-lg: 16px;
 
-  --shadow-card: 0 1px 2px rgba(23, 43, 58, 0.04), 0 2px 8px rgba(23, 43, 58, 0.05);
-  --shadow-card-hover: 0 2px 4px rgba(23, 43, 58, 0.05), 0 8px 20px rgba(23, 43, 58, 0.08);
+  --shadow-card: 0 1px 2px rgba(23, 35, 56, 0.04), 0 2px 10px rgba(23, 35, 56, 0.05);
+  --shadow-card-hover: 0 8px 24px rgba(23, 35, 56, 0.1), 0 2px 10px rgba(124, 106, 237, 0.1);
 
   --max-width: 1140px;
   --header-h: 64px;
@@ -52,7 +62,7 @@ h1,
 h2,
 h3 {
   letter-spacing: -0.015em;
-  color: var(--navy);
+  color: var(--ink);
   line-height: 1.25;
 }
 
@@ -73,7 +83,15 @@ a {
 }
 
 a:hover {
-  color: var(--navy);
+  color: var(--cyan);
+}
+
+/* Themed keyboard-focus ring, in place of the browser default blue
+   outline -- visible only for keyboard navigation (:focus-visible). */
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .app-shell {
@@ -146,32 +164,6 @@ a.card:hover,
 /* ============================================================
    Home -- hero, KPI strip, story cards, chart preview, methodology band
    ============================================================ */
-.hero {
-  padding: 56px 0 40px;
-  border-bottom: 1px solid var(--border);
-}
-
-.hero-eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--teal);
-  margin: 0 0 14px;
-}
-
-.hero h1 {
-  margin: 0 0 18px;
-  max-width: 18ch;
-}
-
-.hero-lede {
-  max-width: 62ch;
-  font-size: 1.1rem;
-  color: var(--ink-muted);
-  margin: 0;
-}
-
 .section {
   padding: 48px 0;
   border-bottom: 1px solid var(--border);
@@ -213,7 +205,7 @@ a.card:hover,
 .kpi-value {
   font-size: 1.9rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--ink);
   line-height: 1.1;
   margin: 0 0 6px;
 }
@@ -280,7 +272,7 @@ a.card:hover,
 }
 
 .story-card:hover .story-card-arrow {
-  color: var(--navy);
+  color: var(--cyan);
 }
 
 /* Chart preview (native SVG/CSS, real figures -- see component source) */
@@ -330,7 +322,7 @@ a.card:hover,
 .bar-row-value {
   font-size: 0.92rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--ink);
   text-align: right;
 }
 
@@ -426,7 +418,7 @@ a.card:hover,
 .definition-term {
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--ink);
   margin: 0 0 4px;
 }
 
@@ -493,7 +485,7 @@ a.card:hover,
   gap: 10px;
   font-weight: 700;
   font-size: 1rem;
-  color: var(--navy);
+  color: var(--ink);
   text-decoration: none;
 }
 
@@ -501,7 +493,7 @@ a.card:hover,
   width: 30px;
   height: 30px;
   border-radius: var(--radius-sm);
-  background: var(--navy);
+  background: linear-gradient(135deg, var(--violet), var(--blue));
   color: #fff;
   display: flex;
   align-items: center;
@@ -528,7 +520,7 @@ a.card:hover,
 }
 
 .site-nav a:hover {
-  color: var(--navy);
+  color: var(--ink);
 }
 
 .site-nav a.active {
@@ -658,4 +650,390 @@ a.card:hover,
 
 .methodology-card a {
   font-weight: 600;
+}
+
+/* ============================================================
+   Homepage hero -- same light theme as the rest of the site, plus
+   its own soft accent glow and the interactive 3D skyline.
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+[id] {
+  scroll-margin-top: calc(var(--header-h) + 12px);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(1100px 520px at 15% -10%, rgba(124, 106, 237, 0.12), transparent 60%),
+    radial-gradient(900px 480px at 100% 10%, rgba(47, 111, 209, 0.09), transparent 55%), var(--bg);
+  padding: 56px 0 220px;
+}
+
+.hero-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cyan);
+  margin: 0 0 18px;
+}
+
+.hero-headline {
+  margin: 0 0 20px;
+  font-size: clamp(2.1rem, 1.6rem + 2vw, 3.1rem);
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  max-width: 17ch;
+}
+
+.hero-headline em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--violet), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-lede {
+  max-width: 54ch;
+  font-size: 1.05rem;
+  color: var(--ink-muted);
+  margin: 0 0 32px;
+}
+
+.hero-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.hero-cta-primary {
+  background: linear-gradient(90deg, var(--violet), var(--blue));
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(124, 106, 237, 0.3);
+}
+
+.hero-cta-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(124, 106, 237, 0.4);
+}
+
+.hero-cta-secondary {
+  background: transparent;
+  border-color: rgba(23, 35, 56, 0.16);
+  color: var(--ink);
+}
+
+.hero-cta-secondary:hover {
+  background: rgba(23, 35, 56, 0.05);
+}
+
+/* Interactive 3D skyline -- a wide isometric illustration along the
+   bottom of the hero that tilts toward the cursor (perspective +
+   rotateX/rotateY, set from Home.jsx's mousemove handler). It sits below
+   the text/panel grid, not behind it, so the panels' backdrop-blur never
+   distorts it. Decorative only -- it does not represent a dataset, so no
+   figures are attached to it. */
+.hero-scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 190px;
+  z-index: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  transform-origin: bottom center;
+  transition: transform 0.25s ease-out;
+  will-change: transform;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+.hero-scene-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.85;
+}
+
+@media (max-width: 860px) {
+  .hero-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-scene {
+    height: 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scene {
+    transition: none;
+  }
+}
+
+/* Floating panel composition */
+.hero-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.panel-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  width: 100%;
+  height: 100%;
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.panel-card:hover,
+.panel-card[aria-expanded="true"] {
+  transform: translateY(-3px);
+  background: var(--glass-bg-hover);
+  box-shadow: 0 16px 36px rgba(23, 35, 56, 0.14);
+}
+
+/* Bracket-labeled widget header, e.g. "[ SHELTER-COST BURDEN ]" --
+   borrowed from dense SaaS dashboard styling, applied to real panel
+   labels rather than a decorative flourish on its own. */
+.panel-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--violet);
+  margin: 0 0 10px;
+}
+
+.panel-eyebrow::before {
+  content: "[ ";
+}
+
+.panel-eyebrow::after {
+  content: " ]";
+}
+
+.panel-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+  line-height: 1.1;
+}
+
+.panel-value-label {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  margin: 0 0 12px;
+}
+
+.panel-secondary {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+.panel-hint {
+  margin-top: 14px;
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  opacity: 0.7;
+}
+
+.panel-detail {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  display: grid;
+  gap: 6px;
+}
+
+.panel-detail dt {
+  display: inline;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.panel-detail dd {
+  display: inline;
+  margin: 0 0 0 4px;
+}
+
+/* Ring (shelter-cost burden panel) */
+.panel-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 12px;
+  background: conic-gradient(var(--violet) calc(var(--ring, 0) * 1%), rgba(23, 35, 56, 0.08) 0);
+}
+
+.panel-ring-inner {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Mini bars (supply-pipeline panel) */
+.panel-mini-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 10px 0 12px;
+}
+
+.panel-mini-bar-label {
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.panel-mini-bar-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(23, 35, 56, 0.08);
+  overflow: hidden;
+}
+
+.panel-mini-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+
+/* Comparison rows (Windsor vs. comparator CMAs panel) */
+.panel-comparison-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 0 12px;
+}
+
+.panel-comparison-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.panel-comparison-row.is-highlight {
+  background: rgba(139, 124, 246, 0.18);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .hero-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Metric selector for the data-explorer preview below the hero */
+.metric-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.metric-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.metric-btn:hover {
+  border-color: var(--teal);
+  color: var(--ink);
+}
+
+.metric-btn.is-active {
+  background: var(--violet);
+  border-color: var(--violet);
+  color: #fff;
 }

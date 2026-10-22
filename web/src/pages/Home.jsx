@@ -1,15 +1,11 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import PageContainer from "../components/PageContainer.jsx";
 
-// Every figure here is real and independently verified elsewhere in this
-// project (docs/story1_validation.md, docs/kpi_catalogue.md) -- nothing on
-// this page is a placeholder or sample value.
-const KPIS = [
-  { value: "422,630", label: "Windsor CMA population", source: "StatCan, 2021 Census" },
-  { value: "34.8%", label: "Renters spending 30%+ on shelter", source: "StatCan 98-10-0252-01" },
-  { value: "3.6%", label: "Rental vacancy rate (Oct-25)", source: "CMHC RMS, Windsor" },
-  { value: "$1,451", label: "Average 2-bedroom rent (Oct-25)", source: "CMHC RMS, Windsor" },
-];
+// Every figure below is real and independently verified elsewhere in this
+// project (docs/story1_validation.md, docs/kpi_catalogue.md,
+// docs/comparator_cmas_justification.md) -- nothing here is a placeholder
+// or a sample value copied from a reference design.
 
 const STORIES = [
   {
@@ -38,48 +34,364 @@ const STORIES = [
   },
 ];
 
-// Owner vs. renter shelter-cost burden -- the real, independently reproduced
-// figures from docs/story1_validation.md (matches StatCan's own published
-// Census Profile rate exactly). A native bar, not a live Superset embed --
-// see docs/superset_embedding_research.md for why that piece isn't built yet.
-const BURDEN_PREVIEW = [
-  { label: "Renter", value: 34.8 },
-  { label: "Owner", value: 10.9 },
+// Four floating hero panels. Each is independently sourced -- see each
+// panel's own `source`/`geography`/`period`, revealed on click -- rather
+// than one blanket citation for the whole hero.
+const PANELS = [
+  {
+    id: "burden",
+    kind: "ring",
+    eyebrow: "Shelter-cost burden",
+    ringValue: 34.8,
+    value: "34.8%",
+    valueLabel: "Renter households spending 30%+ of income on shelter",
+    secondary: "vs. 10.9% of owner households",
+    definition:
+      "Share of households spending 30% or more of income on shelter costs -- rent or mortgage, utilities, and property tax where applicable.",
+    source: "StatCan 98-10-0252-01",
+    geography: "Windsor CMA",
+    period: "2021 Census",
+  },
+  {
+    id: "rental",
+    kind: "duo",
+    eyebrow: "Rental market",
+    value: "3.6%",
+    valueLabel: "Vacancy rate, Combined dwelling types",
+    secondary: "$1,451 average 2-bedroom rent",
+    definition:
+      "Share of surveyed purpose-built rental units vacant; average monthly rent for a 2-bedroom unit. Combined (apartment + row) scope.",
+    source: "CMHC Rental Market Survey",
+    geography: "Windsor CMA",
+    period: "October 2025",
+  },
+  {
+    id: "supply",
+    kind: "pipeline",
+    eyebrow: "Supply pipeline",
+    value: "162,138",
+    valueLabel: "Units under construction",
+    secondary: "17,786 starts this quarter",
+    bars: [
+      { label: "Starts", value: 17786 },
+      { label: "Completions", value: 14083 },
+      { label: "Under construction", value: 162138 },
+    ],
+    definition:
+      "New units started, finished, and still in progress during the quarter. This is an Ontario-wide figure -- no Windsor-specific starts/completions breakdown exists in CMHC's source table yet.",
+    source: "CMHC Starts, Completions and Units Under Construction",
+    geography: "Ontario",
+    period: "Second Quarter 2026",
+  },
+  {
+    id: "comparison",
+    kind: "comparison",
+    eyebrow: "Windsor vs. comparators",
+    value: "2nd-tightest",
+    valueLabel: "vacancy rate of 5 Ontario CMAs",
+    secondary: "Windsor 3.7% (apartment-only scope)",
+    rows: [
+      { label: "Hamilton", value: 3.6 },
+      { label: "Windsor", value: 3.7, highlight: true },
+      { label: "St. Catharines-Niagara", value: 3.9 },
+      { label: "London", value: 4.0 },
+      { label: "Kitchener-Cambridge-Waterloo", value: 4.1 },
+    ],
+    definition:
+      "Apartment-only vacancy rate (CMHC's national comparison scope) against the 4 Ontario CMAs chosen as Windsor's size peers. A narrower scope than the Combined figure in the rental-market panel, not a contradiction of it.",
+    source: "CMHC Rental Market Survey",
+    geography: "Windsor + 4 comparator CMAs",
+    period: "October 2025",
+  },
 ];
 
+// Data-explorer preview: a metric selector switching between 3 real,
+// already-verified datasets -- not a decorative chart. Reuses the site's
+// existing native bar-chart styling.
+const EXPLORER_METRICS = [
+  {
+    id: "burden",
+    label: "Shelter-cost burden",
+    max: 40,
+    unit: "%",
+    rows: [
+      { label: "Renter", value: 34.8 },
+      { label: "Owner", value: 10.9 },
+    ],
+    caption:
+      "StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- reproduced and independently verified against StatCan's own published Census Profile rate.",
+    to: "/stories/affordability",
+  },
+  {
+    id: "supply",
+    label: "Supply pipeline",
+    max: 162138,
+    unit: "units",
+    rows: [
+      { label: "Starts", value: 17786 },
+      { label: "Completions", value: 14083 },
+      { label: "Under construction", value: 162138 },
+    ],
+    caption:
+      "CMHC Starts, Completions and Units Under Construction, Ontario, Second Quarter 2026 -- Ontario-wide only, no Windsor-specific figure yet.",
+    to: "/stories/housing-supply",
+  },
+  {
+    id: "comparison",
+    label: "Comparator vacancy",
+    max: 4.5,
+    unit: "%",
+    rows: [
+      { label: "Hamilton", value: 3.6 },
+      { label: "Windsor", value: 3.7 },
+      { label: "St. Catharines-Niagara", value: 3.9 },
+      { label: "London", value: 4.0 },
+      { label: "Kitchener-Cambridge-Waterloo", value: 4.1 },
+    ],
+    caption:
+      "CMHC Rental Market Survey, apartment-only scope, October 2025 -- Windsor and 4 size-comparable Ontario CMAs.",
+    to: "/stories/comparison",
+  },
+];
+
+function formatValue(value, unit) {
+  return unit === "units" ? value.toLocaleString() : `${value}%`;
+}
+
+// A wide isometric skyline strip, purely illustrative -- it stands in for
+// "a city" the way an icon would, not for any dataset, so it carries no
+// figures of its own. Faces of each block are computed from standard
+// isometric-projection vectors (ux/uy for the floor plane, uz for height)
+// rather than hand-typed coordinates, so the skyline can be tuned by
+// adjusting a few numbers per building instead of redrawing polygons.
+const SKYLINE_BUILDINGS = [
+  { x: 30, baseY: 190, w: 36, d: 36, h: 65 },
+  { x: 130, baseY: 190, w: 32, d: 32, h: 120 },
+  { x: 225, baseY: 190, w: 40, d: 40, h: 52 },
+  { x: 330, baseY: 190, w: 34, d: 34, h: 148 },
+  { x: 430, baseY: 190, w: 38, d: 38, h: 88 },
+  { x: 535, baseY: 190, w: 32, d: 32, h: 128 },
+  { x: 630, baseY: 190, w: 42, d: 42, h: 58 },
+  { x: 740, baseY: 190, w: 34, d: 34, h: 140 },
+  { x: 840, baseY: 190, w: 38, d: 38, h: 80 },
+  { x: 940, baseY: 190, w: 32, d: 32, h: 112 },
+  { x: 1040, baseY: 190, w: 40, d: 40, h: 66 },
+  { x: 1140, baseY: 190, w: 34, d: 34, h: 100 },
+];
+
+const SKYLINE_PALETTE = [
+  { top: "#b2a4fb", right: "#8b7cf6", left: "#6456c9" },
+  { top: "#8fcdff", right: "#4ea1f7", left: "#3579c9" },
+  { top: "#79e6ee", right: "#38d9e8", left: "#23aeba" },
+];
+
+function isoBuildingFaces({ x, baseY, w, d, h }) {
+  const ux = { x: w, y: w * 0.5 };
+  const uy = { x: -d, y: d * 0.5 };
+  const base = { x, y: baseY };
+  const top = { x: base.x, y: base.y - h };
+  const topRight = { x: top.x + ux.x, y: top.y + ux.y };
+  const topLeft = { x: top.x + uy.x, y: top.y + uy.y };
+  const topBack = { x: top.x + ux.x + uy.x, y: top.y + ux.y + uy.y };
+  const right = { x: base.x + ux.x, y: base.y + ux.y };
+  const left = { x: base.x + uy.x, y: base.y + uy.y };
+
+  return {
+    topFace: [top, topRight, topBack, topLeft],
+    rightFace: [base, right, topRight, top],
+    leftFace: [base, top, topLeft, left],
+  };
+}
+
+function toPoints(points) {
+  return points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+}
+
+function HeroSkyline() {
+  return (
+    <svg
+      className="hero-scene-svg"
+      viewBox="0 0 1200 220"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <linearGradient id="skylineGlow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(139,124,246,0.22)" />
+          <stop offset="100%" stopColor="rgba(139,124,246,0)" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="40" width="1200" height="150" fill="url(#skylineGlow)" />
+      {SKYLINE_BUILDINGS.map((building, i) => {
+        const { topFace, rightFace, leftFace } = isoBuildingFaces(building);
+        const shade = SKYLINE_PALETTE[i % SKYLINE_PALETTE.length];
+        return (
+          <g key={building.x}>
+            <polygon points={toPoints(leftFace)} fill={shade.left} />
+            <polygon points={toPoints(rightFace)} fill={shade.right} />
+            <polygon points={toPoints(topFace)} fill={shade.top} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function HeroPanel({ panel, isOpen, onToggle }) {
+  return (
+    <button
+      type="button"
+      className="card panel-card"
+      aria-expanded={isOpen}
+      aria-controls={`panel-detail-${panel.id}`}
+      onClick={() => onToggle(panel.id)}
+    >
+      <p className="panel-eyebrow">{panel.eyebrow}</p>
+
+      {panel.kind === "ring" && (
+        <div className="panel-ring" style={{ "--ring": panel.ringValue }}>
+          <span className="panel-ring-inner">{panel.value}</span>
+        </div>
+      )}
+
+      {panel.kind === "pipeline" && (
+        <div className="panel-mini-bars">
+          {panel.bars.map((bar) => (
+            <div key={bar.label}>
+              <div className="panel-mini-bar-label">
+                <span>{bar.label}</span>
+                <span>{bar.value.toLocaleString()}</span>
+              </div>
+              <div className="panel-mini-bar-track">
+                <div
+                  className="panel-mini-bar-fill"
+                  style={{ width: `${(bar.value / 162138) * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {panel.kind === "comparison" && (
+        <div className="panel-comparison-rows">
+          {panel.rows.map((row) => (
+            <div
+              key={row.label}
+              className={`panel-comparison-row${row.highlight ? " is-highlight" : ""}`}
+            >
+              <span>{row.label}</span>
+              <span>{row.value}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {panel.kind !== "ring" && panel.kind !== "pipeline" && panel.kind !== "comparison" && (
+        <p className="panel-value">{panel.value}</p>
+      )}
+
+      <p className="panel-value-label">{panel.valueLabel}</p>
+      <p className="panel-secondary">{panel.secondary}</p>
+
+      {isOpen ? (
+        <dl className="panel-detail" id={`panel-detail-${panel.id}`}>
+          <div>
+            <dt>Definition:</dt> <dd>{panel.definition}</dd>
+          </div>
+          <div>
+            <dt>Source:</dt> <dd>{panel.source}</dd>
+          </div>
+          <div>
+            <dt>Geography:</dt> <dd>{panel.geography}</dd>
+          </div>
+          <div>
+            <dt>Period:</dt> <dd>{panel.period}</dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="panel-hint">Tap for definition &amp; source</p>
+      )}
+    </button>
+  );
+}
+
 export default function Home() {
+  const [openPanel, setOpenPanel] = useState(null);
+  const [activeMetric, setActiveMetric] = useState(EXPLORER_METRICS[0].id);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const heroRef = useRef(null);
+  const reducedMotionRef = useRef(false);
+
+  useEffect(() => {
+    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  const togglePanel = (id) => setOpenPanel((current) => (current === id ? null : id));
+  const metric = EXPLORER_METRICS.find((m) => m.id === activeMetric) ?? EXPLORER_METRICS[0];
+
+  const handleHeroMouseMove = (e) => {
+    if (reducedMotionRef.current || !heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width - 0.5;
+    const relY = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ x: relY * -10, y: relX * 10 });
+  };
+
+  const handleHeroMouseLeave = () => setTilt({ x: 0, y: 0 });
+
   return (
     <>
-      <section className="hero">
-        <PageContainer>
-          <p className="hero-eyebrow">Windsor Housing Analytics &middot; University of Windsor</p>
-          <h1>Housing affordability and market trends in Windsor, CMA</h1>
-          <p className="hero-lede">
-            A public, web-based look at housing affordability and housing-market conditions in the
-            Windsor Census Metropolitan Area &mdash; built entirely from official Statistics Canada
-            and CMHC open data, with every figure traceable back to its source.
-          </p>
-        </PageContainer>
+      <section
+        className="hero"
+        ref={heroRef}
+        onMouseMove={handleHeroMouseMove}
+        onMouseLeave={handleHeroMouseLeave}
+      >
+        <div
+          className="hero-scene"
+          style={{ transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
+        >
+          <HeroSkyline />
+        </div>
+        <div className="hero-inner">
+          <div>
+            <p className="hero-eyebrow">Windsor Housing Analytics &middot; University of Windsor</p>
+            <h1 className="hero-headline">
+              See Windsor&rsquo;s housing market <em>differently</em>.
+            </h1>
+            <p className="hero-lede">
+              A research platform tracking housing affordability, rental-market conditions, and
+              housing supply in the Windsor Census Metropolitan Area &mdash; built entirely from
+              official Statistics Canada and CMHC open data, with every figure traceable back to its
+              source.
+            </p>
+            <div className="hero-cta-row">
+              <Link to="/stories/affordability" className="hero-cta hero-cta-primary">
+                Explore the Data
+              </Link>
+              <a href="#stories" className="hero-cta hero-cta-secondary">
+                Discover the Stories
+              </a>
+            </div>
+          </div>
+
+          <div className="hero-panels">
+            {PANELS.map((panel) => (
+              <HeroPanel
+                key={panel.id}
+                panel={panel}
+                isOpen={openPanel === panel.id}
+                onToggle={togglePanel}
+              />
+            ))}
+          </div>
+        </div>
       </section>
 
       <PageContainer>
-        <section className="section">
-          <div className="section-heading">
-            <h2>Verified indicators</h2>
-            <p className="section-note">Windsor CMA, most recent available period</p>
-          </div>
-          <div className="kpi-grid">
-            {KPIS.map((kpi) => (
-              <div className="card kpi-card" key={kpi.label}>
-                <p className="kpi-value">{kpi.value}</p>
-                <p className="kpi-label">{kpi.label}</p>
-                <p className="kpi-source">{kpi.source}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="section">
+        <section className="section" id="stories">
           <div className="section-heading">
             <h2>Explore the research stories</h2>
           </div>
@@ -95,34 +407,48 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section">
+        <section className="section" id="explorer">
           <div className="section-heading">
-            <h2>Shelter-cost burden, by tenure</h2>
-            <p className="section-note">Share spending 30%+ of income on shelter</p>
+            <h2>Dig into the data yourself</h2>
+            <p className="section-note">Pick a metric &mdash; every dataset here is real</p>
           </div>
           <div className="card chart-preview-card">
+            <div className="metric-selector" role="group" aria-label="Choose a metric to preview">
+              {EXPLORER_METRICS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`metric-btn${m.id === activeMetric ? " is-active" : ""}`}
+                  aria-pressed={m.id === activeMetric}
+                  onClick={() => setActiveMetric(m.id)}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
             <div className="bar-chart">
-              {BURDEN_PREVIEW.map((row) => (
+              {metric.rows.map((row) => (
                 <div className="bar-row" key={row.label}>
                   <span className="bar-row-label">{row.label}</span>
                   <span className="bar-track">
-                    <span className="bar-fill" style={{ width: `${(row.value / 40) * 100}%` }} />
+                    <span
+                      className="bar-fill"
+                      style={{ width: `${(row.value / metric.max) * 100}%` }}
+                    />
                   </span>
-                  <span className="bar-row-value">{row.value}%</span>
+                  <span className="bar-row-value">{formatValue(row.value, metric.unit)}</span>
                 </div>
               ))}
             </div>
             <p className="chart-preview-caption">
-              StatCan 98-10-0252-01, Windsor CMA, 2021 Census &mdash; reproduced and independently
-              verified against StatCan&rsquo;s own published Census Profile rate. Full breakdown on{" "}
-              <Link to="/stories/affordability">Story 1</Link>.
+              {metric.caption} Full breakdown on <Link to={metric.to}>{metric.label}</Link>.
             </p>
           </div>
         </section>
 
         <section className="section">
           <div className="section-heading">
-            <h2>Methodology, in brief</h2>
+            <h2>Data provenance</h2>
           </div>
           <div className="methodology-band">
             <p>
