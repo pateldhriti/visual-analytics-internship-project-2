@@ -26,6 +26,7 @@ Run from the project virtual environment:
     .venv\\Scripts\\python.exe etl\\extract_cmhc_starts_completions.py
 """
 
+import re
 from pathlib import Path
 
 import openpyxl
@@ -37,6 +38,26 @@ OUTPUT_CSV = PROJECT_ROOT / "data" / "staging" / "ontario_canada_starts_completi
 
 PROVINCE_FILTER = {"Ontario", "Canada"}
 DWELLING_TYPE_COLUMNS = ["Singles", "Semis", "Row", "Apartment and Other", "Total"]
+
+QUARTER_NAME_TO_NUMBER = {"First": 1, "Second": 2, "Third": 3, "Fourth": 4}
+QUARTER_LABEL_RE = re.compile(r"^(First|Second|Third|Fourth) Quarter (\d{4})$")
+YTD_LABEL_RE = re.compile(r"^\w+ to \w+ (\d{4})$")
+
+
+def parse_period(period_label: str) -> tuple[int | None, int | None]:
+    """Pulls (year, quarter) out of CMHC's own period label text --
+    'Second Quarter 2026' -> (2026, 2); a YTD label like 'January to June
+    2026' -> (2026, None), since CMHC's own YTD figure spans several months,
+    not one quarter. Returns (None, None) rather than guessing if a future
+    period label doesn't match either known shape -- the extract should fail
+    loud on an unrecognized label, not silently write a NULL year."""
+    quarter_match = QUARTER_LABEL_RE.match(period_label)
+    if quarter_match:
+        return int(quarter_match.group(2)), QUARTER_NAME_TO_NUMBER[quarter_match.group(1)]
+    ytd_match = YTD_LABEL_RE.match(period_label)
+    if ytd_match:
+        return int(ytd_match.group(1)), None
+    return None, None
 
 # sheet name -> period_type ('quarter' | 'ytd')
 TABLES = {
@@ -95,6 +116,22 @@ def extract(
     long_df = pd.concat(frames, ignore_index=True)
     long_df["units"] = pd.to_numeric(long_df["units"], errors="coerce")
 
+    # (year, quarter) parsed from CMHC's own period_label text -- see
+    # parse_period()'s docstring for why there's no "month" column: neither
+    # Table C1 (one quarter) nor Table C2 (half-year YTD) actually reports at
+    # monthly granularity, so adding one would fabricate precision the
+    # source doesn't have.
+    parsed = long_df["period_label"].apply(parse_period)
+    long_df["period_year"] = [p[0] for p in parsed]
+    long_df["period_quarter"] = [p[1] for p in parsed]
+    unparsed = long_df[long_df["period_year"].isna()]["period_label"].unique()
+    if len(unparsed) > 0:
+        raise ValueError(f"Unrecognized period label(s), extend parse_period(): {sorted(unparsed)}")
+
+    totals_check = check_totals(long_df)
+    if totals_check["mismatches"]:
+        raise ValueError(f"Dwelling-type totals don't reconcile: {totals_check['mismatches']}")
+
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     long_df.to_csv(output_csv, index=False)
 
@@ -109,7 +146,35 @@ def extract(
         "provinces_written": sorted(long_df["province"].unique()),
         "dwelling_types": sorted(long_df["dwelling_type"].unique()),
         "period_labels": sorted(long_df["period_label"].unique()),
+        "totals_check": f"{totals_check['combinations_checked']} (period x activity x province) "
+                         f"combinations checked, 0 mismatches",
     }
+
+
+def check_totals(long_df: pd.DataFrame) -> dict:
+    """Verifies the published 'Total' dwelling_type row actually equals the
+    sum of the other 4 dwelling-type rows, per (period_type, period_label,
+    activity, province) -- confirms the melt didn't drop or duplicate a
+    column, and that CMHC's own Total matches what its own parts add up to."""
+    real_types = [t for t in DWELLING_TYPE_COLUMNS if t != "Total"]
+    group_cols = ["period_type", "period_label", "activity", "province"]
+
+    parts_sum = (
+        long_df[long_df["dwelling_type"].isin(real_types)]
+        .groupby(group_cols)["units"].sum()
+    )
+    published_total = (
+        long_df[long_df["dwelling_type"] == "Total"]
+        .set_index(group_cols)["units"]
+    )
+
+    mismatches = []
+    for key, total in published_total.items():
+        computed = parts_sum.get(key)
+        if computed != total:
+            mismatches.append({"combination": key, "published_total": total, "sum_of_parts": computed})
+
+    return {"combinations_checked": len(published_total), "mismatches": mismatches}
 
 
 if __name__ == "__main__":
