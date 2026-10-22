@@ -2,10 +2,10 @@
 
 **Headline question (proposal):** "Who faces the greatest housing affordability pressure?"
 
-**Status:** outline only — no prose draft yet (that's the next step, same shape as
-`docs/story3_narrative_v1.md`). This defines the page's flow, which findings get featured, and
-the order their charts appear in, so the dashboard and the write-up can be built against the same
-plan instead of drifting apart.
+**Status:** superseded by `docs/story1_narrative_v1.md` (first prose draft, with corrected figures
+from `docs/story1_validation.md`'s denominator-bug fix — Q1's renter figure and Q2's entire ranking
+changed). This outline is kept for the original chart-order reasoning, but the specific numbers
+below are stale; see the v1 doc for current ones.
 
 **Data dependency now resolved:** `docs/story1_questions_and_measures.md`'s dependency note flagged
 that these formulas were only verified against the local staging CSV, not yet loaded into the
