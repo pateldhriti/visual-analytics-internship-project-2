@@ -1,7 +1,8 @@
 """
-Register every Story 4 SQL view (sql/story4_views.sql) as a Superset
-dataset, each with saved metrics -- so chart-builders pick a named metric
-from a dropdown instead of retyping ad-hoc SQL per chart, which is how
+Register every SQL view across all 4 stories (sql/story1_views.sql
+through sql/story4_views.sql) as a Superset dataset, each with saved
+metrics -- so chart-builders pick a named metric from a dropdown instead
+of retyping ad-hoc SQL per chart, which is how
 etl/setup_superset_dashboard.py's single chart currently works.
 
 Reuses the Database connection and auth helpers from
@@ -30,13 +31,104 @@ from setup_superset_dashboard import SUPERSET_URL, ensure_database, find_existin
 SCHEMA = "warehouse"
 
 # view name -> list of saved metrics (metric_name, expression, verbose_name)
-# Only metrics over real, non-NULL columns are defined -- NOT
-# renter_income_growth_pct or affordability_gap_index on
-# v_story4_affordability_gap, since both are NULL for every row right now
-# (see docs/affordability_gap_index.md). A saved metric over an all-NULL
-# column would silently show as 0 or blank in a chart, indistinguishable
-# from "the real value happens to be zero" -- worse than no metric at all.
+# Only metrics over real, non-NULL columns are defined -- a saved metric
+# over a column that's NULL for every row would silently show as 0 or
+# blank in a chart, indistinguishable from "the real value happens to be
+# zero" -- worse than no metric at all. This rule is applied per view
+# below, e.g. v_story4_affordability_gap's renter_income_growth_pct /
+# affordability_gap_index (see docs/affordability_gap_index.md) and
+# v_story3_supply_per_1000_households' households_total /
+# supply_per_1000_households (see sql/story3_views.sql) -- both all-NULL
+# by design, so neither gets a metric.
 VIEWS = {
+    "v_story1_burden_by_tenure": [
+        {
+            "metric_name": "avg_burden_rate",
+            "expression": "AVG(burden_rate_pct)",
+            "verbose_name": "Average Shelter-Cost Burden Rate (%)",
+            "metric_type": "avg",
+            "description": "Share of households spending 30%+ of income on shelter, averaged across whatever rows are in scope (e.g. filtered to one tenure).",
+        },
+    ],
+    "v_story1_burden_by_income_band": [
+        {
+            "metric_name": "avg_burden_rate",
+            "expression": "AVG(burden_rate_pct)",
+            "verbose_name": "Average Shelter-Cost Burden Rate (%)",
+            "metric_type": "avg",
+            "description": "Share of households spending 30%+ of income on shelter, averaged across whatever rows are in scope (e.g. filtered to one income band).",
+        },
+    ],
+    "v_story1_burden_by_household_type": [
+        {
+            "metric_name": "avg_burden_rate",
+            "expression": "AVG(burden_rate_pct)",
+            "verbose_name": "Average Shelter-Cost Burden Rate (%)",
+            "metric_type": "avg",
+            "description": "Share of households spending 30%+ of income on shelter, averaged across whatever rows are in scope (e.g. filtered to one household type).",
+        },
+    ],
+    "v_story2_rent_yoy_change": [
+        {
+            "metric_name": "avg_rent",
+            "expression": "AVG(average_rent)",
+            "verbose_name": "Average Rent ($)",
+            "metric_type": "avg",
+            "description": "Average rent, Windsor CMA Combined scope, averaged across whatever rows are in scope.",
+        },
+        {
+            "metric_name": "avg_yoy_change_pct",
+            "expression": "AVG(yoy_change_pct)",
+            "verbose_name": "Average YoY Rent Change (%)",
+            "metric_type": "avg",
+            "description": "Year-over-year rent change. NULL for each bedroom type's first real period (Oct-20, no prior year in this dataset) -- AVG() excludes those NULLs rather than treating them as 0.",
+        },
+    ],
+    "v_story2_rent_growth": [
+        {
+            "metric_name": "avg_growth_pct",
+            "expression": "AVG(growth_pct)",
+            "verbose_name": "Average Rent Growth, Real Span (%)",
+            "metric_type": "avg",
+            "description": "Total rent growth over this project's real data span (5 years, Oct-20 to Oct-25 -- see each row's own data_note). NULL for 3 Bedroom+ (a real gap in the Oct-25 data), excluded by AVG() rather than treated as 0.",
+        },
+    ],
+    "v_story2_vacancy_trend": [
+        {
+            "metric_name": "avg_vacancy_rate",
+            "expression": "AVG(vacancy_rate_pct)",
+            "verbose_name": "Average Vacancy Rate (%)",
+            "metric_type": "avg",
+            "description": "Vacancy rate, Windsor CMA, averaged across whatever rows are in scope (e.g. filtered to one bedroom/dwelling type).",
+        },
+    ],
+    "v_story2_turnover_by_bedroom": [
+        {
+            "metric_name": "avg_turnover_rate",
+            "expression": "AVG(turnover_rate_pct)",
+            "verbose_name": "Average Turnover Rate (%)",
+            "metric_type": "avg",
+            "description": "Turnover rate, Windsor CMA, averaged across whatever rows are in scope (e.g. filtered to one bedroom/dwelling type).",
+        },
+    ],
+    "v_story3_starts_completions_by_dwelling_type": [
+        {
+            "metric_name": "total_units",
+            "expression": "SUM(units)",
+            "verbose_name": "Total Units",
+            "metric_type": "sum",
+            "description": "Housing units (starts/completions/under construction), Ontario/Canada -- no Windsor-specific figure exists in this source. Summed across whatever rows are in scope.",
+        },
+    ],
+    "v_story3_supply_per_1000_households": [
+        {
+            "metric_name": "total_starts",
+            "expression": "SUM(starts_total)",
+            "verbose_name": "Total Starts",
+            "metric_type": "sum",
+            "description": "Housing starts, Ontario/Canada. No metric defined on households_total or supply_per_1000_households -- both are NULL for every row (see this view's own data_note in sql/story3_views.sql): no households figure exists at this geography.",
+        },
+    ],
     "v_story4_vacancy_comparison": [
         {
             "metric_name": "avg_vacancy_rate",
