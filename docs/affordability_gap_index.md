@@ -14,16 +14,17 @@ This is a simple spread, not a ratio or index number normalized to a base period
 
 Rent growth uses CMHC's own "Percentage Change of Average Rent, Two Bedroom, From Fixed Sample (Existing Structures Only)" figure (Table 1.0 of the national RMS workbook, `etl/extract_rms_canada_comparison.py`), Oct-24 → Oct-25. This is CMHC's matched-sample methodology — it holds the building sample fixed year over year, so it isolates actual rent growth from composition effects (new, typically pricier, construction entering the average). A naive `(rent_2025 - rent_2024) / rent_2024` on the raw average-rent figures would NOT isolate the same thing and would read differently — this note uses CMHC's own matched-sample number, not a recomputed one.
 
-**Real values, Oct-24 → Oct-25** (from `data/staging/rms_canada_comparison.csv`):
+**Real values, Oct-24 → Oct-25** (from `data/staging/rms_canada_comparison.csv`, refreshed against the final comparator CMA list -- see `docs/comparator_cmas_justification.md`; this table originally listed Toronto, which was dropped from the comparator set the day after this note was first written):
 
 | Market | Rent Growth |
 |---|---|
+| Hamilton CMA | 1.6% |
 | Kitchener-Cambridge-Waterloo CMA | 3.3% |
-| Toronto CMA | 3.4% |
 | Windsor CMA | 3.6% |
 | London CMA | 4.1% |
+| St. Catharines-Niagara CMA | 5.5% |
 
-Windsor's own RMS workbook (the Combined/Row+Apartment scope, not just apartments) does **not** have a rent-growth figure loaded in this project — Tables 1.1.5/2.1.5/3.1.5 (the percentage-change-of-rent sheets) were deliberately excluded from `etl/extract_windsor_rms.py`'s scope (see `docs/cmhc_rms_sheet_catalogue.md`'s recommendation). The 3.6% above is Windsor's apartment-only figure from the national comparison table, used here because it's the only rent-growth number currently extracted for Windsor on a basis comparable to the 3 comparator CMAs (also apartment-only, from the same table). If Windsor's Combined-scope rent growth is needed later, it requires extracting Table 3.1.5, which is a small follow-on to the existing RMS extraction pattern.
+Windsor's own RMS workbook (the Combined/Row+Apartment scope, not just apartments) does **not** have a rent-growth figure loaded in this project — Tables 1.1.5/2.1.5/3.1.5 (the percentage-change-of-rent sheets) were deliberately excluded from `etl/extract_windsor_rms.py`'s scope (see `docs/cmhc_rms_sheet_catalogue.md`'s recommendation). The 3.6% above is Windsor's apartment-only figure from the national comparison table, used here because it's the only rent-growth number currently extracted for Windsor on a basis comparable to the 4 comparator CMAs (also apartment-only, from the same table). If Windsor's Combined-scope rent growth is needed later, it requires extracting Table 3.1.5, which is a small follow-on to the existing RMS extraction pattern.
 
 ## Renter Income Growth component — NOT available from current project data
 
@@ -39,8 +40,8 @@ Windsor's own RMS workbook (the Combined/Row+Apartment scope, not just apartment
 
 Because the income-growth component isn't available, the index **cannot be computed as a single number yet** for Windsor or any comparator. What can be reported honestly:
 
-- Real, verified rent-growth ranking: Kitchener-Cambridge-Waterloo (3.3%) < Toronto (3.4%) < Windsor (3.6%) < London (4.1%).
-- If renter income growth turns out to be roughly uniform across these 4 markets (plausible if using a shared provincial-wage-growth proxy, since 3 of the 4 are in Ontario and Toronto also largely tracks the same provincial series), then the *relative ranking* of the AGI across markets would mirror the rent-growth ranking above — London would show the widest gap, Kitchener-Cambridge-Waterloo the narrowest. This is a reasonable directional read, not a computed index value.
+- Real, verified rent-growth ranking: Hamilton (1.6%) < Kitchener-Cambridge-Waterloo (3.3%) < Windsor (3.6%) < London (4.1%) < St. Catharines-Niagara (5.5%).
+- If renter income growth turns out to be roughly uniform across these markets (plausible if using a shared provincial-wage-growth proxy, since Windsor and all 4 comparators are Ontario CMAs), then the *relative ranking* of the AGI across markets would mirror the rent-growth ranking above — St. Catharines-Niagara would show the widest gap, Hamilton the narrowest. This is a reasonable directional read, not a computed index value.
 - No absolute AGI value (e.g. "Windsor's gap is +1.8 points") can be stated as real data — anything of that form in this project before now would be fabricated, not measured.
 
 ## Recommendation
