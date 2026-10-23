@@ -7,6 +7,7 @@ import StoryRentalMarket from "./pages/StoryRentalMarket.jsx";
 import StoryHousingSupply from "./pages/StoryHousingSupply.jsx";
 import StoryComparison from "./pages/StoryComparison.jsx";
 import Methodology from "./pages/Methodology.jsx";
+import Sources from "./pages/Sources.jsx";
 import EmbedSpike from "./pages/EmbedSpike.jsx";
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/stories/housing-supply" element={<StoryHousingSupply />} />
           <Route path="/stories/comparison" element={<StoryComparison />} />
           <Route path="/methodology" element={<Methodology />} />
+          <Route path="/sources" element={<Sources />} />
           <Route path="/embed-spike" element={<EmbedSpike />} />
         </Routes>
       </main>
