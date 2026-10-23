@@ -27,6 +27,7 @@ Run from the project virtual environment:
 
 import json
 import os
+import re
 from pathlib import Path
 
 import requests
@@ -79,30 +80,41 @@ PERCENT_BURDENED_SQL = (
 
 
 def get_session() -> tuple[requests.Session, dict]:
+    """Logs in via the classic form (/login/), not just the JWT-only
+    /api/v1/security/login endpoint used before. Both authenticate fine
+    for writes (create/update), but this Superset build's list/get
+    endpoints filter results by `current_user` via Flask-Login session
+    state -- a JWT-only session never populates that, so every dataset
+    this script creates becomes invisible to its own later GET/list calls
+    (the create still succeeds and the row is real, just unreachable
+    afterwards -- confirmed by inspecting the metadata database directly:
+    the rows, their columns, and their permission_view entries all exist
+    and are well-formed; only the list/get read path was ever broken).
+    The form-login session cookie carries real Flask-Login state, so the
+    same GET calls work correctly under it.
+    """
     load_dotenv(PROJECT_ROOT / ".env")
     session = requests.Session()
 
+    login_page = session.get(f"{SUPERSET_URL}/login/")
+    login_page.raise_for_status()
+    form_csrf = re.search(r'name="csrf_token" type="hidden" value="([^"]+)"', login_page.text).group(1)
+
     login_resp = session.post(
-        f"{SUPERSET_URL}/api/v1/security/login",
-        json={
+        f"{SUPERSET_URL}/login/",
+        data={
             "username": os.environ["SUPERSET_ADMIN_USER"],
             "password": os.environ["SUPERSET_ADMIN_PASSWORD"],
-            "provider": "db",
-            "refresh": True,
+            "csrf_token": form_csrf,
         },
     )
     login_resp.raise_for_status()
-    access_token = login_resp.json()["access_token"]
 
-    csrf_resp = session.get(
-        f"{SUPERSET_URL}/api/v1/security/csrf_token/",
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
+    csrf_resp = session.get(f"{SUPERSET_URL}/api/v1/security/csrf_token/")
     csrf_resp.raise_for_status()
     csrf_token = csrf_resp.json()["result"]
 
     headers = {
-        "Authorization": f"Bearer {access_token}",
         "X-CSRFToken": csrf_token,
         "Referer": SUPERSET_URL,
     }
