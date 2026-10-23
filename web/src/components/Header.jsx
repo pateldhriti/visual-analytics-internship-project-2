@@ -8,6 +8,7 @@ const LINKS = [
   { to: "/stories/housing-supply", label: "Story 3" },
   { to: "/stories/comparison", label: "Story 4" },
   { to: "/methodology", label: "Methodology" },
+  { to: "/sources", label: "Sources" },
 ];
 
 export default function Header() {
