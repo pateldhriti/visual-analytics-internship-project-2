@@ -111,12 +111,18 @@ def FLASK_APP_MUTATOR(app):
 #
 # Slot order is the CVD-safety mechanism, not cosmetic (see palette.md) --
 # do not reorder without re-running the validator. For the Story 4 market
-# comparison (Windsor + 3 comparator CMAs), markets are assigned in slot
-# order: Windsor CMA = slot 1 (blue), London CMA = slot 2 (orange),
-# Kitchener-Cambridge-Waterloo CMA = slot 3 (aqua), Toronto CMA = slot 4
-# (yellow) -- the first 4 slots clear the all-pairs CVD floor for
-# scatter/bubble/choropleth forms, not just the adjacent-pair floor bar/
-# line charts need, so this ordering is safe for any Story 4 chart type.
+# comparison (Windsor + 4 comparator CMAs -- see
+# docs/comparator_cmas_justification.md), markets are assigned in slot
+# order: Windsor CMA = slot 1 (blue), Hamilton CMA = slot 2 (orange),
+# Kitchener-Cambridge-Waterloo CMA = slot 3 (aqua), London CMA = slot 4
+# (yellow), St. Catharines-Niagara CMA = slot 5 (magenta). The original 4
+# slots (1-4) were validated against the all-pairs CVD floor needed for
+# scatter/bubble/choropleth forms, not just the adjacent-pair floor
+# bar/line charts need; slot 5 was added later for the comparator set's
+# 5th market and has only the adjacent-pair guarantee the sequential
+# palette gives by construction -- re-run the dataviz skill's validator
+# with all 5 slots before using this scheme on a scatter/bubble/
+# choropleth chart specifically.
 EXTRA_CATEGORICAL_COLOR_SCHEMES = [
     {
         "id": "windsor_housing",
