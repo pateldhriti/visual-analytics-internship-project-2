@@ -312,11 +312,12 @@ a.card:hover,
   overflow: hidden;
 }
 
+/* Width itself is animated inline by framer-motion (Home.jsx) on mount
+   and whenever the data-explorer's active metric changes. */
 .bar-fill {
   height: 100%;
   border-radius: 999px;
   background: var(--teal);
-  animation: bar-grow 0.7s ease-out both;
 }
 
 .bar-row-value {
@@ -324,23 +325,6 @@ a.card:hover,
   font-weight: 700;
   color: var(--ink);
   text-align: right;
-}
-
-@keyframes bar-grow {
-  from {
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-  to {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bar-fill {
-    animation: none;
-  }
 }
 
 /* Methodology summary band on the homepage */
@@ -673,10 +657,79 @@ html {
 .hero {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(1100px 520px at 15% -10%, rgba(124, 106, 237, 0.12), transparent 60%),
-    radial-gradient(900px 480px at 100% 10%, rgba(47, 111, 209, 0.09), transparent 55%), var(--bg);
+  background: var(--bg);
   padding: 56px 0 220px;
+}
+
+/* Slow-drifting aurora blobs (Home.jsx's HeroAurora) replace a static
+   gradient background with a gently animated one. */
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-aurora-blob {
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  border-radius: 50%;
+  filter: blur(90px);
+}
+
+.hero-aurora-blob--violet {
+  top: -220px;
+  left: -120px;
+  background: rgba(124, 106, 237, 0.16);
+}
+
+.hero-aurora-blob--blue {
+  top: -160px;
+  right: -180px;
+  background: rgba(47, 111, 209, 0.13);
+}
+
+/* Floating house icons (Home.jsx's FloatingHouseIcon) -- a literal nod to
+   "housing", scattered at low opacity behind the hero text. */
+.hero-float-icon {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-float-icon--1 {
+  top: 18%;
+  left: 2%;
+  width: 46px;
+  height: 46px;
+  color: var(--violet);
+  opacity: 0.16;
+}
+
+.hero-float-icon--2 {
+  top: 62%;
+  left: 14%;
+  width: 30px;
+  height: 30px;
+  color: var(--blue);
+  opacity: 0.14;
+}
+
+.hero-float-icon--3 {
+  top: 40%;
+  left: 46%;
+  width: 24px;
+  height: 24px;
+  color: var(--cyan);
+  opacity: 0.12;
+}
+
+@media (max-width: 860px) {
+  .hero-float-icon--3 {
+    display: none;
+  }
 }
 
 .hero-inner {
@@ -751,11 +804,29 @@ html {
   background: linear-gradient(90deg, var(--violet), var(--blue));
   color: #fff;
   box-shadow: 0 8px 24px rgba(124, 106, 237, 0.3);
+  animation: cta-pulse 2.6s ease-in-out infinite;
 }
 
 .hero-cta-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 28px rgba(124, 106, 237, 0.4);
+  animation-play-state: paused;
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 24px rgba(124, 106, 237, 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 30px rgba(124, 106, 237, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta-primary {
+    animation: none;
+  }
 }
 
 .hero-cta-secondary {
@@ -845,9 +916,11 @@ html {
     box-shadow 0.18s ease;
 }
 
+/* The hover/expanded lift itself is handled by framer-motion's
+   whileHover on the motion.button (Home.jsx) -- CSS only owns the
+   background/shadow change here, to avoid both fighting over `transform`. */
 .panel-card:hover,
 .panel-card[aria-expanded="true"] {
-  transform: translateY(-3px);
   background: var(--glass-bg-hover);
   box-shadow: 0 16px 36px rgba(23, 35, 56, 0.14);
 }
@@ -899,9 +972,9 @@ html {
   opacity: 0.7;
 }
 
+/* margin-top/padding-top are animated inline by framer-motion
+   (Home.jsx's HeroPanel) between 0 and 14px as the panel expands. */
 .panel-detail {
-  margin-top: 14px;
-  padding-top: 14px;
   border-top: 1px solid var(--border);
   font-size: 0.78rem;
   color: var(--ink-muted);

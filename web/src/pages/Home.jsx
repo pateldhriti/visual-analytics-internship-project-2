@@ -1,6 +1,58 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  MotionConfig,
+  useMotionValue,
+  useReducedMotion,
+} from "framer-motion";
 import PageContainer from "../components/PageContainer.jsx";
+
+const MotionLink = motion(Link);
+
+// Shared entrance variants. `fadeUp` also moves on the y-axis, so it's only
+// used where nothing else (e.g. a CSS :hover rule) needs to own that
+// element's `transform`. `fadeIn` is opacity-only, for elements like the
+// story cards whose hover lift is still handled by plain CSS. Panels use a
+// springy pop instead of a plain ease for a livelier, less corporate feel.
+const staggerParent = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 160, damping: 18 } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+// Counts up from 0 to a real, already-verified number -- it never displays
+// a value that wasn't passed in as real data. Re-triggers whenever `value`
+// changes (e.g. switching metrics in the data explorer).
+function AnimatedNumber({ value, decimals = 0, prefix = "", suffix = "" }) {
+  const motionValue = useMotionValue(0);
+  const format = (n) =>
+    `${prefix}${decimals > 0 ? n.toFixed(decimals) : Math.round(n).toLocaleString()}${suffix}`;
+  const [display, setDisplay] = useState(() => format(0));
+
+  useEffect(() => {
+    const controls = animate(motionValue, value, {
+      duration: 1.3,
+      ease: "easeOut",
+      onUpdate: (latest) => setDisplay(format(latest)),
+    });
+    return () => controls.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, decimals, prefix, suffix]);
+
+  return <>{display}</>;
+}
 
 // Every figure below is real and independently verified elsewhere in this
 // project (docs/story1_validation.md, docs/kpi_catalogue.md,
@@ -43,6 +95,7 @@ const PANELS = [
     kind: "ring",
     eyebrow: "Shelter-cost burden",
     ringValue: 34.8,
+    animatedValue: { value: 34.8, decimals: 1, suffix: "%" },
     value: "34.8%",
     valueLabel: "Renter households spending 30%+ of income on shelter",
     secondary: "vs. 10.9% of owner households",
@@ -56,6 +109,7 @@ const PANELS = [
     id: "rental",
     kind: "duo",
     eyebrow: "Rental market",
+    animatedValue: { value: 3.6, decimals: 1, suffix: "%" },
     value: "3.6%",
     valueLabel: "Vacancy rate, Combined dwelling types",
     secondary: "$1,451 average 2-bedroom rent",
@@ -154,10 +208,6 @@ const EXPLORER_METRICS = [
   },
 ];
 
-function formatValue(value, unit) {
-  return unit === "units" ? value.toLocaleString() : `${value}%`;
-}
-
 // A wide isometric skyline strip, purely illustrative -- it stands in for
 // "a city" the way an icon would, not for any dataset, so it carries no
 // figures of its own. Faces of each block are computed from standard
@@ -227,31 +277,97 @@ function HeroSkyline() {
         const { topFace, rightFace, leftFace } = isoBuildingFaces(building);
         const shade = SKYLINE_PALETTE[i % SKYLINE_PALETTE.length];
         return (
-          <g key={building.x}>
+          <motion.g
+            key={building.x}
+            style={{ originY: 1 }}
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 + i * 0.045, ease: "easeOut" }}
+          >
             <polygon points={toPoints(leftFace)} fill={shade.left} />
             <polygon points={toPoints(rightFace)} fill={shade.right} />
             <polygon points={toPoints(topFace)} fill={shade.top} />
-          </g>
+          </motion.g>
         );
       })}
     </svg>
   );
 }
 
+// Slow-drifting color blobs behind the hero content -- purely atmospheric,
+// not a chart, so it carries no numbers of its own.
+function HeroAurora() {
+  return (
+    <div className="hero-aurora" aria-hidden="true">
+      <motion.div
+        className="hero-aurora-blob hero-aurora-blob--violet"
+        animate={{ x: [0, 50, -20, 0], y: [0, -30, 25, 0] }}
+        transition={{ duration: 24, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="hero-aurora-blob hero-aurora-blob--blue"
+        animate={{ x: [0, -60, 30, 0], y: [0, 35, -25, 0] }}
+        transition={{ duration: 28, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </div>
+  );
+}
+
+// A simple house silhouette that gently bobs -- a direct, literal nod to
+// "housing" rather than only the abstract skyline, scattered a few times
+// behind the hero text at low opacity.
+function FloatingHouseIcon({ className, delay = 0, duration = 4.5 }) {
+  return (
+    <motion.svg
+      className={`hero-float-icon ${className ?? ""}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      animate={{ y: [0, -14, 0], rotate: [0, 3, 0] }}
+      transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
+    >
+      <path
+        d="M3 11.5 12 4l9 7.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </motion.svg>
+  );
+}
+
+const panelVariants = {
+  hidden: { opacity: 0, y: 32, scale: 0.9 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 220, damping: 20 } },
+};
+
 function HeroPanel({ panel, isOpen, onToggle }) {
   return (
-    <button
+    <motion.button
       type="button"
       className="card panel-card"
       aria-expanded={isOpen}
       aria-controls={`panel-detail-${panel.id}`}
       onClick={() => onToggle(panel.id)}
+      variants={panelVariants}
+      whileHover={{ y: -4 }}
+      whileTap={{ scale: 0.98 }}
     >
       <p className="panel-eyebrow">{panel.eyebrow}</p>
 
       {panel.kind === "ring" && (
         <div className="panel-ring" style={{ "--ring": panel.ringValue }}>
-          <span className="panel-ring-inner">{panel.value}</span>
+          <span className="panel-ring-inner">
+            <AnimatedNumber {...panel.animatedValue} />
+          </span>
         </div>
       )}
 
@@ -261,12 +377,16 @@ function HeroPanel({ panel, isOpen, onToggle }) {
             <div key={bar.label}>
               <div className="panel-mini-bar-label">
                 <span>{bar.label}</span>
-                <span>{bar.value.toLocaleString()}</span>
+                <span>
+                  <AnimatedNumber value={bar.value} />
+                </span>
               </div>
               <div className="panel-mini-bar-track">
-                <div
+                <motion.div
                   className="panel-mini-bar-fill"
-                  style={{ width: `${(bar.value / 162138) * 100}%` }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(bar.value / 162138) * 100}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
                 />
               </div>
             </div>
@@ -289,31 +409,46 @@ function HeroPanel({ panel, isOpen, onToggle }) {
       )}
 
       {panel.kind !== "ring" && panel.kind !== "pipeline" && panel.kind !== "comparison" && (
-        <p className="panel-value">{panel.value}</p>
+        <p className="panel-value">
+          {panel.animatedValue ? <AnimatedNumber {...panel.animatedValue} /> : panel.value}
+        </p>
       )}
 
       <p className="panel-value-label">{panel.valueLabel}</p>
       <p className="panel-secondary">{panel.secondary}</p>
 
-      {isOpen ? (
-        <dl className="panel-detail" id={`panel-detail-${panel.id}`}>
-          <div>
-            <dt>Definition:</dt> <dd>{panel.definition}</dd>
-          </div>
-          <div>
-            <dt>Source:</dt> <dd>{panel.source}</dd>
-          </div>
-          <div>
-            <dt>Geography:</dt> <dd>{panel.geography}</dd>
-          </div>
-          <div>
-            <dt>Period:</dt> <dd>{panel.period}</dd>
-          </div>
-        </dl>
-      ) : (
-        <p className="panel-hint">Tap for definition &amp; source</p>
-      )}
-    </button>
+      <AnimatePresence initial={false}>
+        {isOpen ? (
+          <motion.dl
+            className="panel-detail"
+            id={`panel-detail-${panel.id}`}
+            key="detail"
+            initial={{ height: 0, opacity: 0, marginTop: 0, paddingTop: 0 }}
+            animate={{ height: "auto", opacity: 1, marginTop: 14, paddingTop: 14 }}
+            exit={{ height: 0, opacity: 0, marginTop: 0, paddingTop: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
+          >
+            <div>
+              <dt>Definition:</dt> <dd>{panel.definition}</dd>
+            </div>
+            <div>
+              <dt>Source:</dt> <dd>{panel.source}</dd>
+            </div>
+            <div>
+              <dt>Geography:</dt> <dd>{panel.geography}</dd>
+            </div>
+            <div>
+              <dt>Period:</dt> <dd>{panel.period}</dd>
+            </div>
+          </motion.dl>
+        ) : (
+          <motion.p key="hint" className="panel-hint" exit={{ opacity: 0 }}>
+            Tap for definition &amp; source
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
@@ -322,17 +457,13 @@ export default function Home() {
   const [activeMetric, setActiveMetric] = useState(EXPLORER_METRICS[0].id);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const heroRef = useRef(null);
-  const reducedMotionRef = useRef(false);
-
-  useEffect(() => {
-    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }, []);
+  const prefersReducedMotion = useReducedMotion();
 
   const togglePanel = (id) => setOpenPanel((current) => (current === id ? null : id));
   const metric = EXPLORER_METRICS.find((m) => m.id === activeMetric) ?? EXPLORER_METRICS[0];
 
   const handleHeroMouseMove = (e) => {
-    if (reducedMotionRef.current || !heroRef.current) return;
+    if (prefersReducedMotion || !heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();
     const relX = (e.clientX - rect.left) / rect.width - 0.5;
     const relY = (e.clientY - rect.top) / rect.height - 0.5;
@@ -342,42 +473,48 @@ export default function Home() {
   const handleHeroMouseLeave = () => setTilt({ x: 0, y: 0 });
 
   return (
-    <>
+    <MotionConfig reducedMotion="user">
       <section
         className="hero"
         ref={heroRef}
         onMouseMove={handleHeroMouseMove}
         onMouseLeave={handleHeroMouseLeave}
       >
+        <HeroAurora />
+        <FloatingHouseIcon className="hero-float-icon--1" delay={0} duration={4.2} />
+        <FloatingHouseIcon className="hero-float-icon--2" delay={0.8} duration={5} />
+        <FloatingHouseIcon className="hero-float-icon--3" delay={1.6} duration={4.6} />
         <div
           className="hero-scene"
           style={{ transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
         >
           <HeroSkyline />
         </div>
-        <div className="hero-inner">
+        <motion.div className="hero-inner" variants={staggerParent} initial="hidden" animate="show">
           <div>
-            <p className="hero-eyebrow">Windsor Housing Analytics &middot; University of Windsor</p>
-            <h1 className="hero-headline">
+            <motion.p variants={fadeUp} className="hero-eyebrow">
+              Windsor Housing Analytics &middot; University of Windsor
+            </motion.p>
+            <motion.h1 variants={fadeUp} className="hero-headline">
               See Windsor&rsquo;s housing market <em>differently</em>.
-            </h1>
-            <p className="hero-lede">
+            </motion.h1>
+            <motion.p variants={fadeUp} className="hero-lede">
               A research platform tracking housing affordability, rental-market conditions, and
               housing supply in the Windsor Census Metropolitan Area &mdash; built entirely from
               official Statistics Canada and CMHC open data, with every figure traceable back to its
               source.
-            </p>
-            <div className="hero-cta-row">
+            </motion.p>
+            <motion.div variants={fadeUp} className="hero-cta-row">
               <Link to="/stories/affordability" className="hero-cta hero-cta-primary">
                 Explore the Data
               </Link>
               <a href="#stories" className="hero-cta hero-cta-secondary">
                 Discover the Stories
               </a>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="hero-panels">
+          <motion.div className="hero-panels" variants={staggerParent}>
             {PANELS.map((panel) => (
               <HeroPanel
                 key={panel.id}
@@ -386,33 +523,52 @@ export default function Home() {
                 onToggle={togglePanel}
               />
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       <PageContainer>
-        <section className="section" id="stories">
-          <div className="section-heading">
+        <motion.section
+          className="section"
+          id="stories"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerParent}
+        >
+          <motion.div variants={fadeUp} className="section-heading">
             <h2>Explore the research stories</h2>
-          </div>
-          <div className="story-grid">
+          </motion.div>
+          <motion.div className="story-grid" variants={staggerParent}>
             {STORIES.map((story) => (
-              <Link to={story.to} className="card story-card card--hoverable" key={story.to}>
+              <MotionLink
+                to={story.to}
+                className="card story-card card--hoverable"
+                key={story.to}
+                variants={fadeIn}
+              >
                 <p className="story-label">{story.label}</p>
                 <h3>{story.title}</h3>
                 <p>{story.blurb}</p>
                 <span className="story-card-arrow">Read the story &rarr;</span>
-              </Link>
+              </MotionLink>
             ))}
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        <section className="section" id="explorer">
-          <div className="section-heading">
+        <motion.section
+          className="section"
+          id="explorer"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerParent}
+        >
+          <motion.div variants={fadeUp} className="section-heading">
             <h2>Dig into the data yourself</h2>
             <p className="section-note">Pick a metric &mdash; every dataset here is real</p>
-          </div>
-          <div className="card chart-preview-card">
+          </motion.div>
+          <motion.div variants={fadeUp} className="card chart-preview-card">
             <div className="metric-selector" role="group" aria-label="Choose a metric to preview">
               {EXPLORER_METRICS.map((m) => (
                 <button
@@ -426,27 +582,50 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="bar-chart">
-              {metric.rows.map((row) => (
-                <div className="bar-row" key={row.label}>
-                  <span className="bar-row-label">{row.label}</span>
-                  <span className="bar-track">
-                    <span
-                      className="bar-fill"
-                      style={{ width: `${(row.value / metric.max) * 100}%` }}
-                    />
-                  </span>
-                  <span className="bar-row-value">{formatValue(row.value, metric.unit)}</span>
-                </div>
-              ))}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                className="bar-chart"
+                key={metric.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                {metric.rows.map((row) => (
+                  <div className="bar-row" key={row.label}>
+                    <span className="bar-row-label">{row.label}</span>
+                    <span className="bar-track">
+                      <motion.span
+                        className="bar-fill"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(row.value / metric.max) * 100}%` }}
+                        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                      />
+                    </span>
+                    <span className="bar-row-value">
+                      <AnimatedNumber
+                        value={row.value}
+                        decimals={metric.unit === "%" ? 1 : 0}
+                        suffix={metric.unit === "%" ? "%" : ""}
+                      />
+                    </span>
+                  </div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
             <p className="chart-preview-caption">
               {metric.caption} Full breakdown on <Link to={metric.to}>{metric.label}</Link>.
             </p>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        <section className="section">
+        <motion.section
+          className="section"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeUp}
+        >
           <div className="section-heading">
             <h2>Data provenance</h2>
           </div>
@@ -466,8 +645,8 @@ export default function Home() {
               <li>Starts, Completions and Units Under Construction &mdash; CMHC</li>
             </ul>
           </div>
-        </section>
+        </motion.section>
       </PageContainer>
-    </>
+    </MotionConfig>
   );
 }
