@@ -15,7 +15,7 @@ gap is more useful to the team than a chart that looks real but measures nothing
 - **Formula:** `value[ratio='Spending 30% or more...'] / value[ratio='Total - Shelter-cost-to-income ratio'] * 100`, per `tenure`.
 - **Source table:** `fact_shelter_cost`
 - **Unit:** %
-- **Verified:** Owner 10.9% (13,005/119,125), Renter 34.5% (15,735/45,605).
+- **Verified:** Owner 10.9% (13,005/118,940), Renter 34.8% (15,735/45,280) -- denominator excludes "Not applicable" households (zero/negative income or an agricultural-operation dwelling), matching StatCan's own published rate exactly (see `docs/story1_validation.md`). An earlier version of this line used the raw, unfiltered Total as the denominator and read Renter 34.5% (15,735/45,605) -- wrong, corrected here.
 - **Caveat:** must filter to the baseline slice (`housing_suitability`/`dwelling_condition` = Total, `statistic` = "Number of private households") first -- skipping it makes each combination appear 27x, not once.
 
 ### 2. Burden rate by income bracket
@@ -23,8 +23,8 @@ gap is more useful to the team than a chart that looks real but measures nothing
 - **Formula:** same as KPI 1, grouped by `income_group`, `tenure = 'Total'`.
 - **Source table:** `fact_shelter_cost`
 - **Unit:** %
-- **Verified (top 3):** $10,000-$19,999: 76.4%; Under $10,000: 73.6%; $20,000-$29,999: 56.2%.
-- **Caveat:** `income_group` has 2 non-count rows (Median/Average $ statistics) -- exclude both or the ranking breaks.
+- **Verified (top 3):** Under $10,000: 93.1%; $10,000-$19,999: 76.5%; $20,000-$29,999: 56.2%.
+- **Caveat:** `income_group` has 2 non-count rows (Median/Average $ statistics) -- exclude both or the ranking breaks. Also exclude "Not applicable" households from the denominator (same fix as KPI 1) -- an earlier version of this line used the unfiltered denominator and read Under $10,000: 73.6%, ranked *second* behind $10,000-$19,999's 76.4% -- wrong on both the value and the ranking. Corrected: Under $10,000 is clearly the most burdened bracket, not a close second.
 
 ### 3. Severity within the burdened group
 - **Definition:** of households already spending 30%+, how much is in the most extreme published sub-band.
@@ -39,7 +39,7 @@ gap is more useful to the team than a chart that looks real but measures nothing
 - **Formula:** same as KPI 1, grouped by `(household_type, household_type_member_id)`, `tenure = 'Total'`.
 - **Source table:** `fact_shelter_cost`
 - **Unit:** %
-- **Verified (top 3):** non-census-family one-person households 32.7%; non-census-family households overall 30.9%; one-parent families (no additional persons) 23.2% -- all above the Windsor-wide baseline of 17.4%.
+- **Verified (top 3):** non-census-family one-person households 32.9%; non-census-family households overall 31.1%; one-parent families (no additional persons) 23.3% -- all above the Windsor-wide baseline of 17.5%. (An earlier version of this line used the unfiltered "Not applicable"-inclusive denominator -- same fix as KPI 1 -- and read 32.7%/30.9%/23.2%/17.4%; corrected here.)
 - **Caveat:** `household_type` has 16 real categories but only 14 distinct text labels (2 label collisions) -- group by `household_type_member_id`, never the text label alone.
 
 ### 5. Households outside the ratio calculation
