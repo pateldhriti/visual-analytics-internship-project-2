@@ -111,6 +111,15 @@ VIEWS = {
             "description": "Turnover rate, Windsor CMA, averaged across whatever rows are in scope (e.g. filtered to one bedroom/dwelling type).",
         },
     ],
+    "v_story2_rent_by_zone_bedroom": [
+        {
+            "metric_name": "avg_rent",
+            "expression": "AVG(average_rent)",
+            "verbose_name": "Average Rent ($)",
+            "metric_type": "avg",
+            "description": "Average rent, Oct-25, by Windsor's 7 real zones and bedroom type -- excludes the Windsor CMA and Windsor City rollup rows. Some zone/bedroom-type cells are NULL (suppressed by CMHC for sample size), excluded by AVG() rather than treated as 0.",
+        },
+    ],
     "v_story3_starts_completions_by_dwelling_type": [
         {
             "metric_name": "total_units",

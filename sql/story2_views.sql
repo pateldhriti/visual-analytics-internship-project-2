@@ -1,13 +1,16 @@
 -- SQL views for Story 2 ("What is happening in Windsor's rental market?"):
 -- rent year-over-year change, multi-year rent growth rate, vacancy trend,
--- and turnover by bedroom type. Built on warehouse.fact_rental_market's
--- historical rows (etl/load_warehouse_facts.py's
+-- turnover by bedroom type, and rent by zone and bedroom type. Built on
+-- warehouse.fact_rental_market's historical rows (etl/load_warehouse_facts.py's
 -- load_historical_rental_market_facts(), 6 real CMHC RMS editions -- see
 -- docs/rms_historical_extraction.md), not estimated or interpolated.
 --
--- All 4 views are scoped to Windsor CMA (zone_label = 'Windsor CMA') --
+-- The first 4 views are scoped to Windsor CMA (zone_label = 'Windsor CMA') --
 -- the historical extraction only covers Windsor, not the Story 4
 -- comparator CMAs, so a wider geography here would be silently wrong.
+-- v_story2_rent_by_zone_bedroom (the 5th, at the bottom of this file) is
+-- the one deliberate exception -- it exists specifically to break rent out
+-- by Windsor's own 7 internal zones, which the CMA rollup can't show.
 --
 -- On "10-year growth rate": the real CMHC Windsor RMS data this project
 -- has loaded only spans Oct-20 to Oct-25 -- 5 years, not 10. Rather than
@@ -152,3 +155,35 @@ JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
 JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
 WHERE f.metric_type = 'turnover_rate'
   AND z.zone_label = 'Windsor CMA';
+
+-- ============================================================
+-- v_story2_rent_by_zone_bedroom
+-- One row per (zone, bedroom type): average rent for the most recent
+-- real survey period (Oct-25), broken out by Windsor's 7 real zones --
+-- a gap the 4 views above don't cover, since every one of them is
+-- scoped to the Windsor CMA rollup only (`z.zone_label = 'Windsor CMA'`)
+-- and never breaks out by individual zone. The per-zone rows exist in
+-- `fact_rental_market` already (same historical load as the other 4
+-- views); this just gives them their own queryable shape.
+-- Excludes the 2 rollup rows ('Windsor CMA', 'Windsor City
+-- (Zones 1-4)') -- including them in a per-zone chart would double-count
+-- against the 7 real zones. Zone 7 only has real data from Oct-23
+-- onward (see docs/rms_historical_extraction.md), which doesn't affect
+-- this view since it's scoped to the latest period only.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story2_rent_by_zone_bedroom AS
+SELECT
+    z.zone_label,
+    b.bedroom_type_label,
+    p.period_label,
+    f.value AS average_rent,
+    f.reliability_letter
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type = 'average_rent'
+  AND d.dwelling_type_label = 'Combined'
+  AND p.period_label = 'Oct-25'
+  AND z.zone_label NOT IN ('Windsor CMA', 'Windsor City (Zones 1-4)');

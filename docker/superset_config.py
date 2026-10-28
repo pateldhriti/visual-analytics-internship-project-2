@@ -99,6 +99,13 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story1_burden_by_tenure](id:5)",
     "[Windsor Housing Data].[v_story1_burden_by_income_band](id:7)",
     "[Windsor Housing Data].[v_story1_burden_by_household_type](id:8)",
+    # Story 2's dashboard (id TBD) -- added proactively alongside the
+    # dashboard build itself, not after an embed exposed a gap this time.
+    "[Windsor Housing Data].[v_story2_rent_yoy_change](id:9)",
+    "[Windsor Housing Data].[v_story2_rent_growth](id:10)",
+    "[Windsor Housing Data].[v_story2_vacancy_trend](id:6)",
+    "[Windsor Housing Data].[v_story2_turnover_by_bedroom](id:11)",
+    "[Windsor Housing Data].[v_story2_rent_by_zone_bedroom](id:14)",
 ]
 
 
