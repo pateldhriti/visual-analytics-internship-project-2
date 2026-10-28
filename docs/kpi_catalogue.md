@@ -139,14 +139,14 @@ gap is more useful to the team than a chart that looks real but measures nothing
 
 ---
 
-## Story 4 -- Comparison (`warehouse.fact_rental_market`, comparator CMA rows, Apartment scope)
+## Story 4 -- Comparison (`warehouse.fact_rental_market_comparison`, Apartment scope)
 
 Windsor CMA + 4 comparator CMAs (London, Kitchener-Cambridge-Waterloo, Hamilton, St. Catharines-Niagara -- selection justified in `docs/comparator_cmas_justification.md`). All 5 markets reported at the same scope here -- Apartment only, Oct-25 -- for an apples-to-apples comparison (Table 1.0's national scope, not Windsor's richer Combined data).
 
 ### 16. Vacancy rate vs. comparator CMAs
 - **Definition:** Windsor's apartment vacancy rate against 4 size-comparable Ontario CMAs.
 - **Formula:** `value WHERE metric_type='vacancy_rate' AND dwelling_type='Apartment' AND bedroom_type='Total'`, grouped by market.
-- **Source table:** `fact_rental_market`
+- **Source table:** `fact_rental_market_comparison` for the 4 comparators; `fact_rental_market` (Table 1.1.1) for Windsor's own figure -- Windsor's vacancy_rate row is deliberately excluded from `fact_rental_market_comparison` as a duplicate of this same Windsor-specific extraction.
 - **Unit:** %
 - **Verified (Oct-25):** Windsor 3.7%, Hamilton 3.6%, St. Catharines-Niagara 3.9%, London 4.0%, Kitchener-Cambridge-Waterloo 4.1% -- Windsor has the 2nd-tightest market of the 5.
 - **Caveat:** this is the Apartment-only scope (Table 1.0) -- Windsor's own Combined-dwelling-type figure is 3.6% (KPI 6), a different, non-comparable scope, not a contradiction.
@@ -154,7 +154,7 @@ Windsor CMA + 4 comparator CMAs (London, Kitchener-Cambridge-Waterloo, Hamilton,
 ### 17. Average 2BR rent vs. comparator CMAs
 - **Definition:** Windsor's average 2-bedroom apartment rent against the same 4 CMAs.
 - **Formula:** `value WHERE metric_type='average_rent' AND dwelling_type='Apartment' AND bedroom_type='2 Bedroom'`, grouped by market.
-- **Source table:** `fact_rental_market`
+- **Source table:** `fact_rental_market_comparison` for the 4 comparators; `fact_rental_market` (Table 1.1.2) for Windsor's own figure -- same duplicate-exclusion reasoning as KPI 16.
 - **Unit:** $ CAD / month
 - **Verified (Oct-25):** Windsor $1,454 (cheapest of the 5), St. Catharines-Niagara $1,527, London $1,651, Hamilton $1,656, Kitchener-Cambridge-Waterloo $1,832 (most expensive).
 - **Caveat:** same Apartment-only scope note as KPI 16 -- don't mix with Windsor's Combined-dwelling-type rent figures from Story 2.
@@ -162,7 +162,7 @@ Windsor CMA + 4 comparator CMAs (London, Kitchener-Cambridge-Waterloo, Hamilton,
 ### 18. Year-over-year rent growth vs. comparator CMAs
 - **Definition:** Oct-24-to-25 rent growth, Windsor vs. the 4 comparators.
 - **Formula:** `value WHERE metric_type='pct_change_rent' AND dwelling_type='Apartment' AND bedroom_type='2 Bedroom' AND period_label='Oct-25'`, grouped by market.
-- **Source table:** `fact_rental_market`
+- **Source table:** `fact_rental_market_comparison` -- Windsor's `pct_change_rent` row is kept here (not a duplicate of anything in `fact_rental_market`), so all 5 markets come from this one table.
 - **Unit:** %
 - **Verified:** Windsor 3.6%, Hamilton 1.6%, Kitchener-Cambridge-Waterloo 3.3%, London 4.1%, St. Catharines-Niagara 5.5% -- Windsor sits mid-pack.
 - **Caveat:** this is CMHC's own matched-sample rent-growth figure (existing-tenant, turnover-adjusted) -- don't recompute it as a simple `(rent_2025 - rent_2024) / rent_2024` from KPI 17's two periods, it won't match exactly.
@@ -170,7 +170,7 @@ Windsor CMA + 4 comparator CMAs (London, Kitchener-Cambridge-Waterloo, Hamilton,
 ### 19. Affordability-gap index -- NOT COMPUTABLE
 - **Definition:** whether rent is growing faster than renter income, by market -- the intended headline comparison metric.
 - **Formula:** `rent_growth_pct - renter_income_growth_pct` -- **`renter_income_growth_pct` and the resulting index are left `NULL`, not estimated.**
-- **Source table:** `warehouse.v_story4_affordability_gap` (view; `fact_rental_market`)
+- **Source table:** `warehouse.v_story4_affordability_gap` (view; `fact_rental_market_comparison`)
 - **Unit:** percentage-point gap
 - **Caveat (why `NULL`, not estimated):** no source extracted so far contains a renter/household income **time series** to compute a real growth rate from -- `fact_census_profile`'s income figures are a single 2021 snapshot, not year-over-year. A placeholder number would look like real data in a chart with no way for a viewer to tell the difference -- see `docs/affordability_gap_index.md`'s full "Limits" section for what source would close this gap.
 
@@ -179,4 +179,4 @@ Windsor CMA + 4 comparator CMAs (London, Kitchener-Cambridge-Waterloo, Hamilton,
 ## Cross-cutting notes
 
 - Every KPI above is grounded in a real, currently-loaded row in `warehouse` -- none are projected, estimated, or interpolated, except the two explicitly marked `NULL`.
-- `sql/story3_views.sql` and `sql/story4_views.sql` define the SQL views referenced above, but **are not yet applied to every environment** -- confirmed while building this catalogue: querying `warehouse.v_story4_vacancy_comparison` directly against this machine's database returned "relation does not exist." KPIs 16-19 above were verified by querying `fact_rental_market` directly with the same filters the views apply, not through the views themselves. Running `sql/story3_views.sql` and `sql/story4_views.sql` against a given environment is a prerequisite before building Superset charts on top of those view names specifically.
+- `sql/story3_views.sql` and `sql/story4_views.sql` define the SQL views referenced above, but **are not yet applied to every environment** -- confirmed while building this catalogue: querying `warehouse.v_story4_vacancy_comparison` directly against this machine's database returned "relation does not exist." KPIs 16-19 above were verified by querying `fact_rental_market_comparison` (and, for Windsor's own KPI 16/17 figures, `fact_rental_market`) directly with the same filters the views apply, not through the views themselves. Running `sql/story3_views.sql` and `sql/story4_views.sql` against a given environment is a prerequisite before building Superset charts on top of those view names specifically.

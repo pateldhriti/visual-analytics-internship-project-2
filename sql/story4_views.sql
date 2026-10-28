@@ -1,11 +1,14 @@
 -- SQL views for Story 4 ("How does Windsor compare to similar markets?"):
 -- Windsor vs. comparator CMA rents, vacancy, and affordability-gap index
--- values. Built on top of warehouse.fact_rental_market (the real,
--- verified data from etl/load_rental_market_facts() and
--- etl/load_rms_canada_comparison_facts() -- see
--- docs/conceptual_er_model.md and docs/affordability_gap_index.md).
+-- values. Built on top of warehouse.fact_rental_market_comparison (the
+-- real, verified data from etl/load_rms_canada_comparison_facts() --
+-- see docs/conceptual_er_model.md and docs/affordability_gap_index.md).
+-- This is its own fact table, separate from fact_rental_market, because
+-- it comes from a separate source workbook (CMHC Canada RMS 2025, not
+-- CMHC Windsor RMS 2025) -- see sql/warehouse_schema.sql's comment on
+-- fact_rental_market_comparison for why.
 --
--- All 4 markets (Windsor + the 3 comparator CMAs) are reported here at
+-- All 5 markets (Windsor + the 4 comparator CMAs) are reported here at
 -- the same scope -- apartment-only, Oct-24/Oct-25 -- so the comparison is
 -- apples-to-apples. Windsor's richer Combined-dwelling-type /
 -- all-bedroom-type data (zone-level, Table 3.1.8 quintile bridge, etc.)
@@ -28,7 +31,7 @@ SELECT
     f.value AS vacancy_rate_pct,
     f.reliability_letter,
     f.yoy_trend
-FROM warehouse.fact_rental_market f
+FROM warehouse.fact_rental_market_comparison f
 JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
 JOIN warehouse.dim_period p ON p.period_key = f.period_key
 JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
@@ -49,7 +52,7 @@ SELECT
     p.period_label,
     f.value AS average_rent_2br,
     f.reliability_letter
-FROM warehouse.fact_rental_market f
+FROM warehouse.fact_rental_market_comparison f
 JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
 JOIN warehouse.dim_period p ON p.period_key = f.period_key
 JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
@@ -81,7 +84,7 @@ SELECT
     CAST(NULL AS NUMERIC) AS renter_income_growth_pct,
     CAST(NULL AS NUMERIC) AS affordability_gap_index,
     'Income growth not available -- see docs/affordability_gap_index.md' AS data_note
-FROM warehouse.fact_rental_market f
+FROM warehouse.fact_rental_market_comparison f
 JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
 JOIN warehouse.dim_period p ON p.period_key = f.period_key
 JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key

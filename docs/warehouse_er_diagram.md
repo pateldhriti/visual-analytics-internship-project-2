@@ -1,6 +1,6 @@
 # Warehouse ER Diagram
 
-The conformed-dimension star schema in `sql/warehouse_schema.sql`: 8 dimension tables + 4 fact
+The conformed-dimension star schema in `sql/warehouse_schema.sql`: 8 dimension tables + 5 fact
 tables (one per profiled source), with every primary key, foreign key, unique constraint and CHECK
 constraint the DDL actually enforces shown directly on the diagram — not a separate description
 that could drift from the real schema.
@@ -37,13 +37,19 @@ diagram never drifts from the real DDL.
 
 - **Every fact table has a `UNIQUE` constraint on its full documented grain** (the column
   combination that should appear at most once per row), catching an accidental duplicate load —
-  verified against the real, currently-loaded data (92,506 rows across all 4 fact tables) with
+  verified against the real, currently-loaded data (93,551 rows across all 5 fact tables) with
   zero violations before these constraints were added.
-- **Every foreign-key column on every fact table has its own index** (13 total) — Postgres indexes
+- **Every foreign-key column on every fact table has its own index** (18 total) — Postgres indexes
   a foreign key's *referenced* side automatically via that column's primary key, but never the
   *referencing* (fact-table) side, so without these, filtering or joining from a fact table back to
   one dimension would be a full table scan.
-- `fact_rental_market.metric_type` is deliberately **not** `CHECK`-constrained, unlike this schema's
-  other categorical columns — it's genuinely open-ended (only 12 of the CMHC RMS workbook's 29
-  sheets are extracted so far; see `docs/cmhc_rms_sheet_catalogue.md`), so a fixed list would need
-  editing on every future extraction rather than actually catching bad data.
+- `fact_rental_market` and `fact_rental_market_comparison` are two separate tables, not one, even
+  though they share the same CMHC RMS metric vocabulary and dimension FKs: they come from two
+  separate source workbooks (Windsor RMS 2025 vs. Canada RMS 2025), and this schema's rule is one
+  fact table per source (see the comment on `fact_rental_market_comparison` in
+  `sql/warehouse_schema.sql`).
+- `fact_rental_market.metric_type` and `fact_rental_market_comparison.metric_type` are deliberately
+  **not** `CHECK`-constrained, unlike this schema's other categorical columns — genuinely
+  open-ended (only 12 of the CMHC RMS workbook's 29 sheets are extracted so far; see
+  `docs/cmhc_rms_sheet_catalogue.md`), so a fixed list would need editing on every future extraction
+  rather than actually catching bad data.

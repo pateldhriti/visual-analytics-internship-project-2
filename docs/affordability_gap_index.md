@@ -48,4 +48,4 @@ Because the income-growth component isn't available, the index **cannot be compu
 
 1. Treat this method note as the index definition, not a finished computation.
 2. Next real step: extract a renter/household income growth series (StatCan table 11-10-0239-01 or similar) at a cadence comparable to the RMS data, following the same extract → reshape → load pattern as the other sources in this project.
-3. Once that exists, AGI becomes a one-line calculation (`rent_growth - income_growth`) per market per period, addable to `fact_rental_market` or a derived view rather than a new fact table.
+3. Once that exists, AGI becomes a one-line calculation (`rent_growth - income_growth`) per market per period, addable to `fact_rental_market_comparison` (where `pct_change_rent` already lives) or a derived view rather than a new fact table.

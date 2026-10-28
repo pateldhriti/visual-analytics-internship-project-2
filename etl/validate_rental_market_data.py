@@ -2,11 +2,15 @@
 Data-quality checks for the CMHC rental-market tables, appended to
 docs/data_quality_report.md -- the same shared validation report
 etl/validate_supply_data.py already writes a section into. Checks run
-against the LIVE warehouse.fact_rental_market table, not a single staging
-CSV -- 3 real sources load into that one table (Windsor 2025, Canada
-comparison, and the historical Oct-20/Oct-23 extraction), so this is the
-only point where "is the combined result actually correct" can be checked
-at all.
+against the LIVE warehouse tables, not a single staging CSV.
+
+Two tables, each checked independently (own row-count reconciliation,
+shared range/duplicate/reliability logic):
+  - fact_rental_market: Windsor 2025 + the historical Oct-20/Oct-23
+    extraction (2 real sources, 1 table).
+  - fact_rental_market_comparison: the Canada RMS 2025 comparison source
+    (its own table -- see sql/warehouse_schema.sql's comment on why this
+    isn't merged into fact_rental_market).
 
 Checks:
 
@@ -57,8 +61,11 @@ REPORT_MD = PROJECT_ROOT / "docs" / "data_quality_report.md"
 
 STAGING_SOURCES = {
     "windsor_rental_market.csv": PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv",
-    "rms_canada_comparison.csv": PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv",
     "windsor_rental_market_historical.csv": PROJECT_ROOT / "data" / "staging" / "windsor_rental_market_historical.csv",
+}
+
+COMPARISON_STAGING_SOURCES = {
+    "rms_canada_comparison.csv": PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv",
 }
 
 RATE_METRICS = {"vacancy_rate", "turnover_rate", "quintile_vacancy_rate", "new_stock_vacancy_rate"}
@@ -74,6 +81,8 @@ VALID_RELIABILITY_LETTERS = {"a", "b", "c", "d"}
 
 SECTION_MARKER_START = "<!-- BEGIN: rental market tables -->"
 SECTION_MARKER_END = "<!-- END: rental market tables -->"
+COMPARISON_SECTION_MARKER_START = "<!-- BEGIN: rental market comparison table -->"
+COMPARISON_SECTION_MARKER_END = "<!-- END: rental market comparison table -->"
 
 REPORT_HEADER = """# Data Quality Report
 
@@ -103,33 +112,52 @@ def fetch_live_fact_rental_market(engine) -> pd.DataFrame:
     return df
 
 
+def fetch_live_fact_rental_market_comparison(engine) -> pd.DataFrame:
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT z.zone_label AS zone, p.period_label, b.bedroom_type_label AS bedroom_type,
+                   d.dwelling_type_label AS dwelling_type, NULL AS income_band,
+                   f.metric_type, f.value, f.reliability_letter
+            FROM warehouse.fact_rental_market_comparison f
+            JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+            JOIN warehouse.dim_period p ON p.period_key = f.period_key
+            JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+            JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+        """)).fetchall()
+    df = pd.DataFrame(rows, columns=["zone", "period_label", "bedroom_type", "dwelling_type",
+                                      "income_band", "metric_type", "value", "reliability_letter"])
+    df["value"] = df["value"].astype(float)
+    return df
+
+
 # etl/load_warehouse_facts.py's load_rms_canada_comparison_facts() deliberately
-# drops Windsor's vacancy_rate/average_rent rows from this one source before
+# drops Windsor's vacancy_rate/average_rent rows from this source before
 # loading (they duplicate the Windsor-specific workbook's own extraction --
 # see that function's docstring) -- the only known, documented case where a
 # staging row doesn't become exactly one fact row. Any other gap is a real
 # mismatch, not expected.
-KNOWN_STAGING_EXCLUSIONS = {
+COMPARISON_KNOWN_EXCLUSIONS = {
     "rms_canada_comparison.csv": (4, "Windsor's vacancy_rate/average_rent rows, excluded at load "
                                       "time as duplicates of the Windsor-specific workbook"),
 }
 
 
-def check_row_counts(live_df: pd.DataFrame) -> dict:
+def check_row_counts(live_df: pd.DataFrame, staging_sources: dict, known_exclusions: dict | None = None) -> dict:
+    known_exclusions = known_exclusions or {}
     staging_counts = {}
-    for name, path in STAGING_SOURCES.items():
+    for name, path in staging_sources.items():
         if path.exists():
             staging_counts[name] = len(pd.read_csv(path, dtype=str))
         else:
             staging_counts[name] = None
     staging_total = sum(c for c in staging_counts.values() if c is not None)
-    known_exclusions = sum(n for n, _ in KNOWN_STAGING_EXCLUSIONS.values())
-    expected_live_total = staging_total - known_exclusions
+    exclusions_total = sum(n for n, _ in known_exclusions.values())
+    expected_live_total = staging_total - exclusions_total
     return {
         "live_table_rows": len(live_df),
         "staging_counts": staging_counts,
         "staging_total": staging_total,
-        "known_exclusions": KNOWN_STAGING_EXCLUSIONS,
+        "known_exclusions": known_exclusions,
         "expected_live_total": expected_live_total,
         "pass": len(live_df) == expected_live_total,
         "note": None if len(live_df) == expected_live_total else
@@ -175,9 +203,10 @@ def check_reliability_letters(live_df: pd.DataFrame) -> dict:
             "invalid_row_examples": invalid_rows.head(10).to_dict("records"), "pass": len(invalid) == 0}
 
 
-def render_section(counts: dict, ranges: dict, duplicates: dict, reliability: dict) -> str:
-    lines = [SECTION_MARKER_START, "", "## Rental market tables (CMHC RMS -- Windsor, Canada comparison, historical)", ""]
-    lines.append("Source: `warehouse.fact_rental_market` (3 staging sources -> 1 table)")
+def render_section(counts: dict, ranges: dict, duplicates: dict, reliability: dict,
+                    marker_start: str, marker_end: str, title: str, source_line: str) -> str:
+    lines = [marker_start, "", title, ""]
+    lines.append(source_line)
     lines.append(f"Checked: {datetime.date.today().isoformat()}")
     lines.append("")
 
@@ -223,19 +252,19 @@ def render_section(counts: dict, ranges: dict, duplicates: dict, reliability: di
         for row in reliability["invalid_row_examples"]:
             lines.append(f"    - {row}")
     lines.append("")
-    lines.append(SECTION_MARKER_END)
+    lines.append(marker_end)
     return "\n".join(lines)
 
 
-def update_report(section: str) -> None:
+def update_report(section: str, marker_start: str, marker_end: str) -> None:
     if REPORT_MD.exists():
         content = REPORT_MD.read_text(encoding="utf-8")
     else:
         content = REPORT_HEADER
 
-    if SECTION_MARKER_START in content and SECTION_MARKER_END in content:
-        before = content.split(SECTION_MARKER_START)[0]
-        after = content.split(SECTION_MARKER_END)[1]
+    if marker_start in content and marker_end in content:
+        before = content.split(marker_start)[0]
+        after = content.split(marker_end)[1]
         content = before + section + after
     else:
         content = content.rstrip() + "\n\n" + section + "\n"
@@ -245,9 +274,10 @@ def update_report(section: str) -> None:
 
 if __name__ == "__main__":
     engine = get_engine()
-    live_df = fetch_live_fact_rental_market(engine)
 
-    counts = check_row_counts(live_df)
+    print("--- warehouse.fact_rental_market (Windsor + historical) ---")
+    live_df = fetch_live_fact_rental_market(engine)
+    counts = check_row_counts(live_df, STAGING_SOURCES)
     ranges = check_ranges(live_df)
     duplicates = check_duplicate_keys(live_df)
     reliability = check_reliability_letters(live_df)
@@ -259,6 +289,34 @@ if __name__ == "__main__":
     print("Reliability letters:", "PASS" if reliability["pass"] else "FAIL",
           f"(invalid: {reliability['invalid_values']})")
 
-    section = render_section(counts, ranges, duplicates, reliability)
-    update_report(section)
-    print(f"\nWritten: {REPORT_MD}")
+    section = render_section(
+        counts, ranges, duplicates, reliability,
+        SECTION_MARKER_START, SECTION_MARKER_END,
+        "## Rental market tables (CMHC RMS -- Windsor, historical)",
+        "Source: `warehouse.fact_rental_market` (2 staging sources -> 1 table)",
+    )
+    update_report(section, SECTION_MARKER_START, SECTION_MARKER_END)
+    print(f"Written: {REPORT_MD}")
+
+    print("\n--- warehouse.fact_rental_market_comparison (Canada RMS comparison) ---")
+    comp_df = fetch_live_fact_rental_market_comparison(engine)
+    comp_counts = check_row_counts(comp_df, COMPARISON_STAGING_SOURCES, COMPARISON_KNOWN_EXCLUSIONS)
+    comp_ranges = check_ranges(comp_df)
+    comp_duplicates = check_duplicate_keys(comp_df)
+    comp_reliability = check_reliability_letters(comp_df)
+
+    print("Row counts:", "PASS" if comp_counts["pass"] else "FAIL",
+          f"(live {comp_counts['live_table_rows']} vs staging {comp_counts['staging_total']})")
+    print("Ranges:", "PASS" if comp_ranges["pass"] else "FAIL", f"({comp_ranges['violations']} violations)")
+    print("Duplicate keys:", "PASS" if comp_duplicates["pass"] else "FAIL", f"({comp_duplicates['duplicate_rows']} duplicate rows)")
+    print("Reliability letters:", "PASS" if comp_reliability["pass"] else "FAIL",
+          f"(invalid: {comp_reliability['invalid_values']})")
+
+    comp_section = render_section(
+        comp_counts, comp_ranges, comp_duplicates, comp_reliability,
+        COMPARISON_SECTION_MARKER_START, COMPARISON_SECTION_MARKER_END,
+        "## Rental market comparison table (CMHC Canada RMS 2025)",
+        "Source: `warehouse.fact_rental_market_comparison` (1 staging source -> 1 table)",
+    )
+    update_report(comp_section, COMPARISON_SECTION_MARKER_START, COMPARISON_SECTION_MARKER_END)
+    print(f"Written: {REPORT_MD}")

@@ -1,8 +1,8 @@
 # Data Dictionary — Census Profile & RMS Canada Comparison
 
 Every column kept through to the warehouse for two sources: `warehouse.fact_census_profile`
-(Windsor's 2021 Census characteristics) and the Canada-comparison portion of
-`warehouse.fact_rental_market` (Windsor + 4 comparator CMAs' rent/vacancy indicators). `fact_id`
+(Windsor's 2021 Census characteristics) and `warehouse.fact_rental_market_comparison`
+(Windsor + 4 comparator CMAs' rent/vacancy indicators). `fact_id`
 surrogate keys are omitted from both tables below — every other column is covered.
 
 ## 1. Census Profile — `warehouse.fact_census_profile`
@@ -45,7 +45,7 @@ Present in the staging CSVs but not carried into `fact_census_profile`:
 - **`CHARACTERISTIC_NOTE`** — empty for every one of the 60 curated characteristics in this
   extraction; nothing to keep.
 
-## 2. RMS Canada Comparison — `warehouse.fact_rental_market` (comparison rows)
+## 2. RMS Canada Comparison — `warehouse.fact_rental_market_comparison`
 
 **Source:** CMHC's national Rental Market Survey workbook, **Table 1.0** — "Rental Market
 Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and
@@ -55,8 +55,12 @@ collection rounds); there is no other period in this table.
 
 **Pipeline stage:** raw workbook → `etl/extract_rms_canada_comparison.py` (Windsor + 4 comparator
 CMAs — see `docs/comparator_cmas_justification.md`) → `data/staging/rms_canada_comparison.csv` →
-`etl/load_warehouse_facts.py`'s `load_rms_canada_comparison_facts()` → `warehouse.fact_rental_market`,
-**same table** the Windsor-specific RMS extraction (`etl/extract_windsor_rms.py`) loads into.
+`etl/load_warehouse_facts.py`'s `load_rms_canada_comparison_facts()` → `warehouse.fact_rental_market_comparison`,
+a **separate table** from the one the Windsor-specific RMS extraction
+(`etl/extract_windsor_rms.py`) loads into (`fact_rental_market`) — this source is a different
+workbook (CMHC Canada RMS 2025 vs. CMHC Windsor RMS 2025), so it gets its own fact table per this
+schema's one-table-per-source rule; see `sql/warehouse_schema.sql`'s comment on
+`fact_rental_market_comparison`.
 
 | Column | Meaning | Unit | Source table / column |
 |---|---|---|---|
@@ -65,7 +69,6 @@ CMAs — see `docs/comparator_cmas_justification.md`) → `data/staging/rms_cana
 | `bedroom_type_key` | Which bedroom-size breakdown this metric is reported at. Table 1.0 reports vacancy and turnover as one overall rate (no bedroom breakdown) and average rent / its % change for 2-bedroom units only — a narrower bedroom scope than the Windsor-specific 3.1.x tables. | categorical: `Total` (vacancy_rate, turnover_rate) \| `2 Bedroom` (average_rent, pct_change_rent) | Table 1.0's column grouping (no explicit "bedroom type" column in this table — scope is implicit per metric). |
 | `dwelling_type_key` | Structural type of rental units covered. Constant `Apartment` for every row from this source — Table 1.0 covers privately initiated apartment structures of 3+ units only, not the Row+Apartment Combined scope the Windsor-specific 3.1.x tables use (so Windsor's own vacancy rate here legitimately differs from the Windsor workbook's Combined figure — a scope difference, not a contradiction). | categorical, constant `Apartment` for this source | Table 1.0's title/scope, "Privately Initiated Apartment Structures of Three Units and Over". |
 | `tenure_key` | Confirms this row describes rental-tenure stock. Hardcoded to `Renter` for every row — CMHC's Rental Market Survey is rental-market by definition, nothing in Table 1.0 itself encodes tenure. | categorical, constant `Renter` | Not a raw column — assigned by `load_rms_canada_comparison_facts()`. |
-| `income_band_key` | Not applicable — rental-market indicators (vacancy, turnover, rent) aren't income-banded. Always `NULL` for this source. | n/a | Not a raw column — set to `None` by the loader. |
 | `metric_type` | Which rental-market indicator this row measures. | categorical: `vacancy_rate` \| `turnover_rate` \| `average_rent` \| `pct_change_rent` | Table 1.0's 4 metric column-groups (columns 2, 7, 12, 16 respectively). |
 | `value` | The published number for this (zone × period × metric) combination. | `percent` for `vacancy_rate` / `turnover_rate` / `pct_change_rent`; `CAD per month` for `average_rent` | Table 1.0's numeric cell under each metric's column group; `**` (suppressed) read as `NULL`. |
 | `reliability_letter` | CMHC's own data-quality letter for this specific cell. | categorical letter code (CMHC RMS reliability rating) | Table 1.0, the column immediately right of each value column. |
