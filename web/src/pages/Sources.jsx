@@ -113,6 +113,47 @@ export default function Sources() {
           </div>
         ))}
       </div>
+
+      <h2 style={{ marginTop: 40 }}>Media credits</h2>
+      <div className="methodology-grid">
+        <div className="card methodology-card">
+          <h2>Homepage banner photo</h2>
+          <dl style={{ margin: 0, display: "grid", gap: 6 }}>
+            <div>
+              <dt style={{ display: "inline", fontWeight: 700 }}>Title: </dt>
+              <dd style={{ display: "inline", margin: 0 }}>
+                &ldquo;Windsor, Ontario (aerial view)&rdquo;
+              </dd>
+            </div>
+            <div>
+              <dt style={{ display: "inline", fontWeight: 700 }}>Author: </dt>
+              <dd style={{ display: "inline", margin: 0 }}>WMrapids, via Wikimedia Commons</dd>
+            </div>
+            <div>
+              <dt style={{ display: "inline", fontWeight: 700 }}>Licence: </dt>
+              <dd style={{ display: "inline", margin: 0 }}>
+                <a
+                  href="https://creativecommons.org/publicdomain/zero/1.0/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  CC0 1.0 (public domain)
+                </a>{" "}
+                -- attribution not required, credited here anyway.
+              </dd>
+            </div>
+          </dl>
+          <p style={{ marginTop: 14, marginBottom: 0 }}>
+            <a
+              href="https://commons.wikimedia.org/wiki/File:Windsor,_Ontario_(aerial_view).jpg"
+              target="_blank"
+              rel="noreferrer"
+            >
+              View source &rarr;
+            </a>
+          </p>
+        </div>
+      </div>
     </PageContainer>
   );
 }

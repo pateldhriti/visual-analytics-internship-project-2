@@ -22,6 +22,44 @@ SQLALCHEMY_DATABASE_URI = (
     f"@postgres:5432/{os.environ['SUPERSET_METADATA_DB']}"
 )
 
+# Public-role dashboard embedding (docs/superset_embedding_research.md's
+# Option A) needs a second, separate fix beyond the Public role's own
+# permissions (see FLASK_APP_MUTATOR below): Superset's default security
+# headers (Flask-Talisman) send `X-Frame-Options: SAMEORIGIN` and a CSP
+# with no `frame-ancestors` directive -- verified directly from Superset's
+# own default TALISMAN_CONFIG (`python -c "from superset.config import
+# TALISMAN_CONFIG"` inside the running container). That blocks ANY
+# cross-origin iframe, independent of whether the viewer is authenticated
+# or what they're permitted to read -- the browser refuses to render the
+# frame before a single request is even sent, which is what showed up as
+# "localhost refused to connect" rather than a permission error. This
+# re-declares Superset's exact default CSP (same values, not guessed) and
+# adds `frame-ancestors` for the dev frontend's origin, plus sets
+# `frame_options: None` so the legacy X-Frame-Options header doesn't
+# re-block framing in a browser that ignores frame-ancestors. Update
+# FRONTEND_ORIGINS below once a real hosting origin exists
+# (docs/hosting_decision.md) -- this list is dev-only right now.
+FRONTEND_ORIGINS = ["http://localhost:5173"]
+
+TALISMAN_ENABLED = True
+TALISMAN_CONFIG = {
+    "content_security_policy": {
+        "base-uri": ["'self'"],
+        "default-src": ["'self'"],
+        "img-src": ["'self'", "blob:", "data:"],
+        "worker-src": ["'self'", "blob:"],
+        "connect-src": ["'self'", "https://api.mapbox.com", "https://events.mapbox.com"],
+        "object-src": "'none'",
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "script-src": ["'self'", "'strict-dynamic'"],
+        "frame-ancestors": ["'self'", *FRONTEND_ORIGINS],
+    },
+    "content_security_policy_nonce_in": ["script-src"],
+    "force_https": False,
+    "session_cookie_secure": False,
+    "frame_options": None,
+}
+
 CACHE_CONFIG = {
     "CACHE_TYPE": "RedisCache",
     "CACHE_DEFAULT_TIMEOUT": 300,
@@ -48,11 +86,19 @@ PUBLIC_ROLE_LIKE_GAMMA = True
 
 # Dataset names (as Superset's own `view_menu.name` on their
 # datasource_access permission -- "[<database_name>].[<table>](id:N)") that
-# the Public role should be able to view. Currently just the Story 1
-# shelter-cost chart's dataset; add a name here (exactly matching Superset's
-# own PV naming) whenever another chart/dashboard needs to be public.
+# the Public role should be able to view. Add a name here (exactly matching
+# Superset's own PV naming -- verified directly against ab_view_menu, not
+# guessed from the pattern) whenever another chart/dashboard needs to be
+# public. Story 1's dashboard (id 3) uses all 4 of these: the original
+# shelter-cost chart's dataset plus the 3 v_story1_* warehouse views its
+# other 5 charts were rebuilt on -- found via `dashboard/3/charts`, those 3
+# were missing from this list even though the dashboard itself is
+# published, so an anonymous viewer would have seen 3 of 6 charts blank.
 PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[windsor_shelter_cost_long](id:1)",
+    "[Windsor Housing Data].[v_story1_burden_by_tenure](id:5)",
+    "[Windsor Housing Data].[v_story1_burden_by_income_band](id:7)",
+    "[Windsor Housing Data].[v_story1_burden_by_household_type](id:8)",
 ]
 
 
@@ -63,6 +109,20 @@ def FLASK_APP_MUTATOR(app):
     role already has that permission (verified: ran this grant twice against
     a live instance, permission list was identical both times, no
     duplicates).
+
+    PUBLIC_ROLE_LIKE_GAMMA does NOT actually copy everything Gamma has --
+    verified directly against a live instance (ab_permission_view_role):
+    Public ended up with only 3 base REST-API permissions (can_read on
+    Chart/Dashboard/Dataset), while Gamma has 24 dashboard/explore-related
+    ones, including `can_dashboard` on view `Superset` -- the specific
+    permission the legacy `/superset/dashboard/<id>/` page route checks.
+    Without it, an anonymous visitor hits that route and gets redirected to
+    /login, even with every dataset's datasource_access already granted --
+    confirmed by curling the dashboard URL anonymously and watching it
+    307/302 to /login before this list existed. The extra permissions below
+    close that gap so the plain-iframe "Public dashboards" approach
+    (docs/superset_embedding_research.md's Option A) actually works for the
+    full interactive dashboard page, not just raw chart-data API calls.
 
     PUBLIC_ROLE_LIKE_GAMMA (above) only syncs Gamma's base permissions, not
     per-dataset access -- this is the piece that does the per-dataset grant,
@@ -82,6 +142,11 @@ def FLASK_APP_MUTATOR(app):
             ("can_read", "Chart"),
             ("can_read", "Dashboard"),
             ("can_read", "Dataset"),
+            ("can_dashboard", "Superset"),
+            ("can_explore_json", "Superset"),
+            ("can_fetch_datasource_metadata", "Superset"),
+            ("can_read", "DashboardFilterStateRestApi"),
+            ("can_write", "DashboardFilterStateRestApi"),
         ]:
             pv = sm.find_permission_view_menu(perm_name, view_name)
             if pv is not None:
