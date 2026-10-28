@@ -129,3 +129,53 @@ WHERE f.housing_suitability = 'Total - Housing suitability'
   AND ib.scheme = 'statcan_bracket' AND ib.band_label = 'Total - Total income of household'
   AND t.tenure_name = 'Total'
 GROUP BY ht.household_type_key, ht.household_type_label, ht.parent_member_id;
+
+-- ============================================================
+-- v_story1_burden_severity
+-- One row per tenure (Owner, Renter): of the households already spending
+-- 30%+ of income on shelter, how many are in the "30% to less than 100%"
+-- band StatCan's own table directly publishes, vs. an unaccounted gap.
+-- StatCan's table has no "100% or more" row -- 30%-under-100% is the only
+-- severity sub-band this source publishes at all. The gap (burdened minus
+-- the 30-99% band) is reported honestly as "unaccounted", not assumed to
+-- be a 100%+ band with no source label for that assumption -- see
+-- docs/story1_exploratory_findings.md Finding 4, which found this same
+-- 91.2%/8.8% split at the citywide level; this view adds the by-tenure
+-- breakdown that finding didn't include.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story1_burden_severity AS
+SELECT
+    t.tenure_name AS tenure,
+    SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
+             THEN f.value ELSE 0 END) AS total_burdened,
+    SUM(CASE WHEN f.shelter_cost_ratio = '30% to less than 100%'
+             THEN f.value ELSE 0 END) AS severe_30_to_99,
+    ROUND(
+        100.0 * SUM(CASE WHEN f.shelter_cost_ratio = '30% to less than 100%' THEN f.value ELSE 0 END)
+        / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
+                          THEN f.value ELSE 0 END), 0),
+        1
+    ) AS severe_pct_of_burdened,
+    SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
+             THEN f.value ELSE 0 END)
+        - SUM(CASE WHEN f.shelter_cost_ratio = '30% to less than 100%' THEN f.value ELSE 0 END)
+        AS unaccounted_households,
+    ROUND(
+        100.0 * (
+            SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
+                     THEN f.value ELSE 0 END)
+            - SUM(CASE WHEN f.shelter_cost_ratio = '30% to less than 100%' THEN f.value ELSE 0 END)
+        ) / NULLIF(SUM(CASE WHEN f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs'
+                          THEN f.value ELSE 0 END), 0),
+        1
+    ) AS unaccounted_pct_of_burdened
+FROM warehouse.fact_shelter_cost f
+JOIN warehouse.dim_tenure t ON t.tenure_key = f.tenure_key
+JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
+WHERE f.housing_suitability = 'Total - Housing suitability'
+  AND f.dwelling_condition = 'Total - Dwelling condition'
+  AND f.statistic = 'Number of private households'
+  AND ib.scheme = 'statcan_bracket' AND ib.band_label = 'Total - Total income of household'
+  AND f.household_type_key = 1
+  AND t.tenure_name <> 'Total'
+GROUP BY t.tenure_name;
