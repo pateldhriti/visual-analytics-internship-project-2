@@ -1,4 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
+import SupersetEmbed from "../components/SupersetEmbed.jsx";
 
 // Narrative paragraphs reused verbatim from docs/story1_narrative_v1.md's own
 // draft text -- real, verified figures (corrected via docs/story1_validation.md),
@@ -54,6 +55,18 @@ const LIMITATIONS = [
   "This is a single 2021 Census snapshot, not a time series -- it can't show whether the burden is rising or falling over time.",
 ];
 
+const FILTERS = [
+  { label: "Geography", value: "Windsor CMA" },
+  { label: "Period", value: "2021 Census" },
+];
+
+const KPIS = [
+  { label: "Renter households cost-burdened", value: "34.8%", accent: "rose", trend: "up" },
+  { label: "Owner households cost-burdened", value: "10.9%", accent: "blue", trend: "flat" },
+  { label: "Burden rate, income under $10,000", value: "93.1%", accent: "violet", trend: "up" },
+  { label: "Burdened households in severe range", value: "91.2%", accent: "teal", trend: "flat" },
+];
+
 export default function StoryAffordability() {
   return (
     <StoryPage
@@ -63,6 +76,14 @@ export default function StoryAffordability() {
         "How does shelter-cost burden vary by income group and household type?",
         "How different is the burden for renters and owners?",
       ]}
+      filters={FILTERS}
+      kpis={KPIS}
+      dashboard={
+        <SupersetEmbed
+          dashboardId={3}
+          title="Story 1: Who faces the greatest affordability pressure? (Superset dashboard)"
+        />
+      }
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}

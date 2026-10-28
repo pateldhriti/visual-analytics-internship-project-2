@@ -6,23 +6,30 @@
    surface instead of reverting to flat navy.
    ============================================================ */
 :root {
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
 
-  /* Brand palette -- fixed by design direction, not derived */
-  --bg: #f7f9fc;
+  /* Brand palette -- deliberately spaced around the wheel instead of five
+     adjacent blues: indigo (cool, primary) against coral (warm, alert),
+     with teal and violet as distinct secondary accents. Each one is at
+     least ~90deg of hue apart from its neighbours, which is what actually
+     reads as "designed" rather than a single hue family stretched thin. */
+  --bg: #f5f6fb;
   --surface: #ffffff;
-  --surface-2: #eef1f8;
-  --border: #e1e6f0;
+  --surface-2: #edeff8;
+  --border: #e2e5f0;
 
-  --violet: #7c6aed;
-  --blue: #2f6fd1;
-  --cyan: #0891a8;
-  --teal: #0d9488;
+  --blue: #3454d1; /* indigo -- primary accent: CTAs, links, sidebar active state */
+  --violet: #7c5cff; /* secondary accent, used sparingly (comparison / Story 5) */
+  --cyan: #0e8fae; /* tertiary cool accent -- eyebrows, small labels */
+  --teal: #0f9d79; /* positive/supply accent -- deep teal-green */
+  --rose: #d8503f; /* warm coral -- burden/alert accent, the deliberate contrast to indigo */
+  --amber: #c9862c; /* warm highlight accent -- sparing use, hero duotone, CTA glow */
 
-  --ink: #172338;
-  --ink-muted: #5c6a84;
+  --ink: #12172b;
+  --ink-muted: #5c6480;
 
-  /* Glass surface used by the hero's floating panels */
+  /* Glass surface used by floating/elevated cards */
   --glass-bg: rgba(255, 255, 255, 0.78);
   --glass-bg-hover: rgba(255, 255, 255, 0.94);
 
@@ -34,15 +41,25 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
+  --radius-xl: 22px;
 
-  --shadow-card: 0 1px 2px rgba(23, 35, 56, 0.04), 0 2px 10px rgba(23, 35, 56, 0.05);
-  --shadow-card-hover: 0 8px 24px rgba(23, 35, 56, 0.1), 0 2px 10px rgba(124, 106, 237, 0.1);
+  --shadow-card: 0 1px 2px rgba(18, 23, 43, 0.04), 0 2px 10px rgba(18, 23, 43, 0.05);
+  --shadow-card-hover: 0 10px 28px rgba(18, 23, 43, 0.1), 0 2px 10px rgba(52, 84, 209, 0.12);
 
-  --max-width: 1140px;
+  --max-width: 1180px;
   --header-h: 64px;
 
-  /* Below this width the header switches to a hamburger-triggered menu. */
-  --nav-breakpoint: 680px;
+  /* Persistent left sidebar nav -- dark navy panel against the light
+     page, with a solid indigo pill on the active item. */
+  --sidebar-w: 268px;
+  --sidebar-bg: #0f1530;
+  --sidebar-bg-active: var(--blue);
+  --sidebar-ink: #f3f5fc;
+  --sidebar-ink-muted: #8a92b8;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+
+  /* Below this width the sidebar collapses to a hamburger-triggered drawer. */
+  --nav-breakpoint: 860px;
 }
 
 * {
@@ -63,15 +80,22 @@ h2,
 h3 {
   letter-spacing: -0.015em;
   color: var(--ink);
-  line-height: 1.25;
+  line-height: 1.2;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 h1 {
-  font-size: clamp(1.9rem, 1.5rem + 1.6vw, 2.6rem);
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.9rem);
 }
 
 h2 {
-  font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.8rem);
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
 }
 
 p {
@@ -96,12 +120,27 @@ a:hover {
 
 .app-shell {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
+  background: var(--bg);
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidebar-w);
 }
 
 main {
   flex: 1;
+}
+
+@media (max-width: 860px) {
+  .app-content {
+    margin-left: 0;
+    padding-top: var(--header-h);
+  }
 }
 
 /* ============================================================
@@ -231,28 +270,39 @@ a.card:hover,
 
 .story-card {
   display: block;
-  padding: 24px;
+  padding: 26px 24px;
   text-decoration: none;
   color: inherit;
   position: relative;
   overflow: hidden;
 }
 
-.story-card::before {
+.story-card::after {
   content: "";
   position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--teal);
+  inset: auto auto -40% -20%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, var(--story-accent, var(--blue)) 0%, transparent 72%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.story-card:hover::after {
+  opacity: 0.08;
 }
 
 .story-card .story-label {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  color: var(--story-accent, var(--teal));
 }
 
 .story-card h3 {
   margin: 0 0 8px;
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .story-card p {
@@ -265,14 +315,31 @@ a.card:hover,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 16px;
+  margin-top: 18px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--blue);
+  color: var(--story-accent, var(--blue));
+  transition: gap 0.18s ease;
 }
 
 .story-card:hover .story-card-arrow {
-  color: var(--cyan);
+  gap: 10px;
+}
+
+.story-card:has(.story-card-icon.kpi-tile-badge--blue) {
+  --story-accent: var(--blue);
+}
+
+.story-card:has(.story-card-icon.kpi-tile-badge--violet) {
+  --story-accent: var(--violet);
+}
+
+.story-card:has(.story-card-icon.kpi-tile-badge--teal) {
+  --story-accent: var(--teal);
+}
+
+.story-card:has(.story-card-icon.kpi-tile-badge--rose) {
+  --story-accent: var(--rose);
 }
 
 /* Chart preview (native SVG/CSS, real figures -- see component source) */
@@ -378,6 +445,187 @@ a.card:hover,
   margin-top: 28px;
 }
 
+.story-dashboard-band {
+  max-width: 1480px;
+  margin: 28px auto 0;
+  padding: 0 24px;
+}
+
+.superset-embed {
+  padding: 0;
+  overflow: hidden;
+}
+
+.superset-embed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.superset-embed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.superset-embed-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 3px rgba(15, 157, 121, 0.18);
+}
+
+.superset-embed-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.superset-embed-frame {
+  display: block;
+  width: 100%;
+  border: none;
+}
+
+/* ============================================================
+   Filter bar -- static scope chips shown above each story's
+   dashboard slot (see components/FilterBar.jsx for why these
+   aren't working <select> controls yet).
+   ============================================================ */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.filter-chip-label {
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.filter-chip-value {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ============================================================
+   KPI tile row -- used on the homepage and every story page.
+   ============================================================ */
+.kpi-tile-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.kpi-tile {
+  position: relative;
+  padding: 20px 20px 18px;
+  overflow: hidden;
+}
+
+.kpi-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--kpi-accent, var(--blue));
+}
+
+.kpi-tile-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 10px -2px var(--kpi-accent-shadow, rgba(52, 84, 209, 0.45));
+}
+
+.kpi-tile-badge--blue {
+  --kpi-accent-shadow: rgba(52, 84, 209, 0.45);
+  background: linear-gradient(145deg, #5878e8, var(--blue));
+}
+
+.kpi-tile-badge--violet {
+  --kpi-accent-shadow: rgba(124, 92, 255, 0.45);
+  background: linear-gradient(145deg, #9b82ff, var(--violet));
+}
+
+.kpi-tile-badge--teal {
+  --kpi-accent-shadow: rgba(15, 157, 121, 0.45);
+  background: linear-gradient(145deg, #27c29a, var(--teal));
+}
+
+.kpi-tile-badge--rose {
+  --kpi-accent-shadow: rgba(216, 80, 63, 0.45);
+  background: linear-gradient(145deg, #e8745f, var(--rose));
+}
+
+.kpi-tile:has(.kpi-tile-badge--blue) {
+  --kpi-accent: var(--blue);
+}
+
+.kpi-tile:has(.kpi-tile-badge--violet) {
+  --kpi-accent: var(--violet);
+}
+
+.kpi-tile:has(.kpi-tile-badge--teal) {
+  --kpi-accent: var(--teal);
+}
+
+.kpi-tile:has(.kpi-tile-badge--rose) {
+  --kpi-accent: var(--rose);
+}
+
+.kpi-tile-value {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 0 56px 4px 0;
+}
+
+.kpi-tile-label {
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+.kpi-tile-caption {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  opacity: 0.85;
+  margin: 6px 0 0;
+}
+
 .story-narrative {
   margin-top: 32px;
   max-width: 68ch;
@@ -439,30 +687,8 @@ a.card:hover,
 }
 
 /* ============================================================
-   Header + responsive nav
+   Sidebar nav (persistent left rail on desktop, drawer on mobile)
    ============================================================ */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: var(--header-h);
-  display: flex;
-  align-items: center;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-}
-
-.site-header-inner {
-  width: 100%;
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
 .brand {
   display: flex;
   align-items: center;
@@ -474,42 +700,128 @@ a.card:hover,
 }
 
 .brand-mark {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--violet), var(--blue));
+  background: linear-gradient(135deg, #4766e0 0%, #c9862c 140%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
-/* Desktop: plain horizontal nav, hamburger hidden. */
-.site-nav {
+.app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-w);
+  z-index: 30;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
-  gap: 24px;
+  flex-direction: column;
+  padding: 20px 14px 18px;
+  overflow-y: auto;
 }
 
-.site-nav a {
-  text-decoration: none;
-  color: var(--ink-muted);
+.sidebar-brand {
+  color: var(--sidebar-ink);
+  font-family: var(--font-display);
   font-weight: 600;
+  font-size: 1.02rem;
+  line-height: 1.3;
+  padding: 6px 10px 22px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-nav-heading {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--sidebar-ink-muted);
+  margin: 0 0 8px;
+  padding: 0 10px;
+}
+
+.sidebar-nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--sidebar-ink-muted);
   font-size: 0.88rem;
-  padding: 6px 0;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease;
+  font-weight: 600;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
-.site-nav a:hover {
-  color: var(--ink);
+.sidebar-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
-.site-nav a.active {
-  color: var(--teal);
-  border-bottom-color: var(--teal);
+.sidebar-nav-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.sidebar-nav-link.active .sidebar-nav-dot {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+}
+
+.sidebar-nav-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--sidebar-ink);
+}
+
+.sidebar-nav-link.active {
+  background: var(--sidebar-bg-active);
+  color: #fff;
+}
+
+.sidebar-foot-note {
+  margin: 16px 10px 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--sidebar-border);
+  font-size: 0.72rem;
+  color: var(--sidebar-ink-muted);
+}
+
+.sidebar-scrim {
+  display: none;
+}
+
+/* Mobile topbar: hidden on desktop, shown + sticky on narrow screens. */
+.sidebar-topbar {
+  display: none;
 }
 
 .menu-toggle {
@@ -536,40 +848,43 @@ a.card:hover,
     opacity 0.15s ease;
 }
 
-/* Mobile: hamburger shown, nav collapses to a dropdown panel below the header. */
-@media (max-width: 680px) {
+/* Mobile: sidebar becomes an off-canvas drawer behind a sticky topbar. */
+@media (max-width: 860px) {
+  .sidebar-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-h);
+    padding: 0 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 40;
+  }
+
   .menu-toggle {
     display: flex;
   }
 
-  .site-nav {
-    position: absolute;
-    top: var(--header-h);
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    gap: 0;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease;
+  .app-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    z-index: 50;
   }
 
-  .site-nav--open {
-    max-height: 320px;
+  .app-sidebar--open {
+    transform: translateX(0);
   }
 
-  .site-nav a {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    border-left: 2px solid transparent;
-  }
-
-  .site-nav a.active {
-    border-bottom-color: var(--border);
-    border-left-color: var(--teal);
-    background: var(--surface-2);
+  .sidebar-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 14, 28, 0.45);
+    z-index: 45;
   }
 
   .methodology-band {
@@ -637,8 +952,9 @@ a.card:hover,
 }
 
 /* ============================================================
-   Homepage hero -- same light theme as the rest of the site, plus
-   its own soft accent glow and the interactive 3D skyline.
+   Homepage hero banner -- dark navy banner (same navy as the sidebar)
+   with the isometric skyline as a photo-style backdrop, matching the
+   reference mockup's "dark banner + flat KPI row below" layout.
    ============================================================ */
 html {
   scroll-behavior: smooth;
@@ -654,94 +970,70 @@ html {
   scroll-margin-top: calc(var(--header-h) + 12px);
 }
 
-.hero {
+.hero-banner {
   position: relative;
   overflow: hidden;
-  background: var(--bg);
-  padding: 56px 0 220px;
+  background: var(--sidebar-bg);
+  padding: 72px 24px 88px;
+  min-height: 460px;
+  display: flex;
+  align-items: center;
 }
 
-/* Slow-drifting aurora blobs (Home.jsx's HeroAurora) replace a static
-   gradient background with a gently animated one. */
-.hero-aurora {
+.hero-banner-photo {
   position: absolute;
   inset: 0;
   z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.85) contrast(1.05);
 }
 
-.hero-aurora-blob {
+.hero-banner-overlay {
   position: absolute;
-  width: 640px;
-  height: 640px;
-  border-radius: 50%;
-  filter: blur(90px);
-}
-
-.hero-aurora-blob--violet {
-  top: -220px;
-  left: -120px;
-  background: rgba(124, 106, 237, 0.16);
-}
-
-.hero-aurora-blob--blue {
-  top: -160px;
-  right: -180px;
-  background: rgba(47, 111, 209, 0.13);
-}
-
-/* Floating house icons (Home.jsx's FloatingHouseIcon) -- a literal nod to
-   "housing", scattered at low opacity behind the hero text. */
-.hero-float-icon {
-  position: absolute;
+  inset: 0;
   z-index: 0;
-  pointer-events: none;
+  background:
+    linear-gradient(100deg, rgba(10, 15, 36, 0.97) 0%, rgba(10, 15, 36, 0.86) 40%, rgba(10, 15, 36, 0.35) 100%),
+    linear-gradient(0deg, rgba(10, 15, 36, 0.5) 0%, rgba(10, 15, 36, 0) 35%),
+    radial-gradient(ellipse 900px 500px at 85% 15%, rgba(201, 134, 44, 0.22), transparent 70%);
 }
 
-.hero-float-icon--1 {
-  top: 18%;
-  left: 2%;
-  width: 46px;
-  height: 46px;
-  color: var(--violet);
-  opacity: 0.16;
-}
-
-.hero-float-icon--2 {
-  top: 62%;
-  left: 14%;
-  width: 30px;
-  height: 30px;
-  color: var(--blue);
-  opacity: 0.14;
-}
-
-.hero-float-icon--3 {
-  top: 40%;
-  left: 46%;
-  width: 24px;
-  height: 24px;
-  color: var(--cyan);
-  opacity: 0.12;
-}
-
-@media (max-width: 860px) {
-  .hero-float-icon--3 {
-    display: none;
-  }
-}
-
-.hero-inner {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 24px;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 40px;
-  align-items: start;
+.hero-banner-inner {
   position: relative;
   z-index: 1;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.hero-scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  z-index: 1;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+}
+
+.hero-scroll-cue svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 680px) {
+  .hero-scroll-cue {
+    display: none;
+  }
 }
 
 .hero-eyebrow {
@@ -757,14 +1049,15 @@ html {
   margin: 0 0 20px;
   font-size: clamp(2.1rem, 1.6rem + 2vw, 3.1rem);
   line-height: 1.15;
-  color: var(--ink);
+  color: #fff;
   letter-spacing: -0.02em;
-  max-width: 17ch;
+  max-width: 22ch;
 }
 
 .hero-headline em {
-  font-style: normal;
-  background: linear-gradient(90deg, var(--violet), var(--blue));
+  font-style: italic;
+  font-weight: 500;
+  background: linear-gradient(100deg, #7ea6ff 0%, #ffcf8a 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -773,7 +1066,7 @@ html {
 .hero-lede {
   max-width: 54ch;
   font-size: 1.05rem;
-  color: var(--ink-muted);
+  color: rgba(255, 255, 255, 0.78);
   margin: 0 0 32px;
 }
 
@@ -801,25 +1094,25 @@ html {
 }
 
 .hero-cta-primary {
-  background: linear-gradient(90deg, var(--violet), var(--blue));
+  background: linear-gradient(100deg, #4766e0 0%, #c9862c 130%);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(124, 106, 237, 0.3);
+  box-shadow: 0 8px 24px rgba(71, 102, 224, 0.35);
   animation: cta-pulse 2.6s ease-in-out infinite;
 }
 
 .hero-cta-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(124, 106, 237, 0.4);
+  box-shadow: 0 10px 28px rgba(71, 102, 224, 0.45);
   animation-play-state: paused;
 }
 
 @keyframes cta-pulse {
   0%,
   100% {
-    box-shadow: 0 8px 24px rgba(124, 106, 237, 0.3);
+    box-shadow: 0 8px 24px rgba(71, 102, 224, 0.35);
   }
   50% {
-    box-shadow: 0 8px 30px rgba(124, 106, 237, 0.55);
+    box-shadow: 0 8px 30px rgba(201, 134, 44, 0.4);
   }
 }
 
@@ -831,250 +1124,44 @@ html {
 
 .hero-cta-secondary {
   background: transparent;
-  border-color: rgba(23, 35, 56, 0.16);
-  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
 .hero-cta-secondary:hover {
-  background: rgba(23, 35, 56, 0.05);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-/* Interactive 3D skyline -- a wide isometric illustration along the
-   bottom of the hero that tilts toward the cursor (perspective +
-   rotateX/rotateY, set from Home.jsx's mousemove handler). It sits below
-   the text/panel grid, not behind it, so the panels' backdrop-blur never
-   distorts it. Decorative only -- it does not represent a dataset, so no
-   figures are attached to it. */
-.hero-scene {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 190px;
-  z-index: 0;
-  pointer-events: none;
-  transform-style: preserve-3d;
-  transform-origin: bottom center;
-  transition: transform 0.25s ease-out;
-  will-change: transform;
-  -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
-}
-
-.hero-scene-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  opacity: 0.85;
-}
-
-@media (max-width: 860px) {
-  .hero-inner {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-scene {
-    height: 120px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-scene {
-    transition: none;
-  }
-}
-
-/* Floating panel composition */
-.hero-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr;
-  gap: 18px;
+/* Flat KPI row directly below the banner -- reuses .kpi-tile-row/.kpi-tile
+   (components/KpiRow.jsx), same component as every story page. */
+.hero-kpi-row {
+  margin-top: -40px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
-.panel-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: left;
-  width: 100%;
-  height: 100%;
-  background: var(--glass-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-/* The hover/expanded lift itself is handled by framer-motion's
-   whileHover on the motion.button (Home.jsx) -- CSS only owns the
-   background/shadow change here, to avoid both fighting over `transform`. */
-.panel-card:hover,
-.panel-card[aria-expanded="true"] {
-  background: var(--glass-bg-hover);
-  box-shadow: 0 16px 36px rgba(23, 35, 56, 0.14);
-}
-
-/* Bracket-labeled widget header, e.g. "[ SHELTER-COST BURDEN ]" --
-   borrowed from dense SaaS dashboard styling, applied to real panel
-   labels rather than a decorative flourish on its own. */
-.panel-eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--violet);
-  margin: 0 0 10px;
-}
-
-.panel-eyebrow::before {
-  content: "[ ";
-}
-
-.panel-eyebrow::after {
-  content: " ]";
-}
-
-.panel-value {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--ink);
-  margin: 0 0 4px;
-  line-height: 1.1;
-}
-
-.panel-value-label {
-  font-size: 0.82rem;
-  color: var(--ink-muted);
-  margin: 0 0 12px;
-}
-
-.panel-secondary {
-  font-size: 0.78rem;
-  color: var(--ink-muted);
-  margin: 0;
-}
-
-.panel-hint {
-  margin-top: 14px;
-  font-size: 0.7rem;
-  color: var(--ink-muted);
-  opacity: 0.7;
-}
-
-/* margin-top/padding-top are animated inline by framer-motion
-   (Home.jsx's HeroPanel) between 0 and 14px as the panel expands. */
-.panel-detail {
-  border-top: 1px solid var(--border);
-  font-size: 0.78rem;
-  color: var(--ink-muted);
-  display: grid;
-  gap: 6px;
-}
-
-.panel-detail dt {
-  display: inline;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.panel-detail dd {
-  display: inline;
-  margin: 0 0 0 4px;
-}
-
-/* Ring (shelter-cost burden panel) */
-.panel-ring {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  display: flex;
+/* "Explore the stories" icon badges -- colored circle per story,
+   matching the reference mockup's story-card icons. */
+.story-card-icon {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 4px 0 12px;
-  background: conic-gradient(var(--violet) calc(var(--ring, 0) * 1%), rgba(23, 35, 56, 0.08) 0);
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  color: #fff;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 14px -4px var(--kpi-accent-shadow, rgba(52, 84, 209, 0.45));
+  transition: transform 0.2s ease;
 }
 
-.panel-ring-inner {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--ink);
+.story-card:hover .story-card-icon {
+  transform: scale(1.08) rotate(-4deg);
 }
 
-/* Mini bars (supply-pipeline panel) */
-.panel-mini-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  margin: 10px 0 12px;
-}
-
-.panel-mini-bar-label {
-  font-size: 0.68rem;
-  color: var(--ink-muted);
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2px;
-}
-
-.panel-mini-bar-track {
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(23, 35, 56, 0.08);
-  overflow: hidden;
-}
-
-.panel-mini-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--blue), var(--cyan));
-}
-
-/* Comparison rows (Windsor vs. comparator CMAs panel) */
-.panel-comparison-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin: 10px 0 12px;
-}
-
-.panel-comparison-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.72rem;
-  color: var(--ink-muted);
-  padding: 3px 6px;
-  border-radius: 6px;
-}
-
-.panel-comparison-row.is-highlight {
-  background: rgba(139, 124, 246, 0.18);
-  color: var(--ink);
-  font-weight: 700;
-}
-
-@media (max-width: 520px) {
-  .hero-panels {
-    grid-template-columns: 1fr;
-  }
+.story-card-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Metric selector for the data-explorer preview below the hero */

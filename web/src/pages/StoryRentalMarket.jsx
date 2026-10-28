@@ -24,6 +24,17 @@ const LIMITATIONS = [
   "Universe (unit-count) tables carry no reliability letters or suppression at all -- raw counts are always a plain number, which is a real structural difference from the rate and rent tables, not an inconsistency.",
 ];
 
+const FILTERS = [
+  { label: "Geography", value: "Windsor CMA" },
+  { label: "Period", value: "October 2025" },
+  { label: "Unit scope", value: "Combined (apartment + row)" },
+];
+
+const KPIS = [
+  { label: "Vacancy rate", value: "3.6%", accent: "blue", trend: "up" },
+  { label: "Average 2-bedroom rent", value: "$1,451", accent: "violet", trend: "up" },
+];
+
 export default function StoryRentalMarket() {
   return (
     <StoryPage
@@ -33,6 +44,8 @@ export default function StoryRentalMarket() {
         "How do average rents, vacancy, rental stock and turnover vary by unit type and zone?",
         "Which parts of the market appear tighter or more affordable?",
       ]}
+      filters={FILTERS}
+      kpis={KPIS}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
       source="CMHC Rental Market Survey, Windsor CMA 2025 (Oct-24/Oct-25) -- warehouse.fact_rental_market"

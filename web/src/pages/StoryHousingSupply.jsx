@@ -37,6 +37,19 @@ const LIMITATIONS = [
   "Only one quarter (Second Quarter 2026) has been extracted so far -- not a multi-year time series, so trend questions can't be answered from this data yet.",
 ];
 
+const FILTERS = [
+  { label: "Geography", value: "Ontario" },
+  { label: "Period", value: "Second Quarter 2026" },
+  { label: "Dwelling type", value: "All types" },
+];
+
+const KPIS = [
+  { label: "New housing starts", value: "17,786", accent: "teal", trend: "up" },
+  { label: "Completions", value: "14,083", accent: "blue", trend: "flat" },
+  { label: "Units under construction", value: "162,138", accent: "violet", trend: "up" },
+  { label: "Apartment share of starts", value: "70%", accent: "rose", trend: "flat" },
+];
+
 export default function StoryHousingSupply() {
   return (
     <StoryPage
@@ -46,6 +59,8 @@ export default function StoryHousingSupply() {
         "How many housing units are being started and completed, and which dwelling types contribute most?",
         "How can supply activity be interpreted alongside Windsor population and household context?",
       ]}
+      filters={FILTERS}
+      kpis={KPIS}
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
