@@ -16,6 +16,24 @@ The pipeline has three stages: extract raw sources into staging CSVs, load
 those into Postgres, then build the SQL views on top. Each stage is
 idempotent (safe to re-run) and most scripts print what they did.
 
+**One-command refresh for stages 2-3** (load + views + Superset datasets,
+from already-extracted staging CSVs): `etl/refresh_all.py` runs
+`create_warehouse_schema.py`, `load_warehouse_facts.py`,
+`run_framework_loads.py`, `apply_sql_views.py`, and
+`register_superset_datasets.py` in order, stopping at the first failing
+step. Superset registration is skipped automatically if Superset isn't
+reachable (or always, with `--skip-superset`) -- Postgres-only refreshes
+are a legitimate use case. Verified safe to run twice in a row: identical
+row counts both times, no errors, no duplication.
+```
+.venv\Scripts\python.exe etl\refresh_all.py
+```
+Deliberately doesn't include the extract stage below -- those scripts hit
+real external sources (StatCan, CMHC) over the network, so re-running them
+on every refresh would be slow and adds unnecessary repeat load on those
+services for data that doesn't change between runs. Run the extract
+scripts first if the staging CSVs don't exist yet.
+
 ### 1. Extract (raw file -> staging CSV)
 
 Each source has its own extract script, writing to `data/staging/`:
@@ -61,6 +79,8 @@ Run order from a clean database:
 .venv\Scripts\python.exe etl\load_warehouse_facts.py
 .venv\Scripts\python.exe etl\run_framework_loads.py
 ```
+(`etl\refresh_all.py` runs these 3 plus the views/Superset steps below in
+one command -- see "How to run" above.)
 
 `validate_supply_data.py` is a separate, manual data-quality check (not
 wired into either loader above) -- run it directly after a supply-data
@@ -72,11 +92,11 @@ reload:
 ### 3. Views and Superset
 
 Apply the SQL view files (`sql/story1_views.sql`, `story2_views.sql`,
-`story3_views.sql`, `story4_views.sql`) against the warehouse schema --
-there's no dedicated apply script yet, so run each file through any
-Postgres client (psql, a DB GUI, or a short script using this project's
-`get_engine()` helper). Then, to register the Story 4 views as Superset
-datasets:
+`story3_views.sql`, `story4_views.sql`) against the warehouse schema:
+```
+.venv\Scripts\python.exe etl\apply_sql_views.py
+```
+Then, to register the views as Superset datasets:
 ```
 .venv\Scripts\python.exe etl\register_superset_datasets.py
 ```
