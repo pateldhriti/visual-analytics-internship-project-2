@@ -68,6 +68,15 @@ VIEWS = {
             "description": "Share of households spending 30%+ of income on shelter, averaged across whatever rows are in scope (e.g. filtered to one household type).",
         },
     ],
+    "v_story1_burden_severity": [
+        {
+            "metric_name": "avg_severe_pct",
+            "expression": "AVG(severe_pct_of_burdened)",
+            "verbose_name": "Share of Burdened Households in the 30-99% Band (%)",
+            "metric_type": "avg",
+            "description": "Of households already spending 30%+ on shelter, the share in the 30%-to-under-100% band StatCan's table directly publishes. No metric defined on unaccounted_households/unaccounted_pct_of_burdened -- see this view's own comment in sql/story1_views.sql for why that gap is reported, not assumed.",
+        },
+    ],
     "v_story2_rent_yoy_change": [
         {
             "metric_name": "avg_rent",
