@@ -51,4 +51,4 @@ A genuine 5th candidate that passes both criteria does not exist in this dataset
 
 - `etl/extract_rms_canada_comparison.py`: `CENTRES` updated to the 4 confirmed comparators (Toronto removed, Hamilton and St. Catharines-Niagara added). Re-run and verified: 40/40 expected rows extracted, 0 suppressed/null values, Hamilton and St. Catharines-Niagara figures spot-checked against the raw workbook cells directly.
 - `sql/warehouse_seed_dimensions.sql`: `dim_zone`'s `comparator_cma` rows updated to match.
-- Full pipeline re-verified end-to-end from a clean schema: `fact_rental_market` loads with 0 unmatched dimension keys across all 5 CMAs (Windsor + 4 comparators).
+- Full pipeline re-verified end-to-end from a clean schema: `fact_rental_market_comparison` loads with 0 unmatched dimension keys across all 5 CMAs (Windsor + 4 comparators). (This source now loads into its own table, separate from `fact_rental_market` -- see `sql/warehouse_schema.sql`'s comment on `fact_rental_market_comparison` for why.)

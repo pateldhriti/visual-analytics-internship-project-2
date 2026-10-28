@@ -13,6 +13,11 @@ erDiagram
     dim_zone ||--o{ fact_rental_market : "zone_key"
     dim_bedroom_type ||--o{ fact_rental_market : "bedroom_type_key"
     dim_dwelling_type ||--o{ fact_rental_market : "dwelling_type_key"
+    dim_period ||--o{ fact_rental_market_comparison : "period_key"
+    dim_tenure ||--o{ fact_rental_market_comparison : "tenure_key"
+    dim_zone ||--o{ fact_rental_market_comparison : "zone_key"
+    dim_bedroom_type ||--o{ fact_rental_market_comparison : "bedroom_type_key"
+    dim_dwelling_type ||--o{ fact_rental_market_comparison : "dwelling_type_key"
 
     dim_geography {
         text geography_key PK
@@ -78,6 +83,18 @@ erDiagram
         int dwelling_type_key FK
         int tenure_key FK
         int income_band_key FK "nullable"
+        text metric_type
+        numeric value
+        text reliability_letter
+        text yoy_trend
+    }
+    fact_rental_market_comparison {
+        bigserial fact_id PK
+        int zone_key FK
+        int period_key FK
+        int bedroom_type_key FK
+        int dwelling_type_key FK
+        int tenure_key FK
         text metric_type
         numeric value
         text reliability_letter

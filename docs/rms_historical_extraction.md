@@ -63,7 +63,9 @@ column isn't loaded at all, since that period is already in the warehouse from t
 
 Rebuilt the warehouse schema fresh (new `dim_period` rows added: Oct-20 through Oct-23) and ran the
 full fact load: **990 historical rows loaded, 0 unmatched dimension keys.** `fact_rental_market`
-totals 2,421 rows across all 3 sources (Windsor 2025 + Canada comparison + this historical load).
+totals 2,385 rows across its 2 sources (Windsor 2025 + this historical load). The Canada-comparison
+source has since moved into its own table, `fact_rental_market_comparison` (36 rows) -- see
+`sql/warehouse_schema.sql`'s comment on that table for why.
 Queried the full 6-year Windsor CMA vacancy-rate trend directly from the warehouse afterward:
 
 ```

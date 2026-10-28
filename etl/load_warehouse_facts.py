@@ -5,22 +5,25 @@ only proved the schema works via a single rolled-back smoke-test row per
 fact table (see docs/conceptual_er_model.md) -- this script does the actual
 bulk load.
 
-Loads all three fact tables, from four staging CSVs:
+Loads all five fact tables, from five staging CSVs -- one table per
+source, per this project's schema rule (sql/warehouse_schema.sql):
   - fact_shelter_cost   <- data/staging/windsor_shelter_cost_long.csv (90,720 rows)
   - fact_census_profile <- data/staging/windsor_census_profile_long.csv (360 rows)
-  - fact_rental_market  <- two sources, same fact table:
-    - data/staging/windsor_rental_market.csv (1,395 rows), from
+  - fact_rental_market  <- data/staging/windsor_rental_market.csv (1,395 rows), from
       etl/extract_windsor_rms.py's 9 Windsor-specific sheets.
       income_band_key is only set for Table 3.1.8's quintile rows
       (metric_type 'quintile_universe' / 'quintile_vacancy_rate'); every
       other metric_type has it NULL -- "not applicable", not missing.
-    - data/staging/rms_canada_comparison.csv (32 rows extracted, 28
-      loaded), from etl/extract_rms_canada_comparison.py -- 3 comparator
-      CMAs (London, Kitchener-Cambridge-Waterloo, Toronto) in full, plus
-      Windsor's turnover_rate and pct_change_rent rows only (not
-      vacancy_rate/average_rent, which duplicate the Windsor-specific
-      workbook's own Apartment-scope tables) -- see
-      load_rms_canada_comparison_facts()'s docstring for exactly why.
+  - fact_rental_market_comparison <- data/staging/rms_canada_comparison.csv
+      (40 rows extracted, 36 loaded), from etl/extract_rms_canada_comparison.py
+      -- a separate CMHC workbook (Canada RMS 2025, Table 1.0), so it gets
+      its own fact table rather than being merged into fact_rental_market.
+      4 comparator CMAs (London, Kitchener-Cambridge-Waterloo, Hamilton,
+      St. Catharines-Niagara) in full, plus Windsor's turnover_rate and
+      pct_change_rent rows only (not vacancy_rate/average_rent, which
+      duplicate the Windsor-specific workbook's own Apartment-scope
+      tables) -- see load_rms_canada_comparison_facts()'s docstring for
+      exactly why.
   Tenure is always 'Renter' for both rental-market sources (this data is
   rental-only, per docs/conceptual_er_model.md).
 
@@ -258,10 +261,11 @@ def load_historical_rental_market_facts(engine) -> dict:
 
 
 def load_rms_canada_comparison_facts(engine) -> dict:
-    """Windsor (partially) + the 3 comparator CMAs from the national RMS
-    workbook's Table 1.0, into the same fact_rental_market table --
-    zone_key resolves to dim_zone's zone_level='comparator_cma' rows (or
-    the existing 'Windsor CMA' cma_total row).
+    """Windsor (partially) + the 4 comparator CMAs from the national RMS
+    workbook's Table 1.0, into fact_rental_market_comparison -- a separate
+    table from fact_rental_market since this is a separate source
+    workbook. zone_key resolves to dim_zone's zone_level='comparator_cma'
+    rows (or the existing 'Windsor CMA' cma_total row).
 
     Windsor's vacancy_rate and average_rent rows here ARE genuine
     duplicates of Windsor-specific extraction already loaded
@@ -308,14 +312,13 @@ def load_rms_canada_comparison_facts(engine) -> dict:
         "bedroom_type_key": df["bedroom_type_key"],
         "dwelling_type_key": df["dwelling_type_key"],
         "tenure_key": renter_key,
-        "income_band_key": None,
         "metric_type": df["metric_type"],
         "value": pd.to_numeric(df["value"], errors="coerce"),
         "reliability_letter": df["reliability_letter"],
         "yoy_trend": df["yoy_trend"],
     })
 
-    rows = copy_dataframe(engine, out, "fact_rental_market")
+    rows = copy_dataframe(engine, out, "fact_rental_market_comparison")
     return {"source_rows": len(source), "loaded_rows": rows, "unmatched_dimension_keys": unmatched}
 
 
@@ -345,7 +348,8 @@ if __name__ == "__main__":
     with engine.begin() as conn:
         conn.execute(text(
             "TRUNCATE warehouse.fact_shelter_cost, warehouse.fact_census_profile, "
-            "warehouse.fact_rental_market, warehouse.fact_starts_completions"
+            "warehouse.fact_rental_market, warehouse.fact_rental_market_comparison, "
+            "warehouse.fact_starts_completions"
         ))
 
     print("Loading fact_shelter_cost...")
@@ -363,7 +367,7 @@ if __name__ == "__main__":
     for key, value in rental_stats.items():
         print(f"  {key}: {value}")
 
-    print("Loading fact_rental_market (Canada comparison CMAs)...")
+    print("Loading fact_rental_market_comparison...")
     comparison_stats = load_rms_canada_comparison_facts(engine)
     for key, value in comparison_stats.items():
         print(f"  {key}: {value}")
@@ -380,22 +384,38 @@ if __name__ == "__main__":
 
     print()
     with engine.connect() as conn:
-        for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market", "fact_starts_completions"):
+        for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market",
+                      "fact_rental_market_comparison", "fact_starts_completions"):
             count = conn.execute(text(f'SELECT COUNT(*) FROM warehouse."{table}"')).scalar()
             print(f"warehouse.{table}: {count} rows")
 
     # Validation report produced on every load, not a separate manual step --
-    # etl/validate_rental_market_data.py re-checks the table that was just
+    # etl/validate_rental_market_data.py re-checks the tables that were just
     # loaded (row counts, rent/vacancy ranges, duplicate keys, reliability
-    # letters) and writes its section of docs/data_quality_report.md.
+    # letters) and writes its sections of docs/data_quality_report.md.
     print()
     print("Running rental-market data-quality checks...")
     import validate_rental_market_data as rmv
+
     live_rental_df = rmv.fetch_live_fact_rental_market(engine)
     rmv.update_report(rmv.render_section(
-        rmv.check_row_counts(live_rental_df),
+        rmv.check_row_counts(live_rental_df, rmv.STAGING_SOURCES),
         rmv.check_ranges(live_rental_df),
         rmv.check_duplicate_keys(live_rental_df),
         rmv.check_reliability_letters(live_rental_df),
-    ))
+        rmv.SECTION_MARKER_START, rmv.SECTION_MARKER_END,
+        "## Rental market tables (CMHC RMS -- Windsor, historical)",
+        "Source: `warehouse.fact_rental_market` (2 staging sources -> 1 table)",
+    ), rmv.SECTION_MARKER_START, rmv.SECTION_MARKER_END)
+
+    live_comparison_df = rmv.fetch_live_fact_rental_market_comparison(engine)
+    rmv.update_report(rmv.render_section(
+        rmv.check_row_counts(live_comparison_df, rmv.COMPARISON_STAGING_SOURCES, rmv.COMPARISON_KNOWN_EXCLUSIONS),
+        rmv.check_ranges(live_comparison_df),
+        rmv.check_duplicate_keys(live_comparison_df),
+        rmv.check_reliability_letters(live_comparison_df),
+        rmv.COMPARISON_SECTION_MARKER_START, rmv.COMPARISON_SECTION_MARKER_END,
+        "## Rental market comparison table (CMHC Canada RMS 2025)",
+        "Source: `warehouse.fact_rental_market_comparison` (1 staging source -> 1 table)",
+    ), rmv.COMPARISON_SECTION_MARKER_START, rmv.COMPARISON_SECTION_MARKER_END)
     print(f"  Written: {rmv.REPORT_MD}")

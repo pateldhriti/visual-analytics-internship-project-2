@@ -173,6 +173,44 @@ CREATE INDEX idx_fact_rental_market_dwelling_type ON warehouse.fact_rental_marke
 CREATE INDEX idx_fact_rental_market_tenure ON warehouse.fact_rental_market (tenure_key);
 CREATE INDEX idx_fact_rental_market_income_band ON warehouse.fact_rental_market (income_band_key);
 
+-- Source: CMHC Canada RMS 2025 (Table 1.0, apartment-only, national
+-- comparator CMAs) -- a genuinely separate workbook from CMHC Windsor RMS
+-- 2025 above, so it gets its own fact table per this schema's "one table
+-- per source" rule (see fact_rental_market's comment), rather than being
+-- merged into fact_rental_market by zone_level as an earlier version of
+-- this schema did.
+-- Grain: one row per (zone, period, bedroom_type, dwelling_type, tenure,
+--        metric_type) combination -- same shape as fact_rental_market,
+--        minus income_band (Table 1.0 has no quintile breakdown).
+-- zone_key is always either dim_zone's 'cma_total' row (Windsor) or one of
+-- its 'comparator_cma' rows -- never a Windsor sub-zone, since Table 1.0
+-- only reports whole-CMA figures.
+-- Windsor's rows here are deliberately partial: only turnover_rate and
+-- pct_change_rent (metrics the Windsor-specific workbook never extracted);
+-- Windsor's vacancy_rate/average_rent are excluded to avoid duplicating
+-- the real metric already loaded into fact_rental_market from the
+-- Windsor-specific Apartment-scope tables. See
+-- etl/load_warehouse_facts.py's load_rms_canada_comparison_facts().
+CREATE TABLE warehouse.fact_rental_market_comparison (
+    fact_id            BIGSERIAL PRIMARY KEY,
+    zone_key           INT  NOT NULL REFERENCES warehouse.dim_zone (zone_key),
+    period_key         INT  NOT NULL REFERENCES warehouse.dim_period (period_key),
+    bedroom_type_key   INT  NOT NULL REFERENCES warehouse.dim_bedroom_type (bedroom_type_key),
+    dwelling_type_key  INT  NOT NULL REFERENCES warehouse.dim_dwelling_type (dwelling_type_key),
+    tenure_key         INT  NOT NULL REFERENCES warehouse.dim_tenure (tenure_key),
+    metric_type        TEXT NOT NULL,
+    value               NUMERIC,
+    reliability_letter  TEXT,
+    yoy_trend           TEXT,
+    UNIQUE (zone_key, period_key, bedroom_type_key, dwelling_type_key, tenure_key, metric_type)
+);
+
+CREATE INDEX idx_fact_rental_market_comparison_zone ON warehouse.fact_rental_market_comparison (zone_key);
+CREATE INDEX idx_fact_rental_market_comparison_period ON warehouse.fact_rental_market_comparison (period_key);
+CREATE INDEX idx_fact_rental_market_comparison_bedroom_type ON warehouse.fact_rental_market_comparison (bedroom_type_key);
+CREATE INDEX idx_fact_rental_market_comparison_dwelling_type ON warehouse.fact_rental_market_comparison (dwelling_type_key);
+CREATE INDEX idx_fact_rental_market_comparison_tenure ON warehouse.fact_rental_market_comparison (tenure_key);
+
 -- Source: StatCan 98-401-X2021002 (Census Profile, 2021 - CMAs and CAs)
 -- Grain: one row per (geography, period, characteristic, measure_type, sex)
 -- combination. characteristic_id/characteristic_name are degenerate
