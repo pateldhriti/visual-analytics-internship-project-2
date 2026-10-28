@@ -11,7 +11,10 @@ export default function KpiRow({ tiles }) {
     <div className="kpi-tile-row">
       {tiles.map((tile) => (
         <div className="card kpi-tile" key={tile.label}>
-          <span className={`kpi-tile-badge kpi-tile-badge--${tile.accent ?? "blue"}`} aria-hidden="true">
+          <span
+            className={`kpi-tile-badge kpi-tile-badge--${tile.accent ?? "blue"}`}
+            aria-hidden="true"
+          >
             {TREND_GLYPH[tile.trend] ?? "●"}
           </span>
           <p className="kpi-tile-value">{tile.value}</p>

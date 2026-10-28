@@ -51,16 +51,28 @@ function AnimatedNumber({ value, decimals = 0, prefix = "", suffix = "" }) {
 // sidebar (components/Sidebar.jsx), duplicated here rather than imported
 // across an unrelated component boundary.
 const STORY_ICONS = {
-  affordability: <path d="M10 2v16M14 5.5c0-1.4-1.6-2.5-4-2.5s-4 1.1-4 2.5 1.6 2.3 4 2.7c2.4.4 4 1.3 4 2.8s-1.6 2.5-4 2.5-4-1.1-4-2.5" />,
+  affordability: (
+    <path d="M10 2v16M14 5.5c0-1.4-1.6-2.5-4-2.5s-4 1.1-4 2.5 1.6 2.3 4 2.7c2.4.4 4 1.3 4 2.8s-1.6 2.5-4 2.5-4-1.1-4-2.5" />
+  ),
   rental: <path d="M13 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM2 17l5-5 2.5 2.5L15 9" />,
   supply: <path d="M3 17V9l4-2v10M9 17V5l4-2v14M15 17V9l2-1v9M3 17h14" />,
-  comparison: <path d="M10 2v15M4 6l-2 5a3 3 0 0 0 6 0l-2-5Zm12 0-2 5a3 3 0 0 0 6 0l-2-5ZM3 6h4M13 6h4M6 17h8" />,
+  comparison: (
+    <path d="M10 2v15M4 6l-2 5a3 3 0 0 0 6 0l-2-5Zm12 0-2 5a3 3 0 0 0 6 0l-2-5ZM3 6h4M13 6h4M6 17h8" />
+  ),
   integrated: <path d="m10 2 8 4-8 4-8-4 8-4ZM2 10l8 4 8-4M2 14l8 4 8-4" />,
 };
 
 function StoryIcon({ name }) {
   return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       {STORY_ICONS[name]}
     </svg>
   );
@@ -248,7 +260,14 @@ export default function Home() {
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m6 9 6 6 6-6" />
           </svg>
         </motion.a>

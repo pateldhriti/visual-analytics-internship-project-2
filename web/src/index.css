@@ -996,7 +996,12 @@ html {
   inset: 0;
   z-index: 0;
   background:
-    linear-gradient(100deg, rgba(10, 15, 36, 0.97) 0%, rgba(10, 15, 36, 0.86) 40%, rgba(10, 15, 36, 0.35) 100%),
+    linear-gradient(
+      100deg,
+      rgba(10, 15, 36, 0.97) 0%,
+      rgba(10, 15, 36, 0.86) 40%,
+      rgba(10, 15, 36, 0.35) 100%
+    ),
     linear-gradient(0deg, rgba(10, 15, 36, 0.5) 0%, rgba(10, 15, 36, 0) 35%),
     radial-gradient(ellipse 900px 500px at 85% 15%, rgba(201, 134, 44, 0.22), transparent 70%);
 }

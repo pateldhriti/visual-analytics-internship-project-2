@@ -20,7 +20,12 @@ const FILTERS = [
 
 const KPIS = [
   { label: "Windsor apartment vacancy rate", value: "3.7%", accent: "blue", trend: "flat" },
-  { label: "Vacancy rank among 5 Ontario CMAs", value: "2nd-tightest", accent: "violet", trend: "flat" },
+  {
+    label: "Vacancy rank among 5 Ontario CMAs",
+    value: "2nd-tightest",
+    accent: "violet",
+    trend: "flat",
+  },
 ];
 
 export default function StoryComparison() {
