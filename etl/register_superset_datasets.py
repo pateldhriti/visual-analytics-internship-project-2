@@ -174,6 +174,24 @@ VIEWS = {
             "description": "Oct-24-to-25 rent growth (CMHC's matched-sample figure), averaged across whatever rows are in scope. The income-growth and index columns have no saved metric: both are NULL for every row -- see docs/affordability_gap_index.md.",
         },
     ],
+    "v_dashboard1_rental_yoy": [
+        {
+            "metric_name": "avg_change_value",
+            "expression": "AVG(change_value)",
+            "verbose_name": "Average Change",
+            "metric_type": "avg",
+            "description": "Oct-24-to-Oct-25 change, averaged across whatever rows are in scope (mixed units across metrics -- see change_unit).",
+        },
+    ],
+    "v_dashboard1_cma_benchmark": [
+        {
+            "metric_name": "avg_windsor_minus_median",
+            "expression": "AVG(windsor_minus_median)",
+            "verbose_name": "Average Windsor vs. Comparator-Median Gap",
+            "metric_type": "avg",
+            "description": "Windsor's value minus the 4-comparator median, averaged across whatever rows are in scope.",
+        },
+    ],
 }
 
 

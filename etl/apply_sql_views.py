@@ -30,6 +30,7 @@ VIEW_FILES = [
     SQL_DIR / "story2_views.sql",
     SQL_DIR / "story3_views.sql",
     SQL_DIR / "story4_views.sql",
+    SQL_DIR / "dashboard1_views.sql",
 ]
 
 

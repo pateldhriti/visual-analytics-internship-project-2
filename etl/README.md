@@ -92,13 +92,21 @@ reload:
 ### 3. Views and Superset
 
 Apply the SQL view files (`sql/story1_views.sql`, `story2_views.sql`,
-`story3_views.sql`, `story4_views.sql`) against the warehouse schema:
+`story3_views.sql`, `story4_views.sql`, `dashboard1_views.sql`) against the
+warehouse schema:
 ```
 .venv\Scripts\python.exe etl\apply_sql_views.py
 ```
 Then, to register the views as Superset datasets:
 ```
 .venv\Scripts\python.exe etl\register_superset_datasets.py
+```
+
+`dashboard1_views.sql` backs "01 - Windsor Housing Executive Overview", a
+combined dashboard across Stories 1-4 (not a story of its own). Build it
+with:
+```
+.venv\Scripts\python.exe etl\build_dashboard1_overview.py
 ```
 
 ## Add a dataset
