@@ -1,21 +1,32 @@
 """
 Build the Story 2 Superset dashboard ("What is happening in Windsor's
-rental market?"): rent by bedroom type and zone, rent and vacancy over
-the project's real 6-year span (Oct-20 to Oct-25 -- not 10 years, see
+rental market?"): a 4-tile KPI section (Average Rent, Vacancy, Turnover,
+Rental Stock), rent by bedroom type and zone, rent and vacancy over the
+project's real 6-year span (Oct-20 to Oct-25 -- not 10 years, see
 sql/story2_views.sql's own header comment), turnover by bedroom type,
 with native filters for zone and bedroom type.
 
 Reuses the auth/session helpers from etl/setup_superset_dashboard.py
 (same classic form-login session-cookie approach that fixed the
 JWT-only-login visibility bug -- see that file's get_session()
-docstring). All 6 charts use viz_type "dist_bar" (Distribution Bar
-Chart), the one chart type already proven to render correctly end-to-end
-in this Superset build (Story 1's dashboard uses it for all 6 of its
-charts) -- period_label (Oct-20..Oct-25) is a text column, not a real
-DATE type, so a proper time-series viz_type isn't reliably available
-without first adding a computed date column; dist_bar with period as the
-x-axis category sorts correctly anyway since "Oct-20" < "Oct-21" < ... <
-"Oct-25" in plain string order.
+docstring). The 4 KPI tiles use viz_type "big_number_total" (the trend
+and breakdown charts stay "dist_bar", the one chart type already proven
+to render correctly end-to-end in this Superset build -- period_label
+(Oct-20..Oct-25) is a text column, not a real DATE type, so a proper
+time-series viz_type isn't reliably available without first adding a
+computed date column; dist_bar with period as the x-axis category sorts
+correctly anyway since "Oct-20" < "Oct-21" < ... < "Oct-25" in plain
+string order). The 2 non-KPI-tile charts' row below is unaffected.
+
+The 4 KPI tiles are deliberately excluded from both native filters'
+chartsInScope, same as Story 1's KPI tiles -- each tile already hardcodes
+its own bedroom-type/period scope, and AND-combining that with a
+user-selected filter value can silently return zero rows (confirmed
+directly as a real bug on Story 1's tiles, see
+docs/story1_exploratory_findings.md history in git log for
+fix_story1_tenure_filter_scope.py). Rental Stock's dataset
+(v_dashboard1_rental_yoy) doesn't even have a bedroom_type_label column,
+so including it in the Bedroom-type filter's scope would error outright.
 
 Requires the 5 Story 2 views already registered as Superset datasets
 (etl/register_superset_datasets.py) and Superset running.
@@ -36,6 +47,13 @@ DATASET_RENT_YOY = 9  # v_story2_rent_yoy_change
 DATASET_VACANCY = 6  # v_story2_vacancy_trend
 DATASET_TURNOVER = 11  # v_story2_turnover_by_bedroom
 DATASET_RENT_ZONE = 14  # v_story2_rent_by_zone_bedroom
+# v_dashboard1_rental_yoy -- built for Dashboard 1, reused here rather than
+# duplicated: it's the only registered view with a "universe" (rental
+# stock) row at all. No Story 2 view carries that column (confirmed
+# against sql/story2_views.sql) -- fabricating a new one just to avoid
+# reuse would mean a second view computing the same real
+# fact_rental_market rows the Dashboard 1 one already does.
+DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
 
 COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
 
@@ -112,6 +130,50 @@ CHARTS = {
             "adhoc_filters": [bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": "$,.0f",
             "subheader": "October 2025, all bedroom types",
+        },
+    },
+    "kpi-turnover": {
+        "slice_name": "Windsor CMA Turnover Rate",
+        "description": "Combined dwelling types, Total bedroom type, Oct-25 -- warehouse.v_story2_turnover_by_bedroom.",
+        "dataset_id": DATASET_TURNOVER,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {
+                "expressionType": "SQL",
+                "sqlExpression": "AVG(turnover_rate_pct)",
+                "label": "Turnover Rate",
+            },
+            "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
+            "y_axis_format": ".1f",
+            "subheader": "October 2025, Combined dwelling types",
+        },
+    },
+    "kpi-stock": {
+        "slice_name": "Windsor CMA Rental Stock",
+        "description": (
+            "Combined dwelling types, Oct-25 rental universe (total surveyed rental units) -- "
+            "warehouse.v_dashboard1_rental_yoy."
+        ),
+        "dataset_id": DATASET_RENTAL_YOY,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(latest_value)",
+                "label": "Rental Stock",
+            },
+            "adhoc_filters": [
+                {
+                    "clause": "WHERE",
+                    "subject": "metric",
+                    "operator": "==",
+                    "comparator": "universe",
+                    "expressionType": "SIMPLE",
+                },
+                combined_filter("dwelling_type_label"),
+            ],
+            "y_axis_format": ",.0f",
+            "subheader": "October 2025, Combined dwelling types, total rental universe",
         },
     },
     "rent-zone": {
@@ -211,7 +273,7 @@ DASHBOARD_TITLE = "Story 2: What is happening in Windsor's rental market?"
 
 # width units sum to 12 per row, same grid convention as Story 1's dashboard.
 LAYOUT = [
-    ("ROW-kpi", [("kpi-vacancy", 6), ("kpi-rent", 6)]),
+    ("ROW-kpi", [("kpi-vacancy", 3), ("kpi-rent", 3), ("kpi-turnover", 3), ("kpi-stock", 3)]),
     ("ROW-zone", [("rent-zone", 12)]),
     ("ROW-trends", [("rent-trend", 6), ("vacancy-trend", 6)]),
     ("ROW-turnover", [("turnover", 12)]),

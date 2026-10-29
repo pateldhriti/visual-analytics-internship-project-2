@@ -122,12 +122,27 @@ def get_session() -> tuple[requests.Session, dict]:
 
 
 def find_existing(session, headers, endpoint: str, name_field: str, name_value: str):
-    resp = session.get(f"{SUPERSET_URL}/api/v1/{endpoint}/", headers=headers)
-    resp.raise_for_status()
-    for item in resp.json()["result"]:
-        if item.get(name_field) == name_value:
-            return item["id"]
-    return None
+    """Paginates through every page, not just the first. An unpaginated
+    GET only returns Superset's default page (page_size=20) -- once an
+    endpoint's total row count passes that (confirmed directly: 29 charts
+    now exist, and an unpaginated call only returned 20), a real existing
+    row past page 1 is invisible here, so a rebuild creates a duplicate
+    chart instead of updating the original in place."""
+    page = 0
+    while True:
+        resp = session.get(
+            f"{SUPERSET_URL}/api/v1/{endpoint}/",
+            headers=headers,
+            params={"q": f"(page:{page},page_size:100)"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        for item in data["result"]:
+            if item.get(name_field) == name_value:
+                return item["id"]
+        if (page + 1) * 100 >= data["count"]:
+            return None
+        page += 1
 
 
 def ensure_database(session, headers) -> int:
