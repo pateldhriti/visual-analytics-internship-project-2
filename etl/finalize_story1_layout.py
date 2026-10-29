@@ -23,6 +23,8 @@ from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 DASHBOARD_ID = 3
 DATASET_SEVERITY = 15  # v_story1_burden_severity
+DATASET_SEVERITY_BREAKDOWN = 18  # v_story1_burden_severity_breakdown
+COLOR_SCHEME = "windsor_housing"
 
 # Existing chart ids on dashboard 3, from Story 1's original build.
 EXISTING = {
@@ -43,9 +45,8 @@ NEW_CHARTS = {
         "viz_type": "big_number_total",
         "params": {
             "metric": {
-                "expressionType": "SIMPLE",
-                "column": {"column_name": "severe_pct_of_burdened"},
-                "aggregate": "MAX",
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(severe_pct_of_burdened) / 100.0",
                 "label": "Severe Range Share",
             },
             "adhoc_filters": [
@@ -57,7 +58,7 @@ NEW_CHARTS = {
                     "expressionType": "SIMPLE",
                 }
             ],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
             "subtitle": "of renter burdened households spend 30%-99% of income on shelter",
@@ -71,9 +72,8 @@ NEW_CHARTS = {
         "viz_type": "big_number_total",
         "params": {
             "metric": {
-                "expressionType": "SIMPLE",
-                "column": {"column_name": "severe_pct_of_burdened"},
-                "aggregate": "MAX",
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(severe_pct_of_burdened) / 100.0",
                 "label": "Severe Range Share",
             },
             "adhoc_filters": [
@@ -85,11 +85,41 @@ NEW_CHARTS = {
                     "expressionType": "SIMPLE",
                 }
             ],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
             "subtitle": "of owner burdened households spend 30%-99% of income on shelter",
             "color_scheme": "windsor_housing",
+        },
+    },
+    "severity-breakdown": {
+        "slice_name": "Severity Breakdown of Burdened Households by Tenure",
+        "description": (
+            "Stacked composition of each tenure's burdened households -- Severe (30-99%) vs. "
+            "Unaccounted -- each tenure's 2 segments sum to 100%. "
+            "warehouse.v_story1_burden_severity_breakdown."
+        ),
+        "dataset_id": DATASET_SEVERITY_BREAKDOWN,
+        "viz_type": "dist_bar",
+        "params": {
+            "groupby": ["tenure"],
+            "columns": ["category"],
+            "metrics": [
+                {
+                    "expressionType": "SQL",
+                    "sqlExpression": "MAX(pct_of_burdened) / 100.0",
+                    "label": "Share of Burdened Households",
+                }
+            ],
+            "adhoc_filters": [],
+            "row_limit": 10,
+            "stack": True,
+            "color_scheme": COLOR_SCHEME,
+            "show_legend": True,
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_label": "Tenure",
+            "y_axis_label": "Share of Burdened Households",
         },
     },
 }
@@ -187,6 +217,7 @@ def build_position_json(chart_ids: dict) -> dict:
                 "ROW-household",
                 "HEADER-severity",
                 "ROW-severity",
+                "ROW-severity-breakdown",
                 "HEADER-validation",
                 "ROW-validation",
             ],
@@ -230,6 +261,13 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-severity-owner", "ROW-severity", chart_ids["kpi-severity-owner"], 6
     )
 
+    position["ROW-severity-breakdown"] = row_node(
+        "ROW-severity-breakdown", ["CHART-severity-breakdown"]
+    )
+    position["CHART-severity-breakdown"] = chart_node(
+        "CHART-severity-breakdown", "ROW-severity-breakdown", chart_ids["severity-breakdown"], 12, 55
+    )
+
     position["HEADER-validation"] = header_node("HEADER-validation", "Census Validation")
     position["ROW-validation"] = row_node("ROW-validation", ["MARKDOWN-validation"])
     position["MARKDOWN-validation"] = markdown_node(
@@ -239,22 +277,47 @@ def build_position_json(chart_ids: dict) -> dict:
     return position
 
 
-def verify_native_filter_scope(session, headers, dashboard_id: int, new_chart_ids: set) -> None:
-    """The 2 new severity KPIs are, like the Renter/Owner Burden Rate KPIs
+def verify_native_filter_scope(
+    session, headers, dashboard_id: int, excluded_chart_ids: set, tenure_scoped_chart_id: int
+) -> None:
+    """The 2 severity KPIs are, like the Renter/Owner Burden Rate KPIs
     (etl/fix_story1_tenure_filter_scope.py), fixed-per-tenure and must stay
     out of both native filters' chartsInScope -- same conflict would occur
     otherwise (each already has its own hardcoded tenure filter). Nothing
     adds them to chartsInScope, so this only verifies that's still true
-    rather than silently assuming it."""
+    rather than silently assuming it.
+
+    The new severity-breakdown chart is different: tenure is its groupby,
+    not a hardcoded filter, so including it in the Tenure filter's scope
+    is correct and useful (picking "Owner" narrows the stacked bar to just
+    Owner, same mechanism the Zone/Bedroom-type filters already use
+    elsewhere). Its dataset has no household_type column at all, though,
+    so it must be added to Tenure only -- added here directly rather than
+    left to be missed, since nothing else would add it."""
     resp = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}", headers=headers)
     resp.raise_for_status()
     metadata = json.loads(resp.json()["result"]["json_metadata"])
 
+    changed = False
     for f in metadata.get("native_filter_configuration", []):
-        overlap = set(f["chartsInScope"]) & new_chart_ids
+        overlap = set(f["chartsInScope"]) & excluded_chart_ids
         if overlap:
-            raise RuntimeError(f"Filter '{f['name']}' unexpectedly includes new KPI chart(s) {overlap}")
-    print("Verified: no native filter includes the new severity KPI tiles.")
+            raise RuntimeError(f"Filter '{f['name']}' unexpectedly includes KPI chart(s) {overlap}")
+
+        if f["name"] == "Tenure" and tenure_scoped_chart_id not in f["chartsInScope"]:
+            f["chartsInScope"] = sorted(set(f["chartsInScope"]) | {tenure_scoped_chart_id})
+            changed = True
+
+    if changed:
+        resp = session.put(
+            f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}",
+            headers=headers,
+            json={"json_metadata": json.dumps(metadata)},
+        )
+        resp.raise_for_status()
+        print(f"Tenure filter now also scoped to chart {tenure_scoped_chart_id} (severity breakdown).")
+
+    print("Verified: no native filter includes the fixed-per-tenure KPI tiles.")
 
 
 if __name__ == "__main__":
@@ -277,7 +340,9 @@ if __name__ == "__main__":
     resp.raise_for_status()
     print(f"Dashboard {DASHBOARD_ID} layout updated: 5 sections, {len(chart_ids)} charts.")
 
-    new_ids = {chart_ids[key] for key in NEW_CHARTS}
-    verify_native_filter_scope(session, headers, DASHBOARD_ID, new_ids)
+    excluded_ids = {chart_ids["kpi-severity-renter"], chart_ids["kpi-severity-owner"]}
+    verify_native_filter_scope(
+        session, headers, DASHBOARD_ID, excluded_ids, chart_ids["severity-breakdown"]
+    )
 
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{DASHBOARD_ID}/")

@@ -4,7 +4,14 @@ rental market?"): a 4-tile KPI section (Average Rent, Vacancy, Turnover,
 Rental Stock), rent by bedroom type and zone, rent and vacancy over the
 project's real 6-year span (Oct-20 to Oct-25 -- not 10 years, see
 sql/story2_views.sql's own header comment), turnover by bedroom type,
-with native filters for zone and bedroom type.
+vacancy by dwelling type, with native filters for zone, bedroom type,
+and dwelling scope.
+
+No Period filter is included: every chart with multiple real periods
+uses period as its own trend axis (filtering to one period would
+collapse the trend), and every chart without that is already anchored
+to the latest real survey (Oct-25) for good reason, not an oversight --
+confirmed by checking each chart's own params, not assumed.
 
 Reuses the auth/session helpers from etl/setup_superset_dashboard.py
 (same classic form-login session-cookie approach that fixed the
@@ -176,6 +183,35 @@ CHARTS = {
             "subheader": "October 2025, Combined dwelling types, total rental universe",
         },
     },
+    "vacancy-dwelling": {
+        "slice_name": "Vacancy Rate by Period and Dwelling Type (Oct-20 to Oct-25)",
+        "description": (
+            "Total bedroom type, real 6-year span -- warehouse.v_story2_vacancy_trend. Apartment "
+            "and Combined both have full 6-period coverage for this scope (confirmed directly), so "
+            "comparing them side by side is safe, not a sparse-data gap."
+        ),
+        "dataset_id": DATASET_VACANCY,
+        "viz_type": "dist_bar",
+        "params": {
+            "groupby": ["period_label"],
+            "columns": ["dwelling_type_label"],
+            "metrics": [
+                {
+                    "expressionType": "SQL",
+                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
+                    "label": "Vacancy Rate",
+                }
+            ],
+            "adhoc_filters": [bedroom_filter("Total")],
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_legend": True,
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_label": "Period",
+            "y_axis_label": "Vacancy Rate (%)",
+        },
+    },
     "rent-zone": {
         "slice_name": "Average Rent by Zone and Bedroom Type",
         "description": "Oct-25, excludes the Windsor CMA/Windsor City rollup rows and the Total bedroom-type row -- warehouse.v_story2_rent_by_zone_bedroom.",
@@ -277,6 +313,7 @@ LAYOUT = [
     ("ROW-zone", [("rent-zone", 12)]),
     ("ROW-trends", [("rent-trend", 6), ("vacancy-trend", 6)]),
     ("ROW-turnover", [("turnover", 12)]),
+    ("ROW-dwelling", [("vacancy-dwelling", 12)]),
 ]
 
 
@@ -379,6 +416,36 @@ def build_native_filters(chart_ids: dict) -> list:
             "type": "NATIVE_FILTER",
             "description": "",
             "chartsInScope": non_kpi_bedroom_charts,
+            "tabsInScope": [],
+            "controlValues": {
+                "enableEmptyFilter": False,
+                "defaultToFirstItem": False,
+                "multiSelect": True,
+                "searchAllOptions": False,
+                "inverseSelection": False,
+            },
+        },
+        {
+            "id": f"NATIVE_FILTER-{uuid.uuid4().hex[:8]}",
+            "name": "Dwelling Scope",
+            "filterType": "filter_select",
+            "targets": [{"datasetId": DATASET_VACANCY, "column": {"name": "dwelling_type_label"}}],
+            "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
+            "cascadeParentIds": [],
+            "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
+            "type": "NATIVE_FILTER",
+            # Every other chart on this dashboard already hardcodes
+            # dwelling_type_label == 'Combined' in its own adhoc_filters
+            # (Apartment data is sparse or absent for rent/turnover at
+            # this scope -- see sql/story2_views.sql). AND-combining a
+            # user-selected 'Apartment' value onto those would be the
+            # same zero-rows conflict etl/fix_story1_tenure_filter_scope.py
+            # found and fixed for Story 1's KPI tiles, so this filter is
+            # scoped ONLY to the one new chart built specifically to vary
+            # by dwelling type (both scopes have full real 6-period
+            # coverage there -- confirmed directly, not assumed).
+            "description": "",
+            "chartsInScope": [chart_ids["vacancy-dwelling"]],
             "tabsInScope": [],
             "controlValues": {
                 "enableEmptyFilter": False,

@@ -109,6 +109,13 @@ with:
 .venv\Scripts\python.exe etl\build_dashboard1_overview.py
 ```
 
+To standardize percentage formatting on the handful of charts with no
+idempotent builder script of their own (Renter/Owner Burden Rate, Burden
+Rate by Income Band/Household Type -- shared by Dashboards 1 and 2):
+```
+.venv\Scripts\python.exe etl\polish_percentage_kpi_formatting.py
+```
+
 ## Add a dataset
 
 There are two real paths in this project, depending on what the new data

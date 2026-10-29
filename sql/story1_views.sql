@@ -179,3 +179,19 @@ WHERE f.housing_suitability = 'Total - Housing suitability'
   AND f.household_type_key = 1
   AND t.tenure_name <> 'Total'
 GROUP BY t.tenure_name;
+
+-- ============================================================
+-- v_story1_burden_severity_breakdown
+-- Long-format reshape of v_story1_burden_severity, built for a stacked
+-- chart: one row per (tenure, category), category being either
+-- "Severe (30-99%)" or "Unaccounted" -- the same 2 real percentages
+-- v_story1_burden_severity already reports as separate columns,
+-- reshaped so a single stacked bar per tenure can show both segments
+-- together (a composition-of-a-whole view, not a new computation).
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story1_burden_severity_breakdown AS
+SELECT tenure, 'Severe (30-99%)' AS category, severe_pct_of_burdened AS pct_of_burdened
+FROM warehouse.v_story1_burden_severity
+UNION ALL
+SELECT tenure, 'Unaccounted' AS category, unaccounted_pct_of_burdened AS pct_of_burdened
+FROM warehouse.v_story1_burden_severity;
