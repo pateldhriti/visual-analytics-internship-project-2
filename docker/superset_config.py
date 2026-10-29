@@ -71,6 +71,37 @@ CACHE_CONFIG = {
 
 DATA_CACHE_CONFIG = CACHE_CONFIG
 
+# Real gap found while reviewing this file for hosted reliability: only
+# the metadata/chart-data cache above was Redis-backed. Superset's
+# dashboard native-filter state and the Explore page's form-data draft
+# state each have their OWN cache config, and both default to
+# SimpleCache (in-process memory) when not set explicitly -- confirmed
+# directly from Superset's own default config, not assumed. In-process
+# memory doesn't survive a container restart and isn't shared across
+# multiple gunicorn workers, so with more than 1 worker (see
+# docker/docker-compose.yml's gunicorn command below), a user's filter
+# selection on this project's many native filters (Zone, Tenure,
+# Dwelling Scope, etc.) could silently vanish depending on which worker
+# handled the next request. Separate Redis DB indices (2, 3) from the
+# main cache's DB 1, so clearing one doesn't clear the others.
+FILTER_STATE_CACHE_CONFIG = {
+    **CACHE_CONFIG,
+    "CACHE_REDIS_DB": 2,
+}
+
+EXPLORE_FORM_DATA_CACHE_CONFIG = {
+    **CACHE_CONFIG,
+    "CACHE_REDIS_DB": 3,
+}
+
+# Superset's own docs call out that the default webserver timeout (60s)
+# can cut off a dashboard's slower charts before they finish rendering.
+# This project's heaviest query (v_dashboard1_cma_benchmark's RANK() OVER
+# + grouped-median CTEs) runs well under that locally, but a hosted VM
+# with less CPU/memory than this dev machine could push it closer -- set
+# explicitly rather than left at the default and hoped to be enough.
+SUPERSET_WEBSERVER_TIMEOUT = 120
+
 # Public role + anonymous viewing, for embedding charts/dashboards on the
 # React site without requiring a login.
 #

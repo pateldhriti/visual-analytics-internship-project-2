@@ -25,6 +25,7 @@ services:
     image: redis:7-alpine
     container_name: windsor_housing_redis
     restart: unless-stopped
+    mem_limit: 128m
     volumes:
       - redisdata:/data
 
@@ -32,6 +33,7 @@ services:
     image: apache/superset:3.1.0
     container_name: windsor_housing_superset
     restart: unless-stopped
+    mem_limit: 1g
     env_file:
       - ../.env
     environment:
@@ -55,7 +57,7 @@ services:
       superset db upgrade &&
       superset fab create-admin --username $${SUPERSET_ADMIN_USER} --firstname Admin --lastname User --email admin@example.com --password $${SUPERSET_ADMIN_PASSWORD} || true &&
       superset init &&
-      superset run -h 0.0.0.0 -p 8088
+      gunicorn --bind 0.0.0.0:8088 --workers 2 --worker-class gthread --threads 4 --timeout 120 'superset.app:create_app()'
       "
 
 volumes:
