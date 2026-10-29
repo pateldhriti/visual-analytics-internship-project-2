@@ -16,6 +16,22 @@
 -- that data has no equivalent for the comparator CMAs, so mixing it in
 -- here would make Windsor look artificially different from the
 -- comparators rather than genuinely different.
+--
+-- Real bug found and fixed here: Windsor's own vacancy_rate/average_rent
+-- rows are deliberately EXCLUDED from fact_rental_market_comparison at
+-- load time (etl/load_rms_canada_comparison_facts(), see
+-- docs/data_quality_report.md's "Known exclusion" note) -- they'd
+-- otherwise duplicate the same figures fact_rental_market already
+-- carries. v_story4_vacancy_comparison and v_story4_rent_comparison were
+-- querying fact_rental_market_comparison alone, so despite this header's
+-- own "all 5 markets" claim, Windsor's row was silently absent from both
+-- (confirmed directly: zone_level = 'cma_total' never appears in either
+-- view's live output) -- the same gap class already fixed for
+-- v_dashboard1_cma_benchmark, now fixed at its actual source instead of
+-- worked around elsewhere. pct_change_rent and turnover_rate were never
+-- affected -- those 2 metrics were NOT excluded for Windsor at load
+-- time, so v_story4_affordability_gap already had its real Windsor row
+-- all along (confirmed directly, not assumed).
 
 CREATE SCHEMA IF NOT EXISTS warehouse;
 
@@ -37,9 +53,27 @@ JOIN warehouse.dim_period p ON p.period_key = f.period_key
 JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
 JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
 WHERE f.metric_type = 'vacancy_rate'
-  AND z.zone_level IN ('cma_total', 'comparator_cma')
+  AND z.zone_level = 'comparator_cma'
   AND b.bedroom_type_label = 'Total'
-  AND d.dwelling_type_label = 'Apartment';
+  AND d.dwelling_type_label = 'Apartment'
+UNION ALL
+SELECT
+    z.zone_label AS market,
+    'cma_total' AS market_type,
+    p.period_label,
+    f.value AS vacancy_rate_pct,
+    f.reliability_letter,
+    f.yoy_trend
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type = 'vacancy_rate'
+  AND z.zone_label = 'Windsor CMA'
+  AND b.bedroom_type_label = 'Total'
+  AND d.dwelling_type_label = 'Apartment'
+  AND p.period_label IN ('Oct-24', 'Oct-25');
 
 -- ============================================================
 -- v_story4_rent_comparison
@@ -58,9 +92,26 @@ JOIN warehouse.dim_period p ON p.period_key = f.period_key
 JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
 JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
 WHERE f.metric_type = 'average_rent'
-  AND z.zone_level IN ('cma_total', 'comparator_cma')
+  AND z.zone_level = 'comparator_cma'
   AND b.bedroom_type_label = '2 Bedroom'
-  AND d.dwelling_type_label = 'Apartment';
+  AND d.dwelling_type_label = 'Apartment'
+UNION ALL
+SELECT
+    z.zone_label AS market,
+    'cma_total' AS market_type,
+    p.period_label,
+    f.value AS average_rent_2br,
+    f.reliability_letter
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type = 'average_rent'
+  AND z.zone_label = 'Windsor CMA'
+  AND b.bedroom_type_label = '2 Bedroom'
+  AND d.dwelling_type_label = 'Apartment'
+  AND p.period_label IN ('Oct-24', 'Oct-25');
 
 -- ============================================================
 -- v_story4_affordability_gap

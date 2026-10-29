@@ -116,6 +116,13 @@ Rate by Income Band/Household Type -- shared by Dashboards 1 and 2):
 .venv\Scripts\python.exe etl\polish_percentage_kpi_formatting.py
 ```
 
+Build Story 4's dashboard ("How does Windsor compare to similar
+markets?" -- Windsor vs. the 4 real comparator CMAs on vacancy, rent,
+and the real rent-growth side of the affordability-gap index):
+```
+.venv\Scripts\python.exe etl\build_story4_dashboard.py
+```
+
 ## Add a dataset
 
 There are two real paths in this project, depending on what the new data

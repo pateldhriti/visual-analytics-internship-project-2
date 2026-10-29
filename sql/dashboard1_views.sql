@@ -73,13 +73,17 @@ WHERE m1.period_label = 'Oct-24';
 -- rather than left to be misread as a bigger universe.
 --
 -- Windsor's own vacancy_rate/average_rent are NOT in
--- fact_rental_market_comparison at all -- confirmed directly, the same
--- gap v_story4_vacancy_comparison/v_story4_rent_comparison already have
--- (both return only the 4 comparator rows, no Windsor row). Only
+-- fact_rental_market_comparison at all -- confirmed directly (excluded
+-- at load time to avoid duplicating fact_rental_market). Only
 -- pct_change_rent/turnover_rate have a genuine Windsor row there. So
 -- Windsor's vacancy_rate/average_rent are pulled from fact_rental_market
 -- instead (the same table Windsor's own site KPIs already use) and
 -- unioned in -- not assumed to exist somewhere they don't.
+-- (v_story4_vacancy_comparison/v_story4_rent_comparison had the same gap
+-- and are now fixed the same way -- see sql/story4_views.sql. This view
+-- keeps its own independent union rather than depending on those, since
+-- it already existed before that fix and queries fact_rental_market_comparison
+-- directly for other metrics too.)
 -- ============================================================
 CREATE OR REPLACE VIEW warehouse.v_dashboard1_cma_benchmark AS
 WITH comparator_metrics AS (
