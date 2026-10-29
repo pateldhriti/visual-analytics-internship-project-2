@@ -38,7 +38,7 @@ Checked: 2026-10-22
 ## Rental market tables (CMHC RMS -- Windsor, historical)
 
 Source: `warehouse.fact_rental_market` (2 staging sources -> 1 table)
-Checked: 2026-10-28
+Checked: 2026-10-29
 
 ### 1. Row counts vs. source
 - **PASS** -- live table: 2385 rows, staging sources combined: 2385, expected after known exclusions: 2385
@@ -73,7 +73,7 @@ Checked: 2026-10-28
 ## Rental market comparison table (CMHC Canada RMS 2025)
 
 Source: `warehouse.fact_rental_market_comparison` (1 staging source -> 1 table)
-Checked: 2026-10-28
+Checked: 2026-10-29
 
 ### 1. Row counts vs. source
 - **PASS** -- live table: 36 rows, staging sources combined: 40, expected after known exclusions: 36
