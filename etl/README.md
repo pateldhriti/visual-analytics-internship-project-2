@@ -123,6 +123,12 @@ and the real rent-growth side of the affordability-gap index):
 .venv\Scripts\python.exe etl\build_story4_dashboard.py
 ```
 
+Apply `docs/filter_standards.md`'s naming rule to Story 1's dashboard
+(renames its "Household type" native filter to "Household Type"):
+```
+.venv\Scripts\python.exe etl\apply_filter_standards_story1.py
+```
+
 ## Add a dataset
 
 There are two real paths in this project, depending on what the new data
