@@ -88,13 +88,12 @@ NEW_CHARTS = {
         "viz_type": "big_number_total",
         "params": {
             "metric": {
-                "expressionType": "SIMPLE",
-                "column": {"column_name": "latest_value"},
-                "aggregate": "MAX",
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(latest_value) / 100.0",
                 "label": "Vacancy Rate",
             },
             "adhoc_filters": [metric_filter("vacancy_rate")],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
             "subtitle": "Latest CMHC survey -- Oct-25",
@@ -128,13 +127,12 @@ NEW_CHARTS = {
         "viz_type": "big_number_total",
         "params": {
             "metric": {
-                "expressionType": "SIMPLE",
-                "column": {"column_name": "latest_value"},
-                "aggregate": "MAX",
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(latest_value) / 100.0",
                 "label": "Turnover Rate",
             },
             "adhoc_filters": [metric_filter("turnover_rate")],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
             "subtitle": "Latest CMHC survey -- Oct-25, Combined scope",
