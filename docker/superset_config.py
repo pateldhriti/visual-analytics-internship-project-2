@@ -152,6 +152,10 @@ PUBLIC_DATASOURCE_NAMES = [
     # dashboard-1-only views for the Rental Market YoY and CMA Benchmark
     # tables.
     "[Windsor Housing Data].[v_story3_starts_completions_by_dwelling_type](id:12)",
+    # Story 3's dashboard (etl/build_story3_dashboard.py) -- Windsor CMA
+    # supply from StatCan 34-10-0154-01.
+    "[Windsor Housing Data].[v_story3_windsor_supply_annual](id:21)",
+    "[Windsor Housing Data].[v_story3_windsor_supply_per_1000_households](id:22)",
     "[Windsor Housing Data].[v_dashboard1_rental_yoy](id:16)",
     "[Windsor Housing Data].[v_dashboard1_cma_benchmark](id:17)",
 ]

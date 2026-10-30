@@ -4,8 +4,11 @@ import PageContainer from "../components/PageContainer.jsx";
 
 // Embedding spike (docs/embedding_spike.md) -- not linked from the site nav,
 // a throwaway test route to prove the Embedded SDK mechanism, not a page
-// meant for real visitors. Left in the codebase as a working reference for
-// whoever builds the real guest-token backend later.
+// meant for real visitors. Superseded by the real implementation:
+// api/guest_token_server.py and components/SupersetGuestEmbed.jsx, used by
+// the Story 1 page (docs/embedding_prototype.md). This route still targets
+// the spike's test dashboard, which the backend doesn't allow, so it fails
+// by design.
 //
 // SUPERSET_DASHBOARD_UUID is this spike's one test dashboard (see
 // docs/embedding_spike.md for how it was created) -- not a real story

@@ -272,3 +272,30 @@ CREATE TABLE warehouse.fact_starts_completions (
     -- above on why forcing that conformance would be false).
     UNIQUE (province, period_type, period_label, activity, dwelling_type)
 );
+
+-- Source: StatCan table 34-10-0154-01 (CMHC Starts and Completions Survey,
+-- selected CMAs, monthly) -- etl/extract_windsor_starts_completions.py
+-- Grain: one row per (ref_month, activity, dwelling_type), Windsor CMA
+-- only, January 2016 onward.
+-- A separate table from fact_starts_completions rather than extra rows in
+-- it: different source, different geography (a CMA, not a province) and
+-- a different time grain (calendar months, not CMHC's quarter/YTD
+-- labels), so its CHECK constraints and unique key don't fit. dguid is
+-- StatCan's own identifier for the CMA in this table (2011 vintage,
+-- 2011S0503559) -- kept as local text, not an FK to dim_geography, whose
+-- Windsor row is the 2021 Census vintage (2021S0503559).
+-- dwelling_type uses the same 5 labels as fact_starts_completions
+-- (mapped in the extract), so the two can be read side by side.
+CREATE TABLE warehouse.fact_windsor_starts_completions (
+    fact_id       BIGSERIAL PRIMARY KEY,
+    dguid         TEXT NOT NULL,
+    ref_month     TEXT NOT NULL,  -- 'YYYY-MM'
+    period_year   INTEGER NOT NULL,
+    period_month  INTEGER NOT NULL CHECK (period_month BETWEEN 1 AND 12),
+    activity      TEXT NOT NULL
+        CHECK (activity IN ('Starts', 'Completions', 'Under Construction')),
+    dwelling_type TEXT NOT NULL
+        CHECK (dwelling_type IN ('Singles', 'Semis', 'Row', 'Apartment and Other', 'Total')),
+    units         NUMERIC,
+    UNIQUE (ref_month, activity, dwelling_type)
+);

@@ -188,6 +188,31 @@ VIEWS = {
             "description": "Housing starts, Ontario/Canada. No metric defined on households_total or supply_per_1000_households -- both are NULL for every row (see this view's own data_note in sql/story3_views.sql): no households figure exists at this geography.",
         },
     ],
+    "v_story3_windsor_supply_annual": [
+        {
+            "metric_name": "total_units",
+            "expression": "SUM(units)",
+            "verbose_name": "Total Units",
+            "metric_type": "sum",
+            "description": "Windsor CMA starts/completions (year's monthly sum) or units under construction (year-end stock). Only sum within one activity -- adding Starts to Under Construction mixes a flow with a stock.",
+        },
+    ],
+    "v_story3_windsor_supply_per_1000_households": [
+        {
+            "metric_name": "avg_starts_per_1000",
+            "expression": "AVG(starts_per_1000_households)",
+            "verbose_name": "Starts per 1,000 Households",
+            "metric_type": "avg",
+            "description": "Windsor CMA housing starts per 1,000 private households, full years only, against the 2021 Census household count.",
+        },
+        {
+            "metric_name": "avg_completions_per_1000",
+            "expression": "AVG(completions_per_1000_households)",
+            "verbose_name": "Completions per 1,000 Households",
+            "metric_type": "avg",
+            "description": "Windsor CMA housing completions per 1,000 private households, full years only, against the 2021 Census household count.",
+        },
+    ],
     "v_story4_vacancy_comparison": [
         {
             "metric_name": "avg_vacancy_rate",

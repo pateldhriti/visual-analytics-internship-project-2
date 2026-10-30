@@ -46,6 +46,7 @@ Each source has its own extract script, writing to `data/staging/`:
 | `extract_windsor_rms_historical.py` | `windsor_rental_market_historical.csv` (Windsor, Oct-20 to Oct-23 -- see its own docstring on why this isn't "10 years") |
 | `extract_rms_canada_comparison.py` | `rms_canada_comparison.csv` (comparator CMAs -- see [docs/comparator_cmas_justification.md](../docs/comparator_cmas_justification.md)) |
 | `extract_cmhc_starts_completions.py` | `ontario_canada_starts_completions.csv` |
+| `extract_windsor_starts_completions.py` | `windsor_starts_completions_monthly.csv` (Windsor CMA, monthly from Jan-2016, StatCan 34-10-0154-01 -- downloads the table zip to `data/raw/statcan/` on first run; `--refresh` re-downloads) |
 
 Optionally, `load_raw_files_to_postgres.py` loads every file under
 `data/raw/` as-is into Postgres's `raw` schema first, for reference --
@@ -58,9 +59,10 @@ Two different loaders, for two different kinds of destination:
 
 - **`create_warehouse_schema.py`** -- creates and seeds `sql/warehouse_schema.sql`'s
   dimensional model (run once, or after a schema change).
-- **`load_warehouse_facts.py`** -- bulk-loads all 4 fact tables
+- **`load_warehouse_facts.py`** -- bulk-loads all 6 fact tables
   (`fact_shelter_cost`, `fact_census_profile`, `fact_rental_market`,
-  `fact_starts_completions`) from the staging CSVs above, resolving every
+  `fact_rental_market_comparison`, `fact_starts_completions`,
+  `fact_windsor_starts_completions`) from the staging CSVs above, resolving every
   dimension foreign key by joining on real values (geography DGUID,
   period label, zone label, etc.), not assumed or guessed. Safe to
   re-run: each fact table is truncated first. It also re-runs
@@ -114,6 +116,13 @@ idempotent builder script of their own (Renter/Owner Burden Rate, Burden
 Rate by Income Band/Household Type -- shared by Dashboards 1 and 2):
 ```
 .venv\Scripts\python.exe etl\polish_percentage_kpi_formatting.py
+```
+
+Build Story 3's dashboard ("Is Windsor building enough housing?" --
+Windsor CMA starts vs completions by dwelling type, starts per 1,000
+households and a 2016-2025 trend, with a Year filter):
+```
+.venv\Scripts\python.exe etl\build_story3_dashboard.py
 ```
 
 Build Story 4's dashboard ("How does Windsor compare to similar

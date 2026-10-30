@@ -1,5 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
-import SupersetEmbed from "../components/SupersetEmbed.jsx";
+import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Narrative paragraphs reused verbatim from docs/story1_narrative_v1.md's own
 // draft text -- real, verified figures (corrected via docs/story1_validation.md),
@@ -86,8 +86,9 @@ export default function StoryAffordability() {
         detail: "the steepest of any income bracket in Windsor",
       }}
       dashboard={
-        <SupersetEmbed
-          dashboardId={3}
+        <SupersetGuestEmbed
+          dashboard="story1"
+          fallbackDashboardId={3}
           title="Story 1: Who faces the greatest affordability pressure? (Superset dashboard)"
         />
       }
