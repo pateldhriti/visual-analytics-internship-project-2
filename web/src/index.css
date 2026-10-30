@@ -1,66 +1,123 @@
 /* ============================================================
-   Design tokens -- Windsor Housing Analytics, light theme
-   One consistent theme across every page (header, hero, stories,
-   methodology) -- no page-level light/dark scoping. The accent
-   palette (violet/blue/cyan/teal) stays vibrant on the light
-   surface instead of reverting to flat navy.
+   Design tokens -- Windsor Housing Analytics, minimal editorial theme
+   Fully light, no dark surfaces anywhere on purpose -- warm paper
+   background, near-black ink, and exactly ONE signature accent
+   (a deep editorial red) instead of a 5-hue rainbow. Differentiation
+   between stories/sections comes from typography and layout (see
+   components/StoryPage.jsx's 5 variants), not from color-coding --
+   the restraint is the point, closer to a research journal or a
+   newspaper's data section than a SaaS dashboard.
+
+   The old accent variable NAMES (--blue, --violet, --teal, --rose,
+   --cyan, --amber) are kept and all point at the same --accent value,
+   so every component that referenced a specific hue still resolves
+   correctly without having to touch each call site individually.
    ============================================================ */
 :root {
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
 
-  /* Brand palette -- deliberately spaced around the wheel instead of five
-     adjacent blues: indigo (cool, primary) against coral (warm, alert),
-     with teal and violet as distinct secondary accents. Each one is at
-     least ~90deg of hue apart from its neighbours, which is what actually
-     reads as "designed" rather than a single hue family stretched thin. */
-  --bg: #f5f6fb;
+  --bg: #f6f3ec; /* warm paper, not stark white -- the editorial "page" */
   --surface: #ffffff;
-  --surface-2: #edeff8;
-  --border: #e2e5f0;
+  --surface-2: #efebe0; /* a shade deeper than paper, for subtle zoning */
+  --border: #ddd6c4; /* warm hairline rule, not a cool gray */
 
-  --blue: #3454d1; /* indigo -- primary accent: CTAs, links, sidebar active state */
-  --violet: #7c5cff; /* secondary accent, used sparingly (comparison / Story 5) */
-  --cyan: #0e8fae; /* tertiary cool accent -- eyebrows, small labels */
-  --teal: #0f9d79; /* positive/supply accent -- deep teal-green */
-  --rose: #d8503f; /* warm coral -- burden/alert accent, the deliberate contrast to indigo */
-  --amber: #c9862c; /* warm highlight accent -- sparing use, hero duotone, CTA glow */
+  --accent: #a3271f; /* the one signature color -- a deep editorial red/vermillion */
+  --accent-ink: #ffffff; /* text color used on a solid --accent fill */
 
-  --ink: #12172b;
-  --ink-muted: #5c6480;
+  --blue: var(--accent);
+  --violet: var(--accent);
+  --cyan: var(--accent);
+  --teal: var(--accent);
+  --rose: var(--accent);
+  --amber: var(--accent);
+
+  --ink: #18150f; /* warm near-black, not navy-tinted */
+  --ink-muted: #6b6457;
 
   /* Glass surface used by floating/elevated cards */
-  --glass-bg: rgba(255, 255, 255, 0.78);
-  --glass-bg-hover: rgba(255, 255, 255, 0.94);
+  --glass-bg: rgba(255, 255, 255, 0.86);
+  --glass-bg-hover: rgba(255, 255, 255, 0.97);
 
-  /* Status (real data gaps/limitations, not decorative) */
-  --flag-bg: #fdf6ec;
-  --flag-border: #f0ddb8;
-  --flag-ink: #8a5a14;
+  /* Status (real data gaps/limitations, not decorative) -- a separate,
+     muted ochre, deliberately NOT --accent: a "note" reads differently
+     from the one signature color used for emphasis/interaction. */
+  --flag-bg: #f3ecd9;
+  --flag-border: #ddcb9c;
+  --flag-ink: #6b4f1a;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 22px;
+  /* Small, near-square radii -- print/document corners, not "app" pill
+     shapes. Hairline rules do the separating work cards used to do with
+     shadows. */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
 
-  --shadow-card: 0 1px 2px rgba(18, 23, 43, 0.04), 0 2px 10px rgba(18, 23, 43, 0.05);
-  --shadow-card-hover: 0 10px 28px rgba(18, 23, 43, 0.1), 0 2px 10px rgba(52, 84, 209, 0.12);
+  --shadow-card: none;
+  --shadow-card-hover: 0 1px 0 var(--ink);
 
   --max-width: 1180px;
   --header-h: 64px;
 
-  /* Persistent left sidebar nav -- dark navy panel against the light
-     page, with a solid indigo pill on the active item. */
+  /* Persistent left sidebar nav -- same paper surface as the page, a
+     single hairline rule on its right edge, no dark panel. */
   --sidebar-w: 268px;
-  --sidebar-bg: #0f1530;
-  --sidebar-bg-active: var(--blue);
-  --sidebar-ink: #f3f5fc;
-  --sidebar-ink-muted: #8a92b8;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-bg: var(--surface);
+  --sidebar-bg-active: var(--accent);
+  --sidebar-ink: var(--ink);
+  --sidebar-ink-muted: var(--ink-muted);
+  --sidebar-border: var(--border);
+
+  /* Row-house illustration -- the Neighbourhood theme's street, used on
+     Home's hero, every story page's top band, and the sidebar. */
+  --houses: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='140' viewBox='0 0 480 140'%3E%3Crect x='0' y='50' width='90' height='90' fill='%23e8735a'/%3E%3Cpolygon points='-4,52 45,10 94,52' fill='%233d3a4b'/%3E%3Crect x='14' y='68' width='20' height='22' fill='%23fff1c9'/%3E%3Crect x='56' y='68' width='20' height='22' fill='%23fff1c9'/%3E%3Crect x='34' y='104' width='22' height='36' fill='%233d3a4b'/%3E%3Crect x='90' y='30' width='80' height='110' fill='%23f2c14e'/%3E%3Cpolygon points='86,32 130,0 174,32' fill='%235a4636'/%3E%3Crect x='104' y='48' width='18' height='20' fill='%23fff1c9'/%3E%3Crect x='138' y='48' width='18' height='20' fill='%23fff1c9'/%3E%3Crect x='104' y='80' width='18' height='20' fill='%23fff1c9'/%3E%3Crect x='138' y='80' width='18' height='20' fill='%23fff1c9'/%3E%3Crect x='120' y='110' width='20' height='30' fill='%235a4636'/%3E%3Crect x='170' y='60' width='100' height='80' fill='%234fa3a5'/%3E%3Cpolygon points='166,62 220,24 274,62' fill='%232f4858'/%3E%3Crect x='186' y='78' width='22' height='20' fill='%23fff1c9'/%3E%3Crect x='232' y='78' width='22' height='20' fill='%23fff1c9'/%3E%3Crect x='208' y='106' width='24' height='34' fill='%232f4858'/%3E%3Crect x='270' y='40' width='90' height='100' fill='%239cc3e6'/%3E%3Cpolygon points='266,42 315,6 364,42' fill='%233d3a4b'/%3E%3Crect x='286' y='58' width='20' height='22' fill='%23fff1c9'/%3E%3Crect x='324' y='58' width='20' height='22' fill='%23fff1c9'/%3E%3Crect x='304' y='100' width='22' height='40' fill='%233d3a4b'/%3E%3Crect x='360' y='56' width='120' height='84' fill='%23b5c99a'/%3E%3Cpolygon points='356,58 420,18 484,58' fill='%235a4636'/%3E%3Crect x='378' y='74' width='22' height='20' fill='%23fff1c9'/%3E%3Crect x='440' y='74' width='22' height='20' fill='%23fff1c9'/%3E%3Crect x='408' y='104' width='24' height='36' fill='%235a4636'/%3E%3C/svg%3E");
 
   /* Below this width the sidebar collapses to a hamburger-triggered drawer. */
   --nav-breakpoint: 860px;
 }
+
+/* ============================================================
+   Theme presets -- a temporary comparison aid, NOT the final design.
+   Each story tab (1-5) carries a different complete candidate theme
+   (set via data-theme on .story-page, see components/StoryPage.jsx),
+   so the same real content can be browsed side by side before picking
+   one to apply site-wide. Motion stays identical across all of them,
+   so the comparison is about visual language only. Sidebar chrome stays
+   on the default (editorial) theme throughout, as the one constant
+   reference point while the content area changes.
+   ============================================================ */
+
+/* Story 1 -- explicitly restates the current :root values. Not a
+   no-op by accident: it's here so Story 1 keeps showing this theme
+   even if :root's own defaults change later while comparison is
+   still in progress. */
+[data-theme="editorial"] {
+  --bg: #f6f3ec;
+  --surface: #ffffff;
+  --surface-2: #efebe0;
+  --border: #ddd6c4;
+  --accent: #a3271f;
+  --ink: #18150f;
+  --ink-muted: #6b6457;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-display: "Newsreader", Georgia, serif;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --shadow-card: none;
+  --shadow-card-hover: 0 1px 0 var(--ink);
+  --flag-bg: #f3ecd9;
+  --flag-border: #ddcb9c;
+  --flag-ink: #6b4f1a;
+}
+
+/* The 5 colorful comparison themes (aurora / pop / riso / jewel /
+   holo) live at the very END of this file, not here -- they override
+   component styles (gradients, textures, borders, type effects), not
+   just tokens, so they need to come after every component rule in
+   source order. */
 
 * {
   box-sizing: border-box;
@@ -78,20 +135,20 @@ body {
 h1,
 h2,
 h3 {
-  letter-spacing: -0.015em;
+  letter-spacing: -0.005em;
   color: var(--ink);
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
 h1 {
-  font-size: clamp(2rem, 1.5rem + 2vw, 2.9rem);
+  font-size: clamp(2.1rem, 1.5rem + 2.4vw, 3.2rem);
 }
 
 h2 {
@@ -103,19 +160,19 @@ p {
 }
 
 a {
-  color: var(--blue);
+  color: var(--accent);
 }
 
 a:hover {
-  color: var(--cyan);
+  color: var(--ink);
 }
 
 /* Themed keyboard-focus ring, in place of the browser default blue
    outline -- visible only for keyboard navigation (:focus-visible). */
 :focus-visible {
-  outline: 2px solid var(--violet);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .app-shell {
@@ -189,15 +246,15 @@ main {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
-  transition:
-    box-shadow 0.18s ease,
-    transform 0.18s ease;
+  transition: border-color 0.15s ease;
 }
 
+/* Editorial restraint over "app" motion -- hover darkens the hairline
+   border to full ink instead of lifting/glowing, same idea as a
+   pressed-link underline rather than a floating card. */
 a.card:hover,
 .card--hoverable:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
+  border-color: var(--ink);
 }
 
 /* ============================================================
@@ -373,6 +430,7 @@ a.card:hover,
 }
 
 .bar-track {
+  display: block;
   height: 10px;
   background: var(--surface-2);
   border-radius: 999px;
@@ -380,11 +438,18 @@ a.card:hover,
 }
 
 /* Width itself is animated inline by framer-motion (Home.jsx) on mount
-   and whenever the data-explorer's active metric changes. */
+   and whenever the data-explorer's active metric changes.
+   `display: block` is required here, not cosmetic -- .bar-fill is a
+   <span> (inline by default), and width/height simply don't apply to
+   non-replaced inline elements per the CSS spec. Without this, the
+   browser silently ignores both the animated width and height: 100%,
+   so the fill never actually renders at any size -- confirmed this was
+   the real bug, not a color/contrast issue. */
 .bar-fill {
+  display: block;
   height: 100%;
   border-radius: 999px;
-  background: var(--teal);
+  background: var(--accent);
 }
 
 .bar-row-value {
@@ -479,8 +544,7 @@ a.card:hover,
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--teal);
-  box-shadow: 0 0 0 3px rgba(15, 157, 121, 0.18);
+  background: var(--accent);
 }
 
 .superset-embed-link {
@@ -511,10 +575,10 @@ a.card:hover,
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
+  padding: 8px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 0.82rem;
 }
 
@@ -548,10 +612,14 @@ a.card:hover,
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 3px;
-  background: var(--kpi-accent, var(--blue));
+  width: 2px;
+  background: var(--accent);
 }
 
+/* A plain outlined ring with the trend glyph in ink, not a glossy
+   gradient bubble -- the 4 old per-accent color classes (still applied
+   from the same JS prop, so no component changes needed) all render
+   identically now; color no longer carries meaning here on purpose. */
 .kpi-tile-badge {
   position: absolute;
   top: 16px;
@@ -559,49 +627,25 @@ a.card:hover,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
   font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-  box-shadow: 0 4px 10px -2px var(--kpi-accent-shadow, rgba(52, 84, 209, 0.45));
+  font-weight: 600;
+  color: var(--ink-muted);
+  background: transparent;
 }
 
-.kpi-tile-badge--blue {
-  --kpi-accent-shadow: rgba(52, 84, 209, 0.45);
-  background: linear-gradient(145deg, #5878e8, var(--blue));
-}
-
-.kpi-tile-badge--violet {
-  --kpi-accent-shadow: rgba(124, 92, 255, 0.45);
-  background: linear-gradient(145deg, #9b82ff, var(--violet));
-}
-
-.kpi-tile-badge--teal {
-  --kpi-accent-shadow: rgba(15, 157, 121, 0.45);
-  background: linear-gradient(145deg, #27c29a, var(--teal));
-}
-
+.kpi-tile-badge--blue,
+.kpi-tile-badge--violet,
+.kpi-tile-badge--teal,
 .kpi-tile-badge--rose {
-  --kpi-accent-shadow: rgba(216, 80, 63, 0.45);
-  background: linear-gradient(145deg, #e8745f, var(--rose));
+  background: transparent;
 }
 
-.kpi-tile:has(.kpi-tile-badge--blue) {
-  --kpi-accent: var(--blue);
-}
-
-.kpi-tile:has(.kpi-tile-badge--violet) {
-  --kpi-accent: var(--violet);
-}
-
-.kpi-tile:has(.kpi-tile-badge--teal) {
-  --kpi-accent: var(--teal);
-}
-
-.kpi-tile:has(.kpi-tile-badge--rose) {
-  --kpi-accent: var(--rose);
+.kpi-tile:has(.kpi-tile-badge) {
+  --kpi-accent: var(--accent);
 }
 
 .kpi-tile-value {
@@ -626,8 +670,13 @@ a.card:hover,
   margin: 6px 0 0;
 }
 
+/* Capped at 68ch for a readable line length, but centered within the
+   page rather than left -- without the auto margin, the narrow column
+   just hugged the left edge, leaving a large empty gap on the right
+   on anything wider than a laptop screen (confirmed from a screenshot,
+   not assumed). */
 .story-narrative {
-  margin-top: 32px;
+  margin: 32px auto 0;
   max-width: 68ch;
 }
 
@@ -687,6 +736,355 @@ a.card:hover,
 }
 
 /* ============================================================
+   Story variants -- one signature numeral every story shares
+   (.story-index-numeral), tinted per story via --story-accent, plus 5
+   distinct structural treatments (spotlight / ticker / blueprint /
+   ladder / horizon) so the 5 tabs read as 5 different pages, not one
+   template with swapped-in text.
+   ============================================================ */
+/* Explicit background/color/font-family here (not just left to inherit
+   from <body>) is what makes a [data-theme] override on this element
+   actually take visual effect -- these 3 properties get RE-COMPUTED
+   from the locally-scoped custom properties; everything below that
+   already reads var(--bg)/var(--ink)/var(--font-sans) etc. then
+   inherits correctly through the normal cascade. */
+.story-page {
+  --story-accent: var(--blue);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  padding-bottom: 40px;
+}
+
+.story-page--spotlight {
+  --story-accent: var(--rose);
+}
+
+.story-page--ticker {
+  --story-accent: var(--blue);
+}
+
+.story-page--blueprint {
+  --story-accent: var(--teal);
+}
+
+.story-page--ladder {
+  --story-accent: var(--violet);
+}
+
+.story-page--horizon {
+  --story-accent: var(--cyan);
+}
+
+.story-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: flex-end;
+  gap: 20px;
+  column-gap: 28px;
+}
+
+.story-index-numeral {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(3.4rem, 3rem + 4vw, 6.5rem);
+  line-height: 0.85;
+  color: var(--story-accent);
+  opacity: 0.16;
+  letter-spacing: -0.03em;
+  user-select: none;
+}
+
+.story-head-body {
+  min-width: 0;
+}
+
+.story-head-body h1 {
+  margin-top: 0;
+}
+
+/* Spotlight (Story 1) -- a 3rd column carrying one oversized, verified
+   figure beside the title, so the headline statistic reads as the
+   page's visual anchor instead of competing with 4 equal KPI tiles. */
+.story-page--spotlight .story-head {
+  grid-template-columns: auto 1fr auto;
+}
+
+@media (max-width: 860px) {
+  .story-page--spotlight .story-head {
+    grid-template-columns: auto 1fr;
+  }
+
+  .story-spotlight-stat {
+    grid-column: 1 / -1;
+  }
+}
+
+.story-spotlight-stat {
+  justify-self: end;
+  padding: 20px 26px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  text-align: right;
+  max-width: 220px;
+}
+
+.story-spotlight-value {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 1.8rem + 1.5vw, 2.8rem);
+  font-weight: 600;
+  color: var(--story-accent);
+  margin: 0 0 4px;
+  line-height: 1;
+}
+
+.story-spotlight-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.story-spotlight-detail {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  margin: 4px 0 0;
+}
+
+/* Ticker (Story 2) -- the rental-market KPIs scroll past like a market
+   ticker tape instead of sitting in static tiles, a small nod to "a
+   market that moves." Pauses on hover/focus so the numbers are still
+   readable, not purely decorative motion. */
+/* Deliberately the one inverted (dark) element on an otherwise fully
+   light site -- an actual ticker-tape device, not a leftover dark
+   surface. Self-contained: nothing else on the page reads its colors. */
+.kpi-ticker {
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--ink);
+  padding: 4px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.kpi-ticker-track {
+  display: flex;
+  gap: 48px;
+  width: max-content;
+  animation: kpi-ticker-scroll 22s linear infinite;
+  padding: 18px 48px;
+}
+
+.kpi-ticker:hover .kpi-ticker-track,
+.kpi-ticker:focus-within .kpi-ticker-track {
+  animation-play-state: paused;
+}
+
+.kpi-ticker-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+}
+
+.kpi-ticker-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.kpi-ticker-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes kpi-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Blueprint (Story 3) -- definitions read like callouts on a technical
+   drawing: a faint graph-paper band, dashed cards, numbered like plan
+   sheets -- a deliberate "under construction" visual pun for the
+   housing-supply story. */
+.blueprint-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-2);
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.blueprint-card {
+  position: relative;
+  padding: 18px 18px 16px;
+  background: var(--surface);
+  border: 1.5px dashed var(--story-accent);
+  border-radius: var(--radius-md);
+}
+
+.blueprint-card-index {
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  background: var(--story-accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+/* Ladder (Story 4) -- the comparator CMAs rendered as an actual ranked
+   list with a connecting rail, not a KPI grid -- because this story's
+   real content IS a ranking, so the layout should look like one. */
+.ranking-ladder {
+  margin-top: 22px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 8px;
+}
+
+.ranking-ladder::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 25px;
+  width: 2px;
+  background: var(--border);
+}
+
+.ranking-rung {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.ranking-rung-position {
+  grid-row: 1 / 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+  z-index: 1;
+}
+
+.ranking-rung-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ranking-rung-value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--ink);
+  justify-self: end;
+}
+
+.ranking-rung-detail {
+  grid-column: 2 / 3;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.ranking-rung--highlight {
+  border-color: var(--story-accent);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ranking-rung--highlight .ranking-rung-position {
+  background: var(--story-accent);
+  color: #fff;
+}
+
+.ranking-rung--highlight .ranking-rung-value {
+  color: var(--story-accent);
+}
+
+/* Horizon (Story 5) -- this story genuinely has no narrative/dashboard
+   yet, so instead of the same italic placeholder line every other gap
+   on the site uses, its empty states look deliberately open --
+   dashed, unfinished-on-purpose, with a quiet pulse instead of a
+   static note, honestly matching what the page actually is. */
+.horizon-note {
+  margin-top: 24px;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: 1.5px dashed var(--story-accent);
+  border-radius: var(--radius-lg);
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  position: relative;
+  padding-left: 42px;
+}
+
+.horizon-note::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 26px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--story-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--story-accent) 50%, transparent);
+  animation: horizon-pulse 2.2s ease-out infinite;
+}
+
+@keyframes horizon-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--story-accent) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--story-accent) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpi-ticker-track {
+    animation: none;
+  }
+
+  .horizon-note::before {
+    animation: none;
+  }
+}
+
+/* ============================================================
    Sidebar nav (persistent left rail on desktop, drawer on mobile)
    ============================================================ */
 .brand {
@@ -699,18 +1097,21 @@ a.card:hover,
   text-decoration: none;
 }
 
+/* An imprint mark, not a glossy app icon -- solid ink square, a single
+   serif letter, like a publisher's device on a title page. */
 .brand-mark {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, #4766e0 0%, #c9862c 140%);
-  color: #fff;
+  background: var(--ink);
+  color: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 600;
+  font-style: italic;
+  font-weight: 500;
   flex-shrink: 0;
 }
 
@@ -767,15 +1168,17 @@ a.card:hover,
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
+  padding: 9px 12px 9px 10px;
+  border-radius: 0;
+  border-left: 2px solid transparent;
   text-decoration: none;
   color: var(--sidebar-ink-muted);
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 500;
   transition:
     background 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .sidebar-icon {
@@ -785,26 +1188,31 @@ a.card:hover,
 }
 
 .sidebar-nav-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   margin-left: auto;
   flex-shrink: 0;
-  opacity: 0.85;
+  background: var(--accent);
+  opacity: 0.7;
 }
 
 .sidebar-nav-link.active .sidebar-nav-dot {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18);
+  opacity: 1;
 }
 
 .sidebar-nav-link:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--surface-2);
   color: var(--sidebar-ink);
 }
 
+/* Active state: a left accent rule + bold ink text, not a filled
+   pill -- the documentation-sidebar pattern, suited to a light panel. */
 .sidebar-nav-link.active {
-  background: var(--sidebar-bg-active);
-  color: #fff;
+  background: var(--surface-2);
+  border-left-color: var(--accent);
+  color: var(--sidebar-ink);
+  font-weight: 700;
 }
 
 .sidebar-foot-note {
@@ -930,6 +1338,29 @@ a.card:hover,
 
 .methodology-card {
   padding: 22px 24px;
+  position: relative;
+}
+
+/* Small numbered-step treatment on the Methodology page's stack cards --
+   reads as a pipeline (1 through 6) rather than an unordered tag list. */
+.methodology-timeline .methodology-card {
+  padding-top: 30px;
+}
+
+.methodology-step-index {
+  position: absolute;
+  top: -11px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 .methodology-card h2 {
@@ -952,9 +1383,74 @@ a.card:hover,
 }
 
 /* ============================================================
-   Homepage hero banner -- dark navy banner (same navy as the sidebar)
-   with the isometric skyline as a photo-style backdrop, matching the
-   reference mockup's "dark banner + flat KPI row below" layout.
+   Sources page -- compact dataset citation cards. Deliberately
+   smaller/denser than .methodology-card: these are reference/citation
+   detail, not headline content, and there are 5+ of them on screen at
+   once, so a card needs to stay scannable rather than each one running
+   a full screen-height tall.
+   ============================================================ */
+.source-card-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.source-card {
+  padding: 16px 18px;
+}
+
+.source-card h2 {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0;
+  margin: 0 0 10px;
+}
+
+.source-card dl {
+  margin: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.source-card dt {
+  display: inline;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.source-card dt::after {
+  content: ": ";
+}
+
+.source-card dd {
+  display: inline;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.source-card dd a {
+  font-weight: 600;
+}
+
+.source-card-link {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Homepage hero -- a 2-column editorial masthead on plain paper, not a
+   full-bleed photo banner with text scrimmed over it. The photo sits in
+   its own bordered frame like a captioned newspaper photograph; nothing
+   here is a dark surface (the one deliberately dark element on the
+   whole site is the Story 2 KPI ticker, a self-contained device -- see
+   .kpi-ticker).
    ============================================================ */
 html {
   scroll-behavior: smooth;
@@ -971,197 +1467,152 @@ html {
 }
 
 .hero-banner {
-  position: relative;
-  overflow: hidden;
-  background: var(--sidebar-bg);
-  padding: 72px 24px 88px;
-  min-height: 460px;
-  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 56px 0 48px;
+}
+
+.hero-banner-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
   align-items: center;
+}
+
+@media (max-width: 860px) {
+  .hero-banner-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+.hero-banner-figure {
+  margin: 0;
+  border: 1px solid var(--border);
+  padding: 8px;
+  background: var(--surface);
 }
 
 .hero-banner-photo {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   object-position: center;
-  filter: saturate(0.85) contrast(1.05);
+  filter: grayscale(0.55) contrast(1.05) sepia(0.08);
 }
 
-.hero-banner-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    linear-gradient(
-      100deg,
-      rgba(10, 15, 36, 0.97) 0%,
-      rgba(10, 15, 36, 0.86) 40%,
-      rgba(10, 15, 36, 0.35) 100%
-    ),
-    linear-gradient(0deg, rgba(10, 15, 36, 0.5) 0%, rgba(10, 15, 36, 0) 35%),
-    radial-gradient(ellipse 900px 500px at 85% 15%, rgba(201, 134, 44, 0.22), transparent 70%);
-}
-
-.hero-banner-inner {
-  position: relative;
-  z-index: 1;
-  max-width: var(--max-width);
-  margin: 0 auto;
-}
-
-.hero-scroll-cue {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  z-index: 1;
-  transform: translateX(-50%);
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-}
-
-.hero-scroll-cue svg {
-  width: 16px;
-  height: 16px;
-}
-
-@media (max-width: 680px) {
-  .hero-scroll-cue {
-    display: none;
-  }
+.hero-banner-caption {
+  margin-top: 8px;
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+  text-align: center;
+  letter-spacing: 0.01em;
 }
 
 .hero-eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  color: var(--cyan);
-  margin: 0 0 18px;
+  color: var(--accent);
+  margin: 0 0 16px;
 }
 
 .hero-headline {
   margin: 0 0 20px;
-  font-size: clamp(2.1rem, 1.6rem + 2vw, 3.1rem);
-  line-height: 1.15;
-  color: #fff;
-  letter-spacing: -0.02em;
-  max-width: 22ch;
+  font-size: clamp(2.2rem, 1.7rem + 2.2vw, 3.4rem);
+  line-height: 1.1;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  max-width: 20ch;
 }
 
 .hero-headline em {
   font-style: italic;
   font-weight: 500;
-  background: linear-gradient(100deg, #7ea6ff 0%, #ffcf8a 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent);
 }
 
 .hero-lede {
-  max-width: 54ch;
+  max-width: 52ch;
   font-size: 1.05rem;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--ink-muted);
+  margin: 0 0 30px;
+}
+
+/* Same role as .hero-lede (an intro paragraph under an <h1>) -- a
+   shared name since both now read the same way on the same paper
+   surface; kept as 2 classes only because different pages pass
+   slightly different max-widths. */
+.page-lede {
+  max-width: 60ch;
+  font-size: 1.05rem;
+  color: var(--ink-muted);
   margin: 0 0 32px;
 }
 
 .hero-cta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  align-items: center;
+  gap: 24px;
 }
 
 .hero-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 24px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.92rem;
   text-decoration: none;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
 }
 
 .hero-cta-primary {
-  background: linear-gradient(100deg, #4766e0 0%, #c9862c 130%);
-  color: #fff;
-  box-shadow: 0 8px 24px rgba(71, 102, 224, 0.35);
-  animation: cta-pulse 2.6s ease-in-out infinite;
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 22px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: 0.92rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
 }
 
 .hero-cta-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(71, 102, 224, 0.45);
-  animation-play-state: paused;
-}
-
-@keyframes cta-pulse {
-  0%,
-  100% {
-    box-shadow: 0 8px 24px rgba(71, 102, 224, 0.35);
-  }
-  50% {
-    box-shadow: 0 8px 30px rgba(201, 134, 44, 0.4);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-cta-primary {
-    animation: none;
-  }
+  background: var(--accent);
 }
 
 .hero-cta-secondary {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.92rem;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
 }
 
 .hero-cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
-/* Flat KPI row directly below the banner -- reuses .kpi-tile-row/.kpi-tile
-   (components/KpiRow.jsx), same component as every story page. */
-.hero-kpi-row {
-  margin-top: -40px;
-  position: relative;
-  z-index: 2;
-}
-
-/* "Explore the stories" icon badges -- colored circle per story,
-   matching the reference mockup's story-card icons. */
+/* "Explore the stories" icon marks -- a thin-bordered square in ink,
+   not a colored gradient blob: the numeral already in each story's own
+   page (.story-index-numeral) carries the "which story" signal, so
+   this is a quiet glyph, not a second color-coded badge system. */
 .story-card-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
   margin-bottom: 16px;
-  box-shadow: 0 6px 14px -4px var(--kpi-accent-shadow, rgba(52, 84, 209, 0.45));
   transition: transform 0.2s ease;
 }
 
 .story-card:hover .story-card-icon {
-  transform: scale(1.08) rotate(-4deg);
+  transform: rotate(-4deg);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .story-card-icon svg {
@@ -1179,7 +1630,7 @@ html {
 
 .metric-btn {
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--ink-muted);
@@ -1193,12 +1644,1470 @@ html {
 }
 
 .metric-btn:hover {
-  border-color: var(--teal);
+  border-color: var(--ink);
   color: var(--ink);
 }
 
 .metric-btn.is-active {
-  background: var(--violet);
-  border-color: var(--violet);
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
+}
+
+/* ============================================================
+   Colorful comparison themes -- one per story tab:
+     Home     neighbourhood -- a street of row houses under a sky; house-
+                               shaped (roofed) KPI tiles and story cards.
+                               CURRENTLY APPLIED TO EVERY PAGE -- the
+                               presets below are kept only so any tab can
+                               be switched back by changing its theme prop.
+     Story 1  cutout        -- Matisse paper cut-outs (kept -- chosen)
+     Story 2  bauhaus       -- primary geometric (kept -- chosen)
+     Story 3  construction  -- building site: hazard tape, crane, site-sign
+                               KPI tiles, a real blueprint panel
+     Story 4  jewel         -- jewel tones + gold (kept -- chosen)
+     Story 5  streetmap     -- city map background, map-pin number, street-
+                               sign label, dashed-route callouts
+   All light-background, all multi-color on purpose (unlike the default
+   editorial theme, which collapses every accent to one). Every value
+   shown is still the same real data -- only presentation changes.
+   ============================================================ */
+
+/* Shared: re-enable per-accent color. Each KPI tile / ticker item
+   already carries a kpi-tile-badge--{rose|blue|violet|teal} class from
+   its data; cards and chips cycle through the 4 by position. --tile is
+   the one variable every theme below reads for "this element's color". */
+[data-theme]:not([data-theme="editorial"]) {
+  --tile: var(--accent);
+}
+
+[data-theme]:not([data-theme="editorial"]) .kpi-tile:has(.kpi-tile-badge--rose),
+[data-theme]:not([data-theme="editorial"]) .kpi-tile-badge--rose {
+  --tile: var(--rose);
+}
+
+[data-theme]:not([data-theme="editorial"]) .kpi-tile:has(.kpi-tile-badge--blue),
+[data-theme]:not([data-theme="editorial"]) .kpi-tile-badge--blue {
+  --tile: var(--blue);
+}
+
+[data-theme]:not([data-theme="editorial"]) .kpi-tile:has(.kpi-tile-badge--violet),
+[data-theme]:not([data-theme="editorial"]) .kpi-tile-badge--violet {
+  --tile: var(--violet);
+}
+
+[data-theme]:not([data-theme="editorial"]) .kpi-tile:has(.kpi-tile-badge--teal),
+[data-theme]:not([data-theme="editorial"]) .kpi-tile-badge--teal {
+  --tile: var(--teal);
+}
+
+[data-theme]:not([data-theme="editorial"])
+  :is(.definition-card, .blueprint-card, .filter-chip):nth-child(4n + 1) {
+  --tile: var(--rose);
+}
+
+[data-theme]:not([data-theme="editorial"])
+  :is(.definition-card, .blueprint-card, .filter-chip):nth-child(4n + 2) {
+  --tile: var(--blue);
+}
+
+[data-theme]:not([data-theme="editorial"])
+  :is(.definition-card, .blueprint-card, .filter-chip):nth-child(4n + 3) {
+  --tile: var(--teal);
+}
+
+[data-theme]:not([data-theme="editorial"])
+  :is(.definition-card, .blueprint-card, .filter-chip):nth-child(4n + 4) {
+  --tile: var(--violet);
+}
+
+[data-theme]:not([data-theme="editorial"]) .card {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* ---------- Story 4: JEWEL ---------- */
+.story-page[data-theme="jewel"] {
+  --bg: #faf6ec;
+  --surface: #ffffff;
+  --surface-2: #f2ead6;
+  --border: rgba(185, 140, 50, 0.45);
+  --accent: #0f6e5a;
+  --teal: #0f6e5a;
+  --blue: #1f3f8f;
+  --rose: #9b1d4a;
+  --violet: #5b2a86;
+  --amber: #c99a2e;
+  --cyan: #0f6e8a;
+  --ink: #1b2440;
+  --ink-muted: #5f6577;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow-card: 0 6px 22px rgba(27, 36, 64, 0.08);
+  --shadow-card-hover: 0 14px 34px rgba(15, 110, 90, 0.18);
+  --flag-bg: #f8e9ef;
+  --flag-border: #d7a3b8;
+  --flag-ink: #6b1233;
+  background:
+    radial-gradient(circle at 92% -8%, rgba(15, 110, 90, 0.16), transparent 38%),
+    radial-gradient(circle at -6% 108%, rgba(155, 29, 74, 0.14), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(201, 154, 46, 0.06), transparent 60%), #faf6ec;
+}
+
+.story-page[data-theme="jewel"] :is(h1, h2) {
+  font-weight: 600;
+}
+
+.story-page[data-theme="jewel"] .story-head-body h1::after {
+  content: "";
+  display: block;
+  width: 96px;
+  height: 3px;
+  margin-top: 16px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--amber), var(--rose));
+}
+
+.story-page[data-theme="jewel"] .story-index-numeral {
+  font-style: italic;
+  color: var(--amber);
+  opacity: 0.55;
+}
+
+.story-page[data-theme="jewel"] .story-label {
+  color: var(--amber);
+  letter-spacing: 0.18em;
+}
+
+.story-page[data-theme="jewel"] .card:hover {
+  border-color: var(--amber);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.story-page[data-theme="jewel"] .kpi-tile {
+  background: linear-gradient(150deg, var(--tile), color-mix(in srgb, var(--tile) 68%, #000));
+  border-color: color-mix(in srgb, var(--tile) 60%, #000);
+}
+
+.story-page[data-theme="jewel"] .kpi-tile::before {
+  inset: auto 0 0 0;
+  width: auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--amber), transparent);
+}
+
+.story-page[data-theme="jewel"] :is(.kpi-tile-value, .kpi-tile-label, .kpi-tile-caption) {
+  color: #fff;
+}
+
+.story-page[data-theme="jewel"] .kpi-tile-badge {
+  border: 1.5px solid var(--amber);
+  color: var(--amber);
+}
+
+.story-page[data-theme="jewel"] .filter-chip-label {
+  color: var(--amber);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.story-page[data-theme="jewel"] .ranking-ladder::before {
+  background: linear-gradient(var(--amber), var(--rose));
+}
+
+.story-page[data-theme="jewel"] .ranking-rung-position {
+  background: #fff;
+  border: 1.5px solid var(--amber);
+  color: var(--amber);
+  font-family: var(--font-display);
+}
+
+.story-page[data-theme="jewel"] .ranking-rung--highlight {
+  background: linear-gradient(120deg, var(--teal), var(--blue));
+  border-color: transparent;
+}
+
+.story-page[data-theme="jewel"]
+  .ranking-rung--highlight
+  :is(.ranking-rung-label, .ranking-rung-value, .ranking-rung-detail) {
+  color: #fff;
+}
+
+.story-page[data-theme="jewel"] .ranking-rung--highlight .ranking-rung-position {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #fff;
+}
+
+.story-page[data-theme="jewel"] .definition-card {
+  border-left: 3px solid var(--tile);
+}
+
+.story-page[data-theme="jewel"] .definition-term {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--tile);
+}
+
+.story-page[data-theme="jewel"] .limitations-note {
+  border-left: 4px solid var(--rose);
+}
+
+.story-page[data-theme="jewel"] .placeholder-note {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed var(--amber);
+}
+
+/* ---------- Story 2: BAUHAUS (primary geometric) ---------- */
+.story-page[data-theme="bauhaus"] {
+  --bg: #f3efe6;
+  --surface: #ffffff;
+  --surface-2: #ece6d8;
+  --border: #1a1a1a;
+  --accent: #e63922;
+  --rose: #e63922;
+  --blue: #1f4bb8;
+  --teal: #f2b705;
+  --violet: #ee7b16;
+  --amber: #f2b705;
+  --cyan: #1f4bb8;
+  --ink: #1a1a1a;
+  --ink-muted: #4a4740;
+  --font-sans: "Jost", system-ui, sans-serif;
+  --font-display: "Jost", system-ui, sans-serif;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --shadow-card: none;
+  --shadow-card-hover: 6px 6px 0 #e63922;
+  --flag-bg: #f2b705;
+  --flag-border: #1a1a1a;
+  --flag-ink: #1a1a1a;
+  background:
+    radial-gradient(circle at calc(100% - 140px) 120px, #e63922 0 72px, transparent 73px),
+    radial-gradient(circle at calc(100% - 52px) 236px, #1f4bb8 0 44px, transparent 45px),
+    linear-gradient(#f2b705, #f2b705) right 230px top 206px / 54px 54px no-repeat,
+    #f3efe6;
+}
+
+@media (max-width: 860px) {
+  .story-page[data-theme="bauhaus"] {
+    background: #f3efe6;
+  }
+}
+
+@media (min-width: 861px) {
+  .story-page[data-theme="bauhaus"] .story-head {
+    padding-right: 260px;
+  }
+}
+
+.story-page[data-theme="bauhaus"] :is(h1, h2) {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.story-page[data-theme="bauhaus"] .story-head-body h1 {
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.story-page[data-theme="bauhaus"] .story-index-numeral {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background: #f2b705;
+  color: #1a1a1a;
+  font-size: clamp(2.2rem, 1.8rem + 2.4vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1;
+  opacity: 1;
+}
+
+.story-page[data-theme="bauhaus"] .story-label {
+  color: #e63922;
+  letter-spacing: 0.2em;
+}
+
+.story-page[data-theme="bauhaus"] .card {
+  position: relative;
+  border: 2px solid #1a1a1a;
+}
+
+.story-page[data-theme="bauhaus"] .card:hover {
+  border-color: #1a1a1a;
+  box-shadow: 6px 6px 0 var(--tile);
+}
+
+.story-page[data-theme="bauhaus"] .definition-card::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 16px;
+  height: 16px;
+  background: var(--tile);
+  border-radius: 50%;
+}
+
+.story-page[data-theme="bauhaus"] .definition-card:nth-child(even)::after {
+  border-radius: 0;
+}
+
+.story-page[data-theme="bauhaus"] .definition-card {
+  box-shadow: inset 6px 0 0 var(--tile);
+}
+
+.story-page[data-theme="bauhaus"] .definition-term {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-right: 24px;
+}
+
+.story-page[data-theme="bauhaus"] .filter-chip {
+  border: 2px solid #1a1a1a;
+}
+
+.story-page[data-theme="bauhaus"] .filter-chip::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  background: var(--tile);
+  flex-shrink: 0;
+}
+
+.story-page[data-theme="bauhaus"] .filter-chip:nth-child(even)::before {
+  border-radius: 50%;
+}
+
+.story-page[data-theme="bauhaus"] .kpi-ticker {
+  background: #1a1a1a;
+  border-top: 8px solid #e63922;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.story-page[data-theme="bauhaus"] .kpi-ticker-item {
+  border-left: 10px solid var(--tile);
+}
+
+.story-page[data-theme="bauhaus"] .kpi-ticker-value {
+  font-weight: 700;
+}
+
+.story-page[data-theme="bauhaus"] .kpi-tile::before {
+  width: 8px;
+  background: var(--tile);
+}
+
+.story-page[data-theme="bauhaus"] .kpi-tile-value {
+  font-weight: 700;
+}
+
+.story-page[data-theme="bauhaus"] .limitations-note {
+  border: 2px solid #1a1a1a;
+}
+
+.story-page[data-theme="bauhaus"] .placeholder-note {
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  box-shadow: inset 8px 0 0 #1f4bb8;
+  padding-left: 26px;
+  color: #1a1a1a;
+  font-style: normal;
+}
+
+.story-page[data-theme="bauhaus"] .story-source-line {
+  border-top: 2px solid #1a1a1a;
+}
+
+/* Story-card accents (Home page) follow the same per-accent --tile rule
+   as KPI tiles: each card already carries a kpi-tile-badge--{accent}
+   class on its icon. */
+[data-theme]:not([data-theme="editorial"]) .story-card:has(.kpi-tile-badge--rose) {
+  --tile: var(--rose);
+}
+
+[data-theme]:not([data-theme="editorial"]) .story-card:has(.kpi-tile-badge--blue) {
+  --tile: var(--blue);
+}
+
+[data-theme]:not([data-theme="editorial"]) .story-card:has(.kpi-tile-badge--violet) {
+  --tile: var(--violet);
+}
+
+[data-theme]:not([data-theme="editorial"]) .story-card:has(.kpi-tile-badge--teal) {
+  --tile: var(--teal);
+}
+
+/* ---------- Story 1: CUTOUT (Matisse paper cut-outs) ---------- */
+.story-page[data-theme="cutout"] {
+  --bg: #fbf7ef;
+  --surface: #ffffff;
+  --surface-2: #f3ecdf;
+  --border: #e7dccb;
+  --accent: #1f3fbf;
+  --rose: #e8502f;
+  --blue: #1f3fbf;
+  --violet: #d42a72;
+  --teal: #168a55;
+  --amber: #f2b81b;
+  --cyan: #1f3fbf;
+  --ink: #1d1b33;
+  --ink-muted: #5c5a70;
+  --font-sans: "Inter Tight", system-ui, sans-serif;
+  --font-display: "Gloock", Georgia, serif;
+  --radius-sm: 14px 4px;
+  --radius-md: 28px 8px 28px 8px;
+  --radius-lg: 34px 10px 34px 10px;
+  --radius-xl: 40px 12px;
+  --shadow-card: 0 6px 18px rgba(31, 63, 191, 0.08);
+  --shadow-card-hover: 0 16px 34px rgba(31, 63, 191, 0.18);
+  --flag-bg: #fff3cf;
+  --flag-border: #f2b81b;
+  --flag-ink: #4a3500;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M64 4 C98 8 118 40 108 74 C98 108 56 122 28 104 C2 88 -2 52 14 28 C26 10 44 2 64 4Z' fill='%231f3fbf'/%3E%3C/svg%3E")
+      right -60px top -50px / 240px 240px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 180'%3E%3Cpath d='M50 0 C60 30 92 30 80 60 C70 90 100 110 70 130 C50 145 60 170 40 180 C30 150 0 140 20 110 C35 85 5 70 20 45 C30 25 40 20 50 0Z' fill='%23e8502f'/%3E%3C/svg%3E")
+      left -40px top 520px / 110px 200px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23f2b81b'/%3E%3C/svg%3E")
+      right 230px top 150px / 44px 44px no-repeat,
+    #fbf7ef;
+}
+
+.story-page[data-theme="cutout"] :is(h1, h2) {
+  font-weight: 400;
+}
+
+.story-page[data-theme="cutout"] .story-index-numeral {
+  color: #1f3fbf;
+  opacity: 1;
+}
+
+.story-page[data-theme="cutout"] .story-label {
+  color: #e8502f;
+  letter-spacing: 0.14em;
+}
+
+.story-page[data-theme="cutout"] .card {
+  border-color: transparent;
+}
+
+.story-page[data-theme="cutout"] .card:hover {
+  border-color: transparent;
+  box-shadow: var(--shadow-card-hover);
+}
+
+.story-page[data-theme="cutout"] .kpi-tile {
+  background: var(--tile);
+}
+
+.story-page[data-theme="cutout"] .kpi-tile::before {
+  inset: auto -22px -24px auto;
+  width: 96px;
+  height: 74px;
+  border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.story-page[data-theme="cutout"] :is(.kpi-tile-value, .kpi-tile-label, .kpi-tile-caption) {
+  color: #fff;
+}
+
+.story-page[data-theme="cutout"] .kpi-tile-value {
+  font-family: var(--font-display);
+}
+
+.story-page[data-theme="cutout"] .kpi-tile-badge {
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+
+.story-page[data-theme="cutout"] .story-spotlight-stat {
+  background: #f2b81b;
+  border: none;
+}
+
+.story-page[data-theme="cutout"] :is(.story-spotlight-value, .story-spotlight-label) {
+  color: #1d1b33;
+}
+
+.story-page[data-theme="cutout"] .story-spotlight-detail {
+  color: #4a3500;
+}
+
+.story-page[data-theme="cutout"] .filter-chip {
+  border: none;
+  border-radius: 999px;
+  background: var(--tile);
+}
+
+.story-page[data-theme="cutout"] :is(.filter-chip-label, .filter-chip-value) {
+  color: #fff;
+}
+
+.story-page[data-theme="cutout"] .filter-chip-label {
+  opacity: 0.85;
+}
+
+.story-page[data-theme="cutout"] .definition-card {
+  border-top: 6px solid var(--tile);
+}
+
+.story-page[data-theme="cutout"] .definition-term {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--tile);
+}
+
+.story-page[data-theme="cutout"] .limitations-note {
+  border: none;
+  border-left: 6px solid #e8502f;
+}
+
+/* ---------- HOME: NEIGHBOURHOOD (row houses, roofs, street) ---------- */
+.story-page[data-theme="neighbourhood"] {
+  --bg: #fdf8f0;
+  --surface: #ffffff;
+  --surface-2: #f4ece0;
+  --border: #e6dccb;
+  --accent: #c65335;
+  --rose: #d9623f;
+  --blue: #3f7fbf;
+  --teal: #2e8b8f;
+  --violet: #7a5c99;
+  --amber: #e8a93a;
+  --cyan: #5aa9d6;
+  --roof: #3d3a4b;
+  --ink: #2d2a32;
+  --ink-muted: #6a6470;
+  --font-sans: "Source Sans 3", system-ui, sans-serif;
+  --font-display: "Bitter", Georgia, serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-card: 0 6px 18px rgba(45, 42, 50, 0.07);
+  --shadow-card-hover: 0 14px 30px rgba(198, 83, 53, 0.18);
+  --flag-bg: #fdf1dc;
+  --flag-border: #e8a93a;
+  --flag-ink: #5a3d0c;
+  background: var(--bg);
+}
+
+.story-page[data-theme="neighbourhood"] :is(h1, h2) {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* The hero is a street: sky gradient, a repeating row of real-shaped
+   houses (gable roofs, lit windows, doors) standing on a road with a
+   dashed centre line. */
+.story-page[data-theme="neighbourhood"] .hero-banner {
+  border-bottom: none;
+  padding-bottom: 190px;
+  background:
+    repeating-linear-gradient(90deg, #f6d36b 0 28px, transparent 28px 56px) left bottom 7px / 100%
+      3px no-repeat,
+    linear-gradient(#55606a, #55606a) left bottom / 100% 17px no-repeat,
+    var(--houses) left bottom 17px / 480px 140px repeat-x,
+    linear-gradient(180deg, #cfe7f7 0%, #fdf1df 80%);
+}
+
+.story-page[data-theme="neighbourhood"] .hero-eyebrow {
+  color: var(--teal);
+}
+
+.story-page[data-theme="neighbourhood"] .hero-headline em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+/* The hero photo becomes a house: the framed image is the facade, a
+   pitched roof sits on top of it. */
+.story-page[data-theme="neighbourhood"] .hero-banner-figure {
+  position: relative;
+  margin-top: 64px;
+  padding: 10px;
+  border: none;
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+  box-shadow: 0 16px 34px rgba(45, 42, 50, 0.18);
+}
+
+.story-page[data-theme="neighbourhood"] .hero-banner-figure::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  right: -18px;
+  top: -62px;
+  height: 64px;
+  background: var(--roof);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.story-page[data-theme="neighbourhood"] .hero-banner-photo {
+  filter: saturate(0.9) contrast(1.05);
+}
+
+.story-page[data-theme="neighbourhood"] .hero-cta-primary {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+}
+
+.story-page[data-theme="neighbourhood"] .hero-cta-primary:hover {
+  background: var(--teal);
+}
+
+.story-page[data-theme="neighbourhood"] .hero-cta-secondary {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Small pitched-roof marker before every section heading. */
+.story-page[data-theme="neighbourhood"] .section-heading h2::before {
+  content: "";
+  display: inline-block;
+  width: 26px;
+  height: 16px;
+  margin-right: 12px;
+  background: var(--accent);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+/* KPI tiles and story cards are house-shaped: a roof in their own
+   color sits on a white wall. */
+.story-page[data-theme="neighbourhood"] :is(.kpi-tile, .story-card) {
+  border: none;
+  clip-path: polygon(0 24px, 50% 0, 100% 24px, 100% 100%, 0 100%);
+  background:
+    linear-gradient(var(--tile), var(--tile)) top / 100% 26px no-repeat,
+    var(--surface);
+}
+
+.story-page[data-theme="neighbourhood"] .kpi-tile {
+  padding-top: 40px;
+}
+
+.story-page[data-theme="neighbourhood"] .kpi-tile::before {
+  display: none;
+}
+
+.story-page[data-theme="neighbourhood"] .kpi-tile-badge {
+  top: 36px;
+  border-color: var(--tile);
+  color: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .kpi-tile-value {
+  font-family: var(--font-display);
+  color: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .story-card {
+  padding-top: 46px;
+}
+
+.story-page[data-theme="neighbourhood"] .story-card .story-label {
+  color: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .story-card-icon {
+  border-color: var(--tile);
+  color: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .story-card-arrow {
+  color: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .card:hover {
+  border-color: var(--accent);
+}
+
+.story-page[data-theme="neighbourhood"] .metric-btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.story-page[data-theme="neighbourhood"] .bar-fill {
+  background: linear-gradient(90deg, var(--rose), var(--amber));
+}
+
+.story-page[data-theme="neighbourhood"] .source-list li {
+  border-left-color: var(--accent);
+}
+
+/* ---------- Story 3: CONSTRUCTION (building site) ---------- */
+.story-page[data-theme="construction"] {
+  --bg: #eef0f2;
+  --surface: #ffffff;
+  --surface-2: #e2e5e9;
+  --border: #c6ccd3;
+  --accent: #f2622e;
+  --rose: #f2622e;
+  --blue: #2f6db3;
+  --teal: #3c8d5a;
+  --violet: #5c6773;
+  --amber: #ffb400;
+  --cyan: #2f6db3;
+  --ink: #1f2328;
+  --ink-muted: #59626d;
+  --font-sans: "Barlow", system-ui, sans-serif;
+  --font-display: "Barlow Condensed", system-ui, sans-serif;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --shadow-card: 0 2px 0 rgba(31, 35, 40, 0.12);
+  --shadow-card-hover: 0 10px 22px rgba(31, 35, 40, 0.18);
+  --flag-bg: #fff4d1;
+  --flag-border: #1f2328;
+  --flag-ink: #1f2328;
+  padding-top: 30px;
+  background:
+    repeating-linear-gradient(-45deg, #ffb400 0 22px, #1f2328 22px 44px) 0 0 / 100% 22px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 160'%3E%3Cg opacity='0.3'%3E%3Crect x='146' y='24' width='12' height='136' fill='%231f2328'/%3E%3Crect x='10' y='20' width='205' height='8' fill='%231f2328'/%3E%3Cpolygon points='146,20 158,20 152,4' fill='%231f2328'/%3E%3Cline x1='152' y1='4' x2='20' y2='20' stroke='%231f2328' stroke-width='2'/%3E%3Cline x1='152' y1='4' x2='212' y2='20' stroke='%231f2328' stroke-width='2'/%3E%3Cline x1='50' y1='28' x2='50' y2='92' stroke='%231f2328' stroke-width='2'/%3E%3Crect x='196' y='28' width='18' height='16' fill='%235c6773'/%3E%3C/g%3E%3Crect x='38' y='92' width='24' height='18' fill='%23ffb400' opacity='0.85'/%3E%3C/svg%3E")
+      right 24px top 44px / 240px 175px no-repeat,
+    linear-gradient(rgba(47, 109, 179, 0.07) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgba(47, 109, 179, 0.07) 1px, transparent 1px) 0 0 / 32px 32px,
+    #eef0f2;
+}
+
+@media (min-width: 861px) {
+  .story-page[data-theme="construction"] .story-head {
+    padding-right: 250px;
+  }
+}
+
+.story-page[data-theme="construction"] :is(h1, h2) {
+  font-weight: 800;
+  letter-spacing: 0.005em;
+}
+
+.story-page[data-theme="construction"] .story-head-body h1 {
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.story-page[data-theme="construction"] .story-index-numeral {
+  color: #ffb400;
+  -webkit-text-stroke: 2px #1f2328;
+  font-weight: 800;
+  opacity: 1;
+}
+
+.story-page[data-theme="construction"] .story-label {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #ffb400;
+  color: #1f2328;
+  letter-spacing: 0.14em;
+}
+
+.story-page[data-theme="construction"] .card {
+  border: 2px solid #1f2328;
+}
+
+.story-page[data-theme="construction"] .card:hover {
+  border-color: #f2622e;
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* KPI tiles read like site signboards: hazard stripe across the top in
+   that tile's own color. */
+.story-page[data-theme="construction"] .kpi-tile {
+  padding-top: 26px;
+}
+
+.story-page[data-theme="construction"] .kpi-tile::before {
+  inset: 0 0 auto 0;
+  width: auto;
+  height: 10px;
+  background: repeating-linear-gradient(-45deg, var(--tile) 0 10px, #1f2328 10px 20px);
+}
+
+.story-page[data-theme="construction"] .kpi-tile-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.2rem;
+}
+
+.story-page[data-theme="construction"] .kpi-tile-label {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.76rem;
+}
+
+.story-page[data-theme="construction"] .kpi-tile-badge {
+  top: 22px;
+  border-radius: 4px;
+  border: 2px solid #1f2328;
+  background: #ffb400;
+  color: #1f2328;
+}
+
+.story-page[data-theme="construction"] .filter-chip {
+  border: 2px solid #1f2328;
+  border-radius: 2px;
+}
+
+.story-page[data-theme="construction"] .filter-chip-label {
+  color: var(--tile);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+/* The definitions panel is an actual blueprint: blue sheet, white grid,
+   dashed white drafting boxes. */
+.story-page[data-theme="construction"] .blueprint-grid {
+  background-color: #2a5ea8;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 3px solid #1f2328;
+  border-radius: 4px;
+}
+
+.story-page[data-theme="construction"] .blueprint-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+}
+
+.story-page[data-theme="construction"] .blueprint-card .definition-term {
+  color: #ffd166;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.story-page[data-theme="construction"] .blueprint-card .definition-text {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.story-page[data-theme="construction"] .blueprint-card-index {
+  background: #ffb400;
+  color: #1f2328;
+}
+
+.story-page[data-theme="construction"] .story-narrative p:first-child::first-letter {
+  float: left;
+  margin: 4px 10px 0 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 3.4em;
+  line-height: 0.8;
+  color: #f2622e;
+}
+
+/* Limitations as a site warning sign. */
+.story-page[data-theme="construction"] .limitations-note {
+  border: 3px solid #1f2328;
+  padding-left: 32px;
+  background:
+    repeating-linear-gradient(-45deg, #ffb400 0 8px, #1f2328 8px 16px) left / 14px 100% no-repeat,
+    #fff4d1;
+}
+
+.story-page[data-theme="construction"] .placeholder-note {
+  background: #fff;
+  border: 2px dashed #f2622e;
+  color: #1f2328;
+  font-style: normal;
+}
+
+.story-page[data-theme="construction"] .story-source-line {
+  border-top: 2px solid #1f2328;
+}
+
+/* ---------- Story 5: STREETMAP (city map) ---------- */
+.story-page[data-theme="streetmap"] {
+  --bg: #f3f1ea;
+  --surface: #ffffff;
+  --surface-2: #e9e6dc;
+  --border: #d8d3c4;
+  --accent: #e0563f;
+  --rose: #e0563f;
+  --blue: #4a90c2;
+  --teal: #5b9b5c;
+  --violet: #8b6fb3;
+  --amber: #f2c14e;
+  --cyan: #4a90c2;
+  --ink: #2a2e35;
+  --ink-muted: #626872;
+  --font-sans: "Urbanist", system-ui, sans-serif;
+  --font-display: "Urbanist", system-ui, sans-serif;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --shadow-card: 0 8px 22px rgba(42, 46, 53, 0.08);
+  --shadow-card-hover: 0 14px 30px rgba(224, 86, 63, 0.18);
+  --flag-bg: #ffffff;
+  --flag-border: #d8d3c4;
+  --flag-ink: #2a2e35;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(243, 241, 234, 0) 0,
+      rgba(243, 241, 234, 0.85) 320px,
+      #f3f1ea 560px
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Crect width='240' height='240' fill='%23f3f1ea'/%3E%3Crect x='20' y='54' width='76' height='40' rx='6' fill='%23cfe3c4'/%3E%3Crect x='124' y='122' width='50' height='30' rx='6' fill='%23e3ddcd'/%3E%3Crect x='196' y='122' width='36' height='30' rx='6' fill='%23e3ddcd'/%3E%3Cpath d='M0 200 C60 180 90 230 160 210 S 240 190 240 200 L240 240 L0 240Z' fill='%23cfe1f0'/%3E%3Cpath d='M0 40 H240 M0 165 H240 M45 0 V240 M185 0 V240' stroke='%23ffffff' stroke-width='6'/%3E%3Cpath d='M0 105 H240 M110 0 V240' stroke='%23e2dccb' stroke-width='14'/%3E%3Cpath d='M0 105 H240 M110 0 V240' stroke='%23ffffff' stroke-width='10'/%3E%3Cpath d='M0 105 H240' stroke='%23f2c14e' stroke-width='3'/%3E%3C/svg%3E")
+      0 0 / 240px 240px,
+    #f3f1ea;
+}
+
+.story-page[data-theme="streetmap"] :is(h1, h2) {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* The story number becomes a map pin. */
+.story-page[data-theme="streetmap"] .story-index-numeral {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  margin-bottom: 0.4em;
+  border-radius: 50%;
+  background: #e0563f;
+  color: #fff;
+  font-size: clamp(2rem, 1.7rem + 2vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1;
+  opacity: 1;
+  box-shadow: 0 0 0 5px #fff;
+}
+
+.story-page[data-theme="streetmap"] .story-index-numeral::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.36em;
+  transform: translateX(-50%);
+  border-left: 0.3em solid transparent;
+  border-right: 0.3em solid transparent;
+  border-top: 0.45em solid #e0563f;
+}
+
+/* Label as a green street sign. */
+.story-page[data-theme="streetmap"] .story-label {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid #fff;
+  border-radius: 5px;
+  background: #2f7d4f;
+  color: #fff;
+  outline: 2px solid #2f7d4f;
+  letter-spacing: 0.1em;
+}
+
+.story-page[data-theme="streetmap"] .filter-chip {
+  border-radius: 999px;
+}
+
+.story-page[data-theme="streetmap"] .filter-chip::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--tile);
+  flex-shrink: 0;
+}
+
+.story-page[data-theme="streetmap"] .card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* "In progress" notes as map callouts on a dashed, not-yet-built route. */
+.story-page[data-theme="streetmap"] .horizon-note {
+  padding: 22px 24px 22px 54px;
+  background: #fff;
+  border: 2px dashed var(--blue);
+  border-radius: 16px;
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+
+.story-page[data-theme="streetmap"] .horizon-note::before {
+  left: 20px;
+  top: 22px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--rose);
+  box-shadow: none;
+  animation: none;
+}
+
+.story-page[data-theme="streetmap"] .limitations-note {
+  border: none;
+  border-left: 6px solid var(--amber);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.story-page[data-theme="streetmap"] .kpi-tile::before {
+  inset: 0 0 auto 0;
+  width: auto;
+  height: 4px;
+  background: var(--tile);
+}
+
+.story-page[data-theme="streetmap"] .kpi-tile-value {
+  color: var(--tile);
+}
+
+.story-page[data-theme="streetmap"] .story-source-line {
+  border-top: 2px dashed var(--border);
+}
+
+/* ---------- NEIGHBOURHOOD on story pages ----------
+   Same theme as Home, carried onto every story tab: a shorter street
+   (same houses, half scale) across the top of the page instead of
+   Home's full hero, and the story-specific pieces (number, label,
+   chips, ticker, ladder, blueprint, notes) styled as houses, lots and
+   roads to match. */
+.story-page[data-theme="neighbourhood"]:not(.home-page) {
+  --story-accent: var(--accent);
+  padding-top: 92px;
+  background:
+    repeating-linear-gradient(90deg, #f6d36b 0 20px, transparent 20px 40px) left top 75px / 100% 2px
+      no-repeat,
+    linear-gradient(#55606a, #55606a) left top 70px / 100% 12px no-repeat,
+    var(--houses) left top 0 / 240px 70px repeat-x,
+    linear-gradient(180deg, #cfe7f7 0, #fdf1df 70px, var(--bg) 82px);
+}
+
+.story-page[data-theme="neighbourhood"] .story-questions li::marker {
+  color: var(--accent);
+}
+
+/* The story number sits inside a little house. */
+.story-page[data-theme="neighbourhood"] .story-index-numeral {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 1.55em;
+  height: 1.5em;
+  padding-bottom: 0.12em;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.7rem + 1.8vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1;
+  opacity: 1;
+  clip-path: polygon(50% 0, 100% 38%, 100% 100%, 0 100%, 0 38%);
+}
+
+.story-page[data-theme="neighbourhood"] .story-label {
+  color: var(--teal);
+  letter-spacing: 0.12em;
+}
+
+.story-page[data-theme="neighbourhood"] .filter-chip {
+  border-radius: 999px;
+}
+
+.story-page[data-theme="neighbourhood"] .filter-chip::before {
+  content: "";
+  width: 12px;
+  height: 11px;
+  background: var(--tile);
+  clip-path: polygon(50% 0, 100% 45%, 100% 100%, 0 100%, 0 45%);
+  flex-shrink: 0;
+}
+
+/* Story 1 spotlight stat: a house with a brick roof. */
+.story-page[data-theme="neighbourhood"] .story-spotlight-stat {
+  padding-top: 44px;
+  border: none;
+  clip-path: polygon(0 26px, 50% 0, 100% 26px, 100% 100%, 0 100%);
+  background:
+    linear-gradient(var(--accent), var(--accent)) top / 100% 28px no-repeat,
+    var(--surface);
+}
+
+.story-page[data-theme="neighbourhood"] .story-spotlight-value {
+  color: var(--accent);
+}
+
+/* Story 2 ticker: night street -- roof-dark band, values in white. */
+.story-page[data-theme="neighbourhood"] .kpi-ticker {
+  background: var(--roof);
+}
+
+.story-page[data-theme="neighbourhood"] .kpi-ticker-item {
+  border-left: 4px solid var(--tile);
+}
+
+/* Story 3 blueprint: a lawn of plots, each card a house plan. */
+.story-page[data-theme="neighbourhood"] .blueprint-grid {
+  border-radius: 16px;
+  background:
+    repeating-linear-gradient(90deg, rgba(91, 155, 92, 0.1) 0 26px, transparent 26px 52px), #eef5e6;
+}
+
+.story-page[data-theme="neighbourhood"] .blueprint-card {
+  border: 1px solid var(--border);
+  border-top: 5px solid var(--tile);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.story-page[data-theme="neighbourhood"] .blueprint-card-index {
+  background: var(--tile);
+}
+
+/* Story 4 ladder: houses along a road, ranked. */
+.story-page[data-theme="neighbourhood"] .ranking-ladder::before {
+  left: 22px;
+  width: 8px;
+  background: linear-gradient(90deg, #55606a 0 3px, #f6d36b 3px 5px, #55606a 5px);
+}
+
+.story-page[data-theme="neighbourhood"] .ranking-rung-position {
+  border-radius: 0;
+  background: var(--surface-2);
+  color: var(--ink);
+  clip-path: polygon(50% 0, 100% 40%, 100% 100%, 0 100%, 0 40%);
+  padding-top: 6px;
+}
+
+.story-page[data-theme="neighbourhood"] .ranking-rung--highlight {
+  background: #fff6f1;
+  border-color: var(--accent);
+}
+
+.story-page[data-theme="neighbourhood"] .ranking-rung--highlight .ranking-rung-position {
+  background: var(--accent);
+  color: #fff;
+}
+
+.story-page[data-theme="neighbourhood"] .ranking-rung--highlight .ranking-rung-value {
+  color: var(--accent);
+}
+
+/* Cards, notes, limitations. */
+.story-page[data-theme="neighbourhood"] .definition-card {
+  border-top: 4px solid var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .definition-term {
+  color: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .limitations-note {
+  border: none;
+  border-left: 6px solid var(--amber);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.story-page[data-theme="neighbourhood"] .placeholder-note {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  font-style: normal;
+}
+
+/* Story 5 "in progress" notes: an empty lot, dashed out for building. */
+.story-page[data-theme="neighbourhood"] .horizon-note {
+  background: var(--surface);
+  border: 2px dashed var(--accent);
+  border-radius: 14px;
+}
+
+.story-page[data-theme="neighbourhood"] .horizon-note::before {
+  background: var(--accent);
+}
+
+/* ---------- NEIGHBOURHOOD: every box is a house ----------
+   Same roof treatment as Home's KPI tiles and story cards, applied to
+   every boxed element on every page -- cards of any kind, blueprint
+   cards, ranking rows, notes, limitations, the dashboard frame,
+   Methodology/Sources cards -- so nothing reads as a plain rectangle.
+   A roof in the box's own color (--roof-color, defaulting to its
+   --tile) sits on a white wall; side/bottom walls get an inset hairline
+   since clip-path would cut an outer border or shadow. */
+.story-page[data-theme="neighbourhood"] {
+  --roof-h: 24px;
+}
+
+.story-page[data-theme="neighbourhood"]
+  :is(.card, .blueprint-card, .ranking-rung, .limitations-note, .placeholder-note, .horizon-note) {
+  --roof-color: var(--tile);
+  border: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  clip-path: polygon(0 var(--roof-h), 50% 0, 100% var(--roof-h), 100% 100%, 0 100%);
+  background:
+    linear-gradient(var(--roof-color), var(--roof-color)) top / 100% calc(var(--roof-h) + 2px)
+      no-repeat,
+    var(--surface);
+  box-shadow:
+    inset 0 -1px 0 var(--border),
+    inset 1px 0 0 var(--border),
+    inset -1px 0 0 var(--border);
+}
+
+.story-page[data-theme="neighbourhood"] .card:hover {
+  box-shadow:
+    inset 0 -3px 0 var(--roof-color),
+    inset 1px 0 0 var(--border),
+    inset -1px 0 0 var(--border);
+}
+
+/* A street of differently colored houses wherever boxes repeat. */
+.story-page[data-theme="neighbourhood"]
+  :is(.ranking-rung, .methodology-card, .source-card):nth-child(4n + 1) {
+  --tile: var(--rose);
+}
+
+.story-page[data-theme="neighbourhood"]
+  :is(.ranking-rung, .methodology-card, .source-card):nth-child(4n + 2) {
+  --tile: var(--blue);
+}
+
+.story-page[data-theme="neighbourhood"]
+  :is(.ranking-rung, .methodology-card, .source-card):nth-child(4n + 3) {
+  --tile: var(--teal);
+}
+
+.story-page[data-theme="neighbourhood"]
+  :is(.ranking-rung, .methodology-card, .source-card):nth-child(4n + 4) {
+  --tile: var(--violet);
+}
+
+/* Room for the roof inside each box. */
+.story-page[data-theme="neighbourhood"] :is(.definition-card, .source-card) {
+  padding-top: calc(var(--roof-h) + 16px);
+}
+
+.story-page[data-theme="neighbourhood"] .blueprint-card {
+  padding-top: calc(var(--roof-h) + 18px);
+}
+
+.story-page[data-theme="neighbourhood"] .blueprint-card-index {
+  top: calc(var(--roof-h) + 8px);
+  left: auto;
+  right: 12px;
+}
+
+.story-page[data-theme="neighbourhood"] .ranking-rung {
+  padding-top: calc(var(--roof-h) + 14px);
+}
+
+.story-page[data-theme="neighbourhood"] .ranking-rung--highlight {
+  --roof-color: var(--accent);
+  background:
+    linear-gradient(var(--accent), var(--accent)) top / 100% calc(var(--roof-h) + 2px) no-repeat,
+    #fff6f1;
+}
+
+.story-page[data-theme="neighbourhood"] .chart-preview-card {
+  padding-top: calc(var(--roof-h) + 28px);
+}
+
+.story-page[data-theme="neighbourhood"] .superset-embed {
+  padding-top: var(--roof-h);
+}
+
+.story-page[data-theme="neighbourhood"] .methodology-card {
+  padding-top: calc(var(--roof-h) + 22px);
+}
+
+.story-page[data-theme="neighbourhood"] .methodology-step-index {
+  top: calc(var(--roof-h) + 10px);
+  left: auto;
+  right: 16px;
+  background: var(--tile);
+}
+
+.story-page[data-theme="neighbourhood"] .limitations-note {
+  --roof-color: var(--amber);
+  padding-top: calc(var(--roof-h) + 16px);
+  border-radius: 0 0 12px 12px;
+}
+
+.story-page[data-theme="neighbourhood"] .placeholder-note {
+  --roof-color: #c9bda6;
+  padding-top: calc(var(--roof-h) + 14px);
+}
+
+.story-page[data-theme="neighbourhood"] .horizon-note {
+  --roof-color: var(--accent);
+  padding-top: calc(var(--roof-h) + 22px);
+}
+
+.story-page[data-theme="neighbourhood"] .horizon-note::before {
+  top: calc(var(--roof-h) + 26px);
+}
+
+/* ---------- NEIGHBOURHOOD: site chrome (sidebar, mobile top bar, footer) ----------
+   The pages all use the Neighbourhood theme now, so the chrome around
+   them does too: same warm paper, brick accent, Bitter/Source Sans 3.
+   Sidebar = a sky over the brand, house-shaped logo and story markers,
+   and a little street of houses at the bottom. */
+body,
+.app-shell {
+  background: #fdf8f0;
+}
+
+.app-sidebar {
+  border-right: 2px solid #d9c9ad;
+  box-shadow: 4px 0 16px rgba(45, 42, 50, 0.06);
+  padding-bottom: 20px;
+  background:
+    repeating-linear-gradient(90deg, #f6d36b 0 16px, transparent 16px 32px) left bottom 63px / 100%
+      2px no-repeat,
+    linear-gradient(#55606a, #55606a) left bottom 58px / 100% 12px no-repeat,
+    var(--houses) left bottom 70px / 216px 63px repeat-x,
+    linear-gradient(180deg, #cfe7f7 0, #fdf1df 110px, #fffaf3 200px);
+}
+
+.sidebar-brand {
+  color: #2d2a32;
+  font-family: "Bitter", Georgia, serif;
+  font-weight: 700;
+  border-bottom-color: #e6dccb;
+}
+
+/* The logo is a house with a W on its front. */
+.brand-mark {
+  width: 34px;
+  height: 32px;
+  padding-top: 7px;
+  border-radius: 0;
+  background: #c65335;
+  color: #fff;
+  font-family: "Bitter", Georgia, serif;
+  font-style: normal;
+  font-weight: 700;
+  clip-path: polygon(50% 0, 100% 40%, 100% 100%, 0 100%, 0 40%);
+}
+
+.sidebar-nav-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6a6470;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+}
+
+.sidebar-nav-heading::before {
+  content: "";
+  width: 14px;
+  height: 9px;
+  background: #c65335;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.sidebar-nav-link {
+  padding: 9px 12px;
+  border-left: none;
+  border-radius: 10px;
+  color: #6a6470;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.sidebar-nav-link:hover {
+  background: #f4ece0;
+  color: #2d2a32;
+}
+
+.sidebar-nav-link.active {
+  background: #fff;
+  color: #2d2a32;
+  font-weight: 700;
+  box-shadow:
+    inset 0 0 0 1px #e6dccb,
+    0 4px 12px rgba(45, 42, 50, 0.06);
+}
+
+.sidebar-nav-link.active .sidebar-icon {
+  color: #c65335;
+}
+
+/* Each story's marker is a tiny house in that story's color. */
+.sidebar-nav-dot {
+  width: 12px;
+  height: 11px;
+  border-radius: 0;
+  opacity: 1;
+  clip-path: polygon(50% 0, 100% 45%, 100% 100%, 0 100%, 0 45%);
+}
+
+.sidebar-nav-dot.kpi-tile-badge--rose {
+  background: #d9623f;
+}
+
+.sidebar-nav-dot.kpi-tile-badge--blue {
+  background: #3f7fbf;
+}
+
+.sidebar-nav-dot.kpi-tile-badge--teal {
+  background: #2e8b8f;
+}
+
+.sidebar-nav-dot.kpi-tile-badge--violet {
+  background: #7a5c99;
+}
+
+.sidebar-foot-note {
+  border-top: none;
+  color: #6a6470;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+}
+
+/* Mobile top bar. */
+.sidebar-topbar {
+  background: #fffaf3;
+  border-bottom-color: #e6dccb;
+}
+
+.sidebar-topbar .brand {
+  color: #2d2a32;
+  font-family: "Bitter", Georgia, serif;
+}
+
+/* Footer: the road the street of houses stands on. */
+.site-footer {
+  border-top: none;
+  padding-top: 12px;
+  background:
+    repeating-linear-gradient(90deg, #f6d36b 0 20px, transparent 20px 40px) left top 5px / 100% 2px
+      no-repeat,
+    linear-gradient(#55606a, #55606a) left top / 100% 12px no-repeat,
+    #f4ece0;
+}
+
+.site-footer-inner,
+.site-footer-inner p {
+  color: #6a6470;
+  font-family: "Source Sans 3", system-ui, sans-serif;
 }

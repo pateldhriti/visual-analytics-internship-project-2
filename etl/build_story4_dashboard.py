@@ -240,7 +240,10 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     resp.raise_for_status()
 
 
-def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 50) -> dict:
+def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 25) -> dict:
+    # Default height, used only by the 3 KPI tiles (every bar chart below
+    # passes its own height=55) -- was 50, which left a large empty gap
+    # above the number inside every KPI card, confirmed visually.
     return {
         "type": "CHART",
         "id": node_id,

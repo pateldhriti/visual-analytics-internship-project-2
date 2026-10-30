@@ -3,27 +3,9 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, animate, motion, MotionConfig, useMotionValue } from "framer-motion";
 import PageContainer from "../components/PageContainer.jsx";
 import KpiRow from "../components/KpiRow.jsx";
+import { staggerParent, fadeUp, fadeIn } from "../lib/motion.js";
 
 const MotionLink = motion(Link);
-
-// Shared entrance variants. `fadeUp` also moves on the y-axis, so it's only
-// used where nothing else (e.g. a CSS :hover rule) needs to own that
-// element's `transform`. `fadeIn` is opacity-only, for elements like the
-// story cards whose hover lift is still handled by plain CSS.
-const staggerParent = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 22 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 160, damping: 18 } },
-};
-
-const fadeIn = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
-};
 
 // Counts up from 0 to a real, already-verified number -- it never displays
 // a value that wasn't passed in as real data. Re-triggers whenever `value`
@@ -223,183 +205,179 @@ export default function Home() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <section className="hero-banner">
-        <img className="hero-banner-photo" src={BANNER_PHOTO.src} alt={BANNER_PHOTO.alt} />
-        <div className="hero-banner-overlay" />
-        <motion.div
-          className="hero-banner-inner"
-          variants={staggerParent}
-          initial="hidden"
-          animate="show"
-        >
-          <motion.p variants={fadeUp} className="hero-eyebrow">
-            Windsor Housing Analytics &middot; University of Windsor
-          </motion.p>
-          <motion.h1 variants={fadeUp} className="hero-headline">
-            Understanding housing in <em>Windsor and beyond</em>.
-          </motion.h1>
-          <motion.p variants={fadeUp} className="hero-lede">
-            An integrated analysis of housing affordability, rental market, supply, and comparison
-            conditions in the Windsor Census Metropolitan Area &mdash; built entirely from official
-            Statistics Canada and CMHC open data, with every figure traceable back to its source.
-          </motion.p>
-          <motion.div variants={fadeUp} className="hero-cta-row">
-            <Link to="/stories/affordability" className="hero-cta hero-cta-primary">
-              Explore the Data
-            </Link>
-            <a href="#stories" className="hero-cta hero-cta-secondary">
-              Discover the Stories
-            </a>
-          </motion.div>
-        </motion.div>
-
-        <motion.a
-          href="#stories"
-          className="hero-scroll-cue"
-          aria-label="Scroll to the research stories"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </motion.a>
-      </section>
-
-      <PageContainer>
-        <div className="hero-kpi-row">
-          <KpiRow tiles={HOME_KPIS} />
-        </div>
-
-        <motion.section
-          className="section"
-          id="stories"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerParent}
-        >
-          <motion.div variants={fadeUp} className="section-heading">
-            <h2>Explore the research stories</h2>
-          </motion.div>
-          <motion.div className="story-grid" variants={staggerParent}>
-            {STORIES.map((story) => (
-              <MotionLink
-                to={story.to}
-                className="card story-card card--hoverable"
-                key={story.to}
-                variants={fadeIn}
-              >
-                <span className={`story-card-icon kpi-tile-badge--${story.accent}`}>
-                  <StoryIcon name={story.icon} />
-                </span>
-                <p className="story-label">{story.label}</p>
-                <h3>{story.title}</h3>
-                <p>{story.blurb}</p>
-                <span className="story-card-arrow">Read the story &rarr;</span>
-              </MotionLink>
-            ))}
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          className="section"
-          id="explorer"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={staggerParent}
-        >
-          <motion.div variants={fadeUp} className="section-heading">
-            <h2>Dig into the data yourself</h2>
-            <p className="section-note">Pick a metric &mdash; every dataset here is real</p>
-          </motion.div>
-          <motion.div variants={fadeUp} className="card chart-preview-card">
-            <div className="metric-selector" role="group" aria-label="Choose a metric to preview">
-              {EXPLORER_METRICS.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`metric-btn${m.id === activeMetric ? " is-active" : ""}`}
-                  aria-pressed={m.id === activeMetric}
-                  onClick={() => setActiveMetric(m.id)}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                className="bar-chart"
-                key={metric.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-              >
-                {metric.rows.map((row) => (
-                  <div className="bar-row" key={row.label}>
-                    <span className="bar-row-label">{row.label}</span>
-                    <span className="bar-track">
-                      <motion.span
-                        className="bar-fill"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(row.value / metric.max) * 100}%` }}
-                        transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                      />
-                    </span>
-                    <span className="bar-row-value">
-                      <AnimatedNumber
-                        value={row.value}
-                        decimals={metric.unit === "%" ? 1 : 0}
-                        suffix={metric.unit === "%" ? "%" : ""}
-                      />
-                    </span>
-                  </div>
-                ))}
+      <div className="story-page home-page" data-theme="neighbourhood">
+        {/* A 2-column editorial masthead -- headline text on plain paper,
+          the real photo held in its own bordered frame like a captioned
+          newspaper photograph, not a full-bleed marketing banner with
+          text scrimmed over it. Fully light: nothing here is a dark
+          surface, the photo is the only non-paper-colored element. */}
+        <section className="hero-banner">
+          <PageContainer>
+            <div className="hero-banner-grid">
+              <motion.div variants={staggerParent} initial="hidden" animate="show">
+                <motion.p variants={fadeUp} className="hero-eyebrow">
+                  Windsor Housing Analytics &middot; University of Windsor
+                </motion.p>
+                <motion.h1 variants={fadeUp} className="hero-headline">
+                  Understanding housing in <em>Windsor</em> and beyond.
+                </motion.h1>
+                <motion.p variants={fadeUp} className="hero-lede">
+                  An integrated analysis of housing affordability, rental market, supply, and
+                  comparison conditions in the Windsor Census Metropolitan Area &mdash; built
+                  entirely from official Statistics Canada and CMHC open data, with every figure
+                  traceable back to its source.
+                </motion.p>
+                <motion.div variants={fadeUp} className="hero-cta-row">
+                  <Link to="/stories/affordability" className="hero-cta hero-cta-primary">
+                    Explore the Data
+                  </Link>
+                  <a href="#stories" className="hero-cta hero-cta-secondary">
+                    Discover the Stories &rarr;
+                  </a>
+                </motion.div>
               </motion.div>
-            </AnimatePresence>
-            <p className="chart-preview-caption">
-              {metric.caption} Full breakdown on <Link to={metric.to}>{metric.label}</Link>.
-            </p>
-          </motion.div>
-        </motion.section>
 
-        <motion.section
-          className="section"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeUp}
-        >
-          <div className="section-heading">
-            <h2>Data provenance</h2>
-          </div>
-          <div className="methodology-band">
-            <p>
-              Every figure on this site traces back to an official Statistics Canada or CMHC
-              download. Raw files are kept separate from processed data, loaded into PostgreSQL
-              through documented Python ETL scripts, and queried through SQL views that Apache
-              Superset builds charts from. See the{" "}
-              <Link to="/methodology">full methodology page</Link> for the stack, data sources, and
-              known limitations.
-            </p>
-            <ul className="source-list">
-              <li>Census Profile, 2021 &mdash; Statistics Canada</li>
-              <li>Shelter-cost-to-income ratio by tenure &mdash; Statistics Canada</li>
-              <li>Rental Market Survey, Windsor &amp; Canada &mdash; CMHC</li>
-              <li>Starts, Completions and Units Under Construction &mdash; CMHC</li>
-            </ul>
-          </div>
-        </motion.section>
-      </PageContainer>
+              <motion.figure
+                className="hero-banner-figure"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
+              >
+                <img className="hero-banner-photo" src={BANNER_PHOTO.src} alt={BANNER_PHOTO.alt} />
+                <figcaption className="hero-banner-caption">
+                  Windsor, Ontario &mdash; aerial view
+                </figcaption>
+              </motion.figure>
+            </div>
+          </PageContainer>
+        </section>
+
+        <PageContainer>
+          <KpiRow tiles={HOME_KPIS} />
+
+          <motion.section
+            className="section"
+            id="stories"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerParent}
+          >
+            <motion.div variants={fadeUp} className="section-heading">
+              <h2>Explore the research stories</h2>
+            </motion.div>
+            <motion.div className="story-grid" variants={staggerParent}>
+              {STORIES.map((story) => (
+                <MotionLink
+                  to={story.to}
+                  className="card story-card card--hoverable"
+                  key={story.to}
+                  variants={fadeIn}
+                >
+                  <span className={`story-card-icon kpi-tile-badge--${story.accent}`}>
+                    <StoryIcon name={story.icon} />
+                  </span>
+                  <p className="story-label">{story.label}</p>
+                  <h3>{story.title}</h3>
+                  <p>{story.blurb}</p>
+                  <span className="story-card-arrow">Read the story &rarr;</span>
+                </MotionLink>
+              ))}
+            </motion.div>
+          </motion.section>
+
+          <motion.section
+            className="section"
+            id="explorer"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={staggerParent}
+          >
+            <motion.div variants={fadeUp} className="section-heading">
+              <h2>Dig into the data yourself</h2>
+              <p className="section-note">Pick a metric &mdash; every dataset here is real</p>
+            </motion.div>
+            <motion.div variants={fadeUp} className="card chart-preview-card">
+              <div className="metric-selector" role="group" aria-label="Choose a metric to preview">
+                {EXPLORER_METRICS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`metric-btn${m.id === activeMetric ? " is-active" : ""}`}
+                    aria-pressed={m.id === activeMetric}
+                    onClick={() => setActiveMetric(m.id)}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  className="bar-chart"
+                  key={metric.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                >
+                  {metric.rows.map((row) => (
+                    <div className="bar-row" key={row.label}>
+                      <span className="bar-row-label">{row.label}</span>
+                      <span className="bar-track">
+                        <motion.span
+                          className="bar-fill"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(row.value / metric.max) * 100}%` }}
+                          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                        />
+                      </span>
+                      <span className="bar-row-value">
+                        <AnimatedNumber
+                          value={row.value}
+                          decimals={metric.unit === "%" ? 1 : 0}
+                          suffix={metric.unit === "%" ? "%" : ""}
+                        />
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+              <p className="chart-preview-caption">
+                {metric.caption} Full breakdown on <Link to={metric.to}>{metric.label}</Link>.
+              </p>
+            </motion.div>
+          </motion.section>
+
+          <motion.section
+            className="section"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUp}
+          >
+            <div className="section-heading">
+              <h2>Data provenance</h2>
+            </div>
+            <div className="methodology-band">
+              <p>
+                Every figure on this site traces back to an official Statistics Canada or CMHC
+                download. Raw files are kept separate from processed data, loaded into PostgreSQL
+                through documented Python ETL scripts, and queried through SQL views that Apache
+                Superset builds charts from. See the{" "}
+                <Link to="/methodology">full methodology page</Link> for the stack, data sources,
+                and known limitations.
+              </p>
+              <ul className="source-list">
+                <li>Census Profile, 2021 &mdash; Statistics Canada</li>
+                <li>Shelter-cost-to-income ratio by tenure &mdash; Statistics Canada</li>
+                <li>Rental Market Survey, Windsor &amp; Canada &mdash; CMHC</li>
+                <li>Starts, Completions and Units Under Construction &mdash; CMHC</li>
+              </ul>
+            </div>
+          </motion.section>
+        </PageContainer>
+      </div>
     </MotionConfig>
   );
 }

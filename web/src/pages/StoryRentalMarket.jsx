@@ -33,6 +33,8 @@ const FILTERS = [
 const KPIS = [
   { label: "Vacancy rate", value: "3.6%", accent: "blue", trend: "up" },
   { label: "Average 2-bedroom rent", value: "$1,451", accent: "violet", trend: "up" },
+  { label: "Turnover rate", value: "11.9%", accent: "teal", trend: "up" },
+  { label: "Rental stock", value: "19,883 units", accent: "rose", trend: "up" },
 ];
 
 export default function StoryRentalMarket() {
@@ -46,6 +48,8 @@ export default function StoryRentalMarket() {
       ]}
       filters={FILTERS}
       kpis={KPIS}
+      variant="ticker"
+      theme="neighbourhood"
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
       source="CMHC Rental Market Survey, Windsor CMA 2025 (Oct-24/Oct-25) -- warehouse.fact_rental_market"

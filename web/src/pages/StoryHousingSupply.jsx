@@ -61,6 +61,8 @@ export default function StoryHousingSupply() {
       ]}
       filters={FILTERS}
       kpis={KPIS}
+      variant="blueprint"
+      theme="neighbourhood"
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}

@@ -67,93 +67,95 @@ const DATASETS = [
 
 export default function Sources() {
   return (
-    <PageContainer>
-      <h1>Data sources</h1>
-      <p className="hero-lede" style={{ marginBottom: 32 }}>
-        Every dataset this site uses, with its publisher, catalogue or edition, release date,
-        licence, and a direct link to the source. See the{" "}
-        <a href="/methodology">full methodology page</a> for the stack and known limitations.
-      </p>
+    <div className="story-page" data-theme="neighbourhood">
+      <PageContainer>
+        <h1>Data sources</h1>
+        <p className="page-lede">
+          Every dataset this site uses, with its publisher, catalogue or edition, release date,
+          licence, and a direct link to the source. See the{" "}
+          <a href="/methodology">full methodology page</a> for the stack and known limitations.
+        </p>
 
-      <div className="methodology-grid">
-        {DATASETS.map((d) => (
-          <div className="card methodology-card" key={d.url + d.name}>
-            <h2>{d.name}</h2>
+        <div className="source-card-grid">
+          {DATASETS.map((d) => (
+            <div className="card source-card" key={d.url + d.name}>
+              <h2>{d.name}</h2>
+              <dl>
+                <div>
+                  <dt>Publisher</dt>
+                  <dd>{d.publisher}</dd>
+                </div>
+                <div>
+                  <dt>Catalogue</dt>
+                  <dd>{d.catalogue}</dd>
+                </div>
+                <div>
+                  <dt>Release date</dt>
+                  <dd>{d.releaseDate}</dd>
+                </div>
+                <div>
+                  <dt>Licence</dt>
+                  <dd>
+                    <a href={d.licenceUrl} target="_blank" rel="noreferrer">
+                      {d.licence}
+                    </a>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Used for</dt>
+                  <dd>{d.usedFor}</dd>
+                </div>
+              </dl>
+              <p className="source-card-link">
+                <a href={d.url} target="_blank" rel="noreferrer">
+                  View source &rarr;
+                </a>
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <h2 style={{ marginTop: 40 }}>Media credits</h2>
+        <div className="methodology-grid">
+          <div className="card methodology-card">
+            <h2>Homepage banner photo</h2>
             <dl style={{ margin: 0, display: "grid", gap: 6 }}>
               <div>
-                <dt style={{ display: "inline", fontWeight: 700 }}>Publisher: </dt>
-                <dd style={{ display: "inline", margin: 0 }}>{d.publisher}</dd>
+                <dt style={{ display: "inline", fontWeight: 700 }}>Title: </dt>
+                <dd style={{ display: "inline", margin: 0 }}>
+                  &ldquo;Windsor, Ontario (aerial view)&rdquo;
+                </dd>
               </div>
               <div>
-                <dt style={{ display: "inline", fontWeight: 700 }}>Catalogue: </dt>
-                <dd style={{ display: "inline", margin: 0 }}>{d.catalogue}</dd>
-              </div>
-              <div>
-                <dt style={{ display: "inline", fontWeight: 700 }}>Release date: </dt>
-                <dd style={{ display: "inline", margin: 0 }}>{d.releaseDate}</dd>
+                <dt style={{ display: "inline", fontWeight: 700 }}>Author: </dt>
+                <dd style={{ display: "inline", margin: 0 }}>WMrapids, via Wikimedia Commons</dd>
               </div>
               <div>
                 <dt style={{ display: "inline", fontWeight: 700 }}>Licence: </dt>
                 <dd style={{ display: "inline", margin: 0 }}>
-                  <a href={d.licenceUrl} target="_blank" rel="noreferrer">
-                    {d.licence}
-                  </a>
+                  <a
+                    href="https://creativecommons.org/publicdomain/zero/1.0/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    CC0 1.0 (public domain)
+                  </a>{" "}
+                  -- attribution not required, credited here anyway.
                 </dd>
-              </div>
-              <div>
-                <dt style={{ display: "inline", fontWeight: 700 }}>Used for: </dt>
-                <dd style={{ display: "inline", margin: 0 }}>{d.usedFor}</dd>
               </div>
             </dl>
             <p style={{ marginTop: 14, marginBottom: 0 }}>
-              <a href={d.url} target="_blank" rel="noreferrer">
+              <a
+                href="https://commons.wikimedia.org/wiki/File:Windsor,_Ontario_(aerial_view).jpg"
+                target="_blank"
+                rel="noreferrer"
+              >
                 View source &rarr;
               </a>
             </p>
           </div>
-        ))}
-      </div>
-
-      <h2 style={{ marginTop: 40 }}>Media credits</h2>
-      <div className="methodology-grid">
-        <div className="card methodology-card">
-          <h2>Homepage banner photo</h2>
-          <dl style={{ margin: 0, display: "grid", gap: 6 }}>
-            <div>
-              <dt style={{ display: "inline", fontWeight: 700 }}>Title: </dt>
-              <dd style={{ display: "inline", margin: 0 }}>
-                &ldquo;Windsor, Ontario (aerial view)&rdquo;
-              </dd>
-            </div>
-            <div>
-              <dt style={{ display: "inline", fontWeight: 700 }}>Author: </dt>
-              <dd style={{ display: "inline", margin: 0 }}>WMrapids, via Wikimedia Commons</dd>
-            </div>
-            <div>
-              <dt style={{ display: "inline", fontWeight: 700 }}>Licence: </dt>
-              <dd style={{ display: "inline", margin: 0 }}>
-                <a
-                  href="https://creativecommons.org/publicdomain/zero/1.0/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  CC0 1.0 (public domain)
-                </a>{" "}
-                -- attribution not required, credited here anyway.
-              </dd>
-            </div>
-          </dl>
-          <p style={{ marginTop: 14, marginBottom: 0 }}>
-            <a
-              href="https://commons.wikimedia.org/wiki/File:Windsor,_Ontario_(aerial_view).jpg"
-              target="_blank"
-              rel="noreferrer"
-            >
-              View source &rarr;
-            </a>
-          </p>
         </div>
-      </div>
-    </PageContainer>
+      </PageContainer>
+    </div>
   );
 }

@@ -1,4 +1,6 @@
+import { motion } from "framer-motion";
 import PageContainer from "../components/PageContainer.jsx";
+import { staggerParent, fadeUp, reveal } from "../lib/motion.js";
 
 const SOURCES = [
   {
@@ -30,74 +32,81 @@ const SOURCES = [
 
 export default function Methodology() {
   return (
-    <PageContainer>
-      <h1>Methodology</h1>
-      <p>
-        Every figure on this site traces back to an official Statistics Canada or CMHC download. Raw
-        files are kept separate from processed data, loaded into PostgreSQL through documented
-        Python ETL scripts, and queried through SQL views that Apache Superset builds charts from.
-      </p>
+    <div className="story-page" data-theme="neighbourhood">
+      <PageContainer>
+        <motion.div {...reveal(staggerParent)}>
+          <motion.h1 variants={fadeUp}>Methodology</motion.h1>
+          <motion.p variants={fadeUp}>
+            Every figure on this site traces back to an official Statistics Canada or CMHC download.
+            Raw files are kept separate from processed data, loaded into PostgreSQL through
+            documented Python ETL scripts, and queried through SQL views that Apache Superset builds
+            charts from.
+          </motion.p>
+        </motion.div>
 
-      <h2>Stack</h2>
-      <div className="methodology-grid">
-        {[
-          ["Data sources", "Statistics Canada, CMHC"],
-          ["Data processing", "Python (pandas, SQLAlchemy)"],
-          ["Database", "PostgreSQL"],
-          ["Analytics", "Apache Superset"],
-          ["Front end", "React"],
-          ["Containerisation", "Docker"],
-        ].map(([label, value]) => (
-          <div className="card methodology-card" key={label}>
-            <p className="definition-term">{label}</p>
-            <p className="definition-text">{value}</p>
-          </div>
-        ))}
-      </div>
+        <h2>Stack</h2>
+        <motion.div {...reveal(staggerParent)} className="methodology-grid methodology-timeline">
+          {[
+            ["Data sources", "Statistics Canada, CMHC"],
+            ["Data processing", "Python (pandas, SQLAlchemy)"],
+            ["Database", "PostgreSQL"],
+            ["Analytics", "Apache Superset"],
+            ["Front end", "React"],
+            ["Containerisation", "Docker"],
+          ].map(([label, value], i) => (
+            <motion.div variants={fadeUp} className="card methodology-card" key={label}>
+              <span className="methodology-step-index">{i + 1}</span>
+              <p className="definition-term">{label}</p>
+              <p className="definition-text">{value}</p>
+            </motion.div>
+          ))}
+        </motion.div>
 
-      <h2>Data sources</h2>
-      <ul className="source-list">
-        {SOURCES.map((s) => (
-          <li key={s.url}>
-            <a href={s.url} target="_blank" rel="noreferrer">
-              {s.name}
-            </a>{" "}
-            &mdash; {s.agency}
-          </li>
-        ))}
-      </ul>
+        <h2>Data sources</h2>
+        <motion.ul {...reveal(staggerParent)} className="source-list">
+          {SOURCES.map((s) => (
+            <motion.li variants={fadeUp} key={s.url}>
+              <a href={s.url} target="_blank" rel="noreferrer">
+                {s.name}
+              </a>{" "}
+              &mdash; {s.agency}
+            </motion.li>
+          ))}
+        </motion.ul>
 
-      <h2>Known limitations</h2>
-      <div className="limitations-note">
-        <ul style={{ margin: 0, paddingLeft: 18 }}>
-          <li>
-            Sources span different reporting years &mdash; the 2021 Census, 2025 CMHC rental-market
-            data, and 2026 construction data are shown side by side for context, not joined
-            directly: they&rsquo;re connected only where geography and time period make the
-            comparison valid.
-          </li>
-          <li>
-            Housing-supply figures (starts, completions, units under construction) are Ontario- and
-            Canada-wide only &mdash; CMHC&rsquo;s source table has no Windsor-specific breakdown, so
-            there&rsquo;s no Windsor-only starts/completions figure anywhere on this site yet.
-          </li>
-          <li>
-            Only one quarter of supply data has been extracted so far (Second Quarter 2026) &mdash;
-            not a multi-year time series, so trend questions (&ldquo;is Windsor building enough
-            housing over time?&rdquo;) can&rsquo;t be answered from this data yet.
-          </li>
-          <li>
-            The Story 4 affordability-gap index (rent growth vs. renter income growth) isn&rsquo;t
-            computed: no source extracted so far contains a renter-income time series to compute a
-            real growth rate from, so that figure is left blank rather than estimated.
-          </li>
-          <li>
-            Within the shelter-cost-burden breakdown (Story 1), about 8.8% of burdened households
-            aren&rsquo;t accounted for by any published StatCan sub-category &mdash; flagged as an
-            open data-quality question, not silently assumed into any one bucket.
-          </li>
-        </ul>
-      </div>
-    </PageContainer>
+        <h2>Known limitations</h2>
+        <motion.div {...reveal(fadeUp)} className="limitations-note">
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            <li>
+              Sources span different reporting years &mdash; the 2021 Census, 2025 CMHC
+              rental-market data, and 2026 construction data are shown side by side for context, not
+              joined directly: they&rsquo;re connected only where geography and time period make the
+              comparison valid.
+            </li>
+            <li>
+              Housing-supply figures (starts, completions, units under construction) are Ontario-
+              and Canada-wide only &mdash; CMHC&rsquo;s source table has no Windsor-specific
+              breakdown, so there&rsquo;s no Windsor-only starts/completions figure anywhere on this
+              site yet.
+            </li>
+            <li>
+              Only one quarter of supply data has been extracted so far (Second Quarter 2026)
+              &mdash; not a multi-year time series, so trend questions (&ldquo;is Windsor building
+              enough housing over time?&rdquo;) can&rsquo;t be answered from this data yet.
+            </li>
+            <li>
+              The Story 4 affordability-gap index (rent growth vs. renter income growth) isn&rsquo;t
+              computed: no source extracted so far contains a renter-income time series to compute a
+              real growth rate from, so that figure is left blank rather than estimated.
+            </li>
+            <li>
+              Within the shelter-cost-burden breakdown (Story 1), about 8.8% of burdened households
+              aren&rsquo;t accounted for by any published StatCan sub-category &mdash; flagged as an
+              open data-quality question, not silently assumed into any one bucket.
+            </li>
+          </ul>
+        </motion.div>
+      </PageContainer>
+    </div>
   );
 }
