@@ -158,6 +158,12 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story3_windsor_supply_per_1000_households](id:22)",
     "[Windsor Housing Data].[v_dashboard1_rental_yoy](id:16)",
     "[Windsor Housing Data].[v_dashboard1_cma_benchmark](id:17)",
+    # Story 4's dashboard (etl/build_story4_dashboard.py) -- never granted
+    # when it was built, so all 6 of its charts returned 403 for anonymous
+    # requests (blank if the dashboard were embedded on its React page).
+    "[Windsor Housing Data].[v_story4_vacancy_comparison](id:2)",
+    "[Windsor Housing Data].[v_story4_rent_comparison](id:3)",
+    "[Windsor Housing Data].[v_story4_affordability_gap](id:4)",
 ]
 
 
