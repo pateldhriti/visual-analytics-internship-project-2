@@ -26,6 +26,8 @@ export default function StoryIntegratedAnalysis() {
       ]}
       filters={FILTERS}
       limitations={LIMITATIONS}
+      variant="horizon"
+      theme="neighbourhood"
     />
   );
 }

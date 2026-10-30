@@ -369,7 +369,10 @@ def build_position_json(chart_ids: dict) -> dict:
                 "meta": {
                     "chartId": chart_ids[key],
                     "width": width,
-                    "height": 50 if key.startswith("kpi") else 55,
+                    # 25, not 50, for KPI tiles -- 50 left a large empty
+                    # gap above the number inside every big_number_total
+                    # card, confirmed visually, not a guess.
+                    "height": 25 if key.startswith("kpi") else 55,
                     "uuid": str(uuid.uuid4()),
                 },
             }

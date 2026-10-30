@@ -28,6 +28,18 @@ const KPIS = [
   },
 ];
 
+// Real, already-verified vacancy figures for Windsor + its 4 comparator
+// CMAs (docs/story4_exploratory_findings.md, warehouse.v_story4_vacancy_comparison,
+// Oct-25, apartment scope) -- the story's own content IS this ranking, so
+// the "ladder" variant renders it directly instead of burying it in prose.
+const RANKING = [
+  { label: "Hamilton CMA", value: "3.6%" },
+  { label: "Windsor CMA", value: "3.7%", highlight: true, detail: "This project's own CMA" },
+  { label: "St. Catharines-Niagara CMA", value: "3.9%" },
+  { label: "London CMA", value: "4.0%" },
+  { label: "Kitchener-Cambridge-Waterloo CMA", value: "4.1%" },
+];
+
 export default function StoryComparison() {
   return (
     <StoryPage
@@ -38,6 +50,9 @@ export default function StoryComparison() {
       ]}
       filters={FILTERS}
       kpis={KPIS}
+      variant="ladder"
+      theme="neighbourhood"
+      ranking={RANKING}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
       source="CMHC Rental Market Survey, Canada 2025 (Windsor + 4 comparator CMAs, Oct-25) -- warehouse.fact_rental_market"
