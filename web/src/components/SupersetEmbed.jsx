@@ -23,7 +23,7 @@ export default function SupersetEmbed({ dashboardId, title, height = 1400 }) {
       <div className="superset-embed-header">
         <span className="superset-embed-badge">Live dashboard</span>
         <a href={openUrl} target="_blank" rel="noreferrer" className="superset-embed-link">
-          Open full dashboard &nearr;
+          Open full dashboard ↗
         </a>
       </div>
       <iframe

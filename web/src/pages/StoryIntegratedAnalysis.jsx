@@ -88,8 +88,8 @@ function ConclusionGrid() {
               src={c.image}
               alt={c.alt}
               loading="lazy"
-              width="1350"
-              height="840"
+              width="1368"
+              height="874"
             />
             <ul className="conclusion-insights">
               {c.insights.map((insight) => (
@@ -102,7 +102,7 @@ function ConclusionGrid() {
       <p className="conclusion-live-link">
         Chart images are snapshots of the{" "}
         <a href={SUPERSET_DASHBOARD_URL} target="_blank" rel="noreferrer">
-          live Story 5 dashboard &nearr;
+          live Story 5 dashboard ↗
         </a>
       </p>
     </>

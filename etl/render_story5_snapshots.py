@@ -10,8 +10,7 @@ Re-run this after a data refresh so the images match the dashboard.
 
 Styling follows the Superset charts: the project's "windsor_housing"
 palette in the same slot order, slices sorted largest first (as Superset's
-sort_by_metric does), donut pies with a direct label (name and share) on
-every slice, and a bar chart for Story 4, whose conclusion is a ranking
+sort_by_metric does), donut pies with a key giving each slice's name, share and count, and a bar chart for Story 4, whose conclusion is a ranking
 rather than parts of a whole.
 
 Run from the project virtual environment:
@@ -24,9 +23,9 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
-from matplotlib.ticker import StrMethodFormatter  # noqa: E402
+from matplotlib.patches import Rectangle  # noqa: E402
+from matplotlib.ticker import MultipleLocator, StrMethodFormatter  # noqa: E402
 
 from load_windsor_shelter_cost_to_postgres import get_engine  # noqa: E402
 
@@ -39,7 +38,13 @@ INK = "#2d2a32"
 MUTED = "#6a6470"
 GRID = "#e6dccb"
 SURFACE = "#ffffff"
-LABEL_GAP = 0.28  # minimum vertical space between two-line slice labels, in data units
+
+# The React page shows each image at roughly half its pixel width, so the
+# figure is kept small in inches and text large relative to it -- labels
+# land around 13px on screen, not 9px.
+FIGSIZE = (7.2, 4.6)
+DPI = 190
+LABEL_SIZE = 11
 
 plt.rcParams.update({
     "font.family": "DejaVu Sans",
@@ -84,60 +89,50 @@ def fetch(engine, key: str) -> pd.DataFrame:
     return df.sort_values("value", ascending=False).reset_index(drop=True)
 
 
-def donut(df: pd.DataFrame, title: str, subtitle: str, unit: str, path: Path) -> None:
-    fig, ax = plt.subplots(figsize=(9, 5.6), dpi=150)
+def add_caption(fig, caption: str) -> None:
+    """What the chart measures and where it's from. No headline: the React
+    card above each image already carries the conclusion as its title."""
+    fig.text(0.02, 0.955, caption, ha="left", va="center", fontsize=LABEL_SIZE, color=MUTED)
+
+
+def donut(df: pd.DataFrame, caption: str, unit: str, path: Path) -> None:
+    """Donut on the left, a key on the right with one row per slice
+    (swatch, name, share and count) in the same largest-first order as the
+    slices. A key rather than labels around the ring: with 7 zones, several
+    small slices sit side by side and their labels collide or run off the
+    image at the size the React card shows it."""
+    fig = plt.figure(figsize=FIGSIZE, dpi=DPI)
+    ax = fig.add_axes([0.02, 0.04, 0.46, 0.82])
     total = df["value"].sum()
     colors = PALETTE[: len(df)]
-    wedges, _ = ax.pie(
+    ax.pie(
         df["value"],
         colors=colors,
         startangle=90,
         counterclock=False,
         # 2px surface-coloured gaps between slices, so neighbours stay
         # distinct without relying on colour alone.
-        wedgeprops={"width": 0.42, "edgecolor": SURFACE, "linewidth": 2},
+        wedgeprops={"width": 0.38, "edgecolor": SURFACE, "linewidth": 2},
     )
-
-    # Direct label on every slice: name, share and count, in text ink
-    # (not the slice colour), with a leader line to the slice. Labels are
-    # placed per side of the donut and pushed apart vertically so small
-    # neighbouring slices don't print on top of each other.
-    labels = []
-    for wedge, (_, row) in zip(wedges, df.iterrows()):
-        angle = np.deg2rad((wedge.theta2 + wedge.theta1) / 2)
-        x, y = np.cos(angle), np.sin(angle)
-        share = 100 * row["value"] / total
-        labels.append({
-            "text": f"{row['label']}\n{share:.0f}%  ({row['value']:,.0f})",
-            "anchor": (x * 0.98, y * 0.98),
-            "side": 1 if x >= 0 else -1,
-            "y": y * 1.22,
-        })
-
-    for side in (1, -1):
-        on_side = sorted((lbl for lbl in labels if lbl["side"] == side), key=lambda lbl: -lbl["y"])
-        for above, below in zip(on_side, on_side[1:]):
-            below["y"] = min(below["y"], above["y"] - LABEL_GAP)
-
-    for lbl in labels:
-        ax.annotate(
-            lbl["text"],
-            xy=lbl["anchor"],
-            xytext=(lbl["side"] * 1.32, lbl["y"]),
-            ha="left" if lbl["side"] > 0 else "right",
-            va="center",
-            fontsize=9.5,
-            color=INK,
-            arrowprops={"arrowstyle": "-", "color": MUTED, "lw": 0.8},
-        )
-
-    ax.text(0, 0.06, f"{total:,.0f}", ha="center", va="center", fontsize=18, fontweight="bold", color=INK)
-    ax.text(0, -0.14, unit, ha="center", va="center", fontsize=9.5, color=MUTED)
+    ax.text(0, 0.1, f"{total:,.0f}", ha="center", va="center", fontsize=20, fontweight="bold", color=INK)
+    ax.text(0, -0.17, unit, ha="center", va="center", fontsize=LABEL_SIZE - 1, color=MUTED)
     ax.set_aspect("equal")
-    fig.suptitle(title, x=0.02, y=0.97, ha="left", fontsize=14, fontweight="bold", color=INK)
-    fig.text(0.02, 0.905, subtitle, ha="left", fontsize=10, color=MUTED)
-    # Wide side margins: slice labels sit outside the ring on both sides.
-    fig.subplots_adjust(top=0.84, bottom=0.04, left=0.27, right=0.73)
+
+    # Key rows, vertically centred on the donut. Text stays in ink, not the
+    # slice colour; the swatch carries the colour.
+    row_height = min(0.115, 0.8 / len(df))
+    top = 0.45 + row_height * (len(df) - 1) / 2
+    for i, (color, (_, row)) in enumerate(zip(colors, df.iterrows())):
+        y = top - i * row_height
+        fig.patches.append(
+            Rectangle((0.52, y - 0.022), 0.022, 0.044, transform=fig.transFigure, color=color, figure=fig)
+        )
+        share = 100 * row["value"] / total
+        fig.text(0.56, y + 0.012, row["label"], ha="left", va="center", fontsize=LABEL_SIZE, color=INK)
+        fig.text(0.56, y - 0.03, f"{share:.0f}%  ·  {row['value']:,.0f}", ha="left", va="center",
+                 fontsize=LABEL_SIZE - 1, color=MUTED)
+
+    add_caption(fig, caption)
     fig.savefig(path)
     plt.close(fig)
 
@@ -146,27 +141,25 @@ def rent_bars(df: pd.DataFrame, path: Path) -> None:
     # barh draws the first row at the bottom, so sort highest-first to put
     # the lowest rent (Windsor, the conclusion) at the top.
     df = df.sort_values("value", ascending=False)
-    fig, ax = plt.subplots(figsize=(9, 5.6), dpi=150)
+    fig, ax = plt.subplots(figsize=FIGSIZE, dpi=DPI)
     bars = ax.barh(df["label"], df["value"], color=PALETTE[0], height=0.6)
     for bar, value in zip(bars, df["value"]):
-        ax.text(value + 15, bar.get_y() + bar.get_height() / 2, f"${value:,.0f}", va="center", fontsize=10, color=INK)
+        ax.text(value + 15, bar.get_y() + bar.get_height() / 2, f"${value:,.0f}", va="center", fontsize=LABEL_SIZE, color=INK)
     for tick in ax.get_yticklabels():
         if tick.get_text() == "Windsor":
             tick.set_fontweight("bold")
     ax.set_xlim(0, df["value"].max() * 1.15)
+    ax.xaxis.set_major_locator(MultipleLocator(500))
     ax.xaxis.set_major_formatter(StrMethodFormatter("${x:,.0f}"))
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ax.set_axisbelow(True)
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(GRID)
-    ax.tick_params(axis="y", length=0, labelsize=10.5, labelcolor=INK)
-    ax.set_xlabel("Average 2-bedroom apartment rent, October 2025")
-    fig.suptitle("Windsor has the lowest 2-bedroom rent of five peer cities", x=0.02, y=0.97, ha="left",
-                 fontsize=14, fontweight="bold", color=INK)
-    fig.text(0.02, 0.905, "CMHC Rental Market Survey, Oct-25 -- a ranking, so bars rather than a pie",
-             ha="left", fontsize=10, color=MUTED)
-    fig.subplots_adjust(top=0.84, bottom=0.13, left=0.3, right=0.96)
+    ax.tick_params(axis="y", length=0, labelsize=LABEL_SIZE, labelcolor=INK)
+    ax.tick_params(axis="x", labelsize=LABEL_SIZE - 1)
+    add_caption(fig, "Average 2-bedroom apartment rent -- CMHC Rental Market Survey, Oct-25")
+    fig.subplots_adjust(top=0.88, bottom=0.09, left=0.37, right=0.95)
     fig.savefig(path)
     plt.close(fig)
 
@@ -177,21 +170,18 @@ def main() -> None:
 
     donut(
         fetch(engine, "tenure"),
-        "Renters are most of Windsor's cost-burdened households",
         "Households spending 30%+ of income on shelter, by tenure -- 2021 Census",
         "burdened households",
         OUTPUT_DIR / "story1-burdened-by-tenure.png",
     )
     donut(
         fetch(engine, "zones"),
-        "Most of Windsor's rental stock is in the city's four zones",
         "Purpose-built rental units by zone -- CMHC Rental Market Survey, Oct-25",
         "rental units",
         OUTPUT_DIR / "story2-rental-stock-by-zone.png",
     )
     donut(
         fetch(engine, "starts"),
-        "Apartments were most of Windsor's 2025 housing starts",
         "Housing starts by dwelling type, 2025 -- CMHC via StatCan 34-10-0154-01",
         "homes started",
         OUTPUT_DIR / "story3-starts-by-dwelling-type.png",
