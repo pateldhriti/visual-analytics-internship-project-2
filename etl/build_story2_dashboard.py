@@ -119,11 +119,11 @@ CHARTS = {
         "params": {
             "metric": {
                 "expressionType": "SQL",
-                "sqlExpression": "AVG(vacancy_rate_pct)",
+                "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
                 "label": "Vacancy Rate",
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "subheader": "October 2025, Combined dwelling types",
         },
     },
@@ -151,11 +151,11 @@ CHARTS = {
         "params": {
             "metric": {
                 "expressionType": "SQL",
-                "sqlExpression": "AVG(turnover_rate_pct)",
+                "sqlExpression": "AVG(turnover_rate_pct) / 100.0",
                 "label": "Turnover Rate",
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "subheader": "October 2025, Combined dwelling types",
         },
     },
@@ -234,6 +234,8 @@ CHARTS = {
             "rich_tooltip": True,
             "y_axis_format": "$,.0f",
             "x_axis_label": "Zone",
+            "x_ticks_layout": "45°",
+            "bottom_margin": "auto",
             "y_axis_label": "Average Rent ($)",
         },
     },
@@ -263,6 +265,8 @@ CHARTS = {
             "rich_tooltip": True,
             "y_axis_format": ",.0f",
             "x_axis_label": "Zone",
+            "x_ticks_layout": "45°",
+            "bottom_margin": "auto",
             "y_axis_label": "Rental Units",
         },
     },
@@ -286,6 +290,8 @@ CHARTS = {
             "rich_tooltip": True,
             "y_axis_format": ".1%",
             "x_axis_label": "Zone",
+            "x_ticks_layout": "45°",
+            "bottom_margin": "auto",
             "y_axis_label": "Vacancy Rate (%)",
         },
     },
@@ -374,7 +380,7 @@ CHARTS = {
             "metrics": [
                 {
                     "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct)",
+                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
                     "label": "Vacancy Rate",
                 }
             ],
@@ -383,7 +389,7 @@ CHARTS = {
             "color_scheme": COLOR_SCHEME,
             "show_legend": True,
             "rich_tooltip": True,
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "x_axis_label": "Period",
             "y_axis_label": "Vacancy Rate (%)",
         },
@@ -398,7 +404,7 @@ CHARTS = {
             "metrics": [
                 {
                     "expressionType": "SQL",
-                    "sqlExpression": "AVG(turnover_rate_pct)",
+                    "sqlExpression": "AVG(turnover_rate_pct) / 100.0",
                     "label": "Turnover Rate",
                 }
             ],
@@ -407,7 +413,7 @@ CHARTS = {
             "color_scheme": COLOR_SCHEME,
             "show_legend": False,
             "rich_tooltip": True,
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "x_axis_label": "Bedroom Type",
             "y_axis_label": "Turnover Rate (%)",
         },
@@ -419,14 +425,26 @@ DASHBOARD_TITLE = "Story 2: What is happening in Windsor's rental market?"
 # Top-to-bottom grid entries: a HEADER-* id with its text, or a ROW-* id
 # with (chart key, width) pairs -- widths sum to 12 per row, same grid
 # convention as Story 1's dashboard.
+#
+# Every section has a header, matching Dashboards 1, 2 and 4 (this was the
+# only dashboard without them). KPI tiles follow Dashboard 1's rental row
+# order (Rent, Vacancy, Stock, Turnover) so the same 4 numbers read in the
+# same order wherever they appear. The rent and vacancy trend charts are
+# full width rather than side by side: each draws 4 bedroom types x 6
+# periods = 24 bars, which crowds badly in a half-width cell once the
+# dashboard is embedded in the React story page's narrower iframe.
 LAYOUT = [
-    ("ROW-kpi", [("kpi-vacancy", 3), ("kpi-rent", 3), ("kpi-turnover", 3), ("kpi-stock", 3)]),
+    ("HEADER-kpi", "Windsor CMA at a Glance (Oct-25)"),
+    ("ROW-kpi", [("kpi-rent", 3), ("kpi-vacancy", 3), ("kpi-stock", 3), ("kpi-turnover", 3)]),
     ("HEADER-zone", "Zone-Level Rental Market"),
     ("ROW-zone-bars", [("zone-stock", 6), ("zone-vacancy", 6)]),
     ("ROW-zone", [("rent-zone", 12)]),
     ("ROW-zone-trend", [("zone-vacancy-trend", 12)]),
     ("ROW-zone-table", [("zone-table", 12)]),
-    ("ROW-trends", [("rent-trend", 6), ("vacancy-trend", 6)]),
+    ("HEADER-trends", "Rent and Vacancy Trends (Oct-20 to Oct-25)"),
+    ("ROW-rent-trend", [("rent-trend", 12)]),
+    ("ROW-vacancy-trend", [("vacancy-trend", 12)]),
+    ("HEADER-turnover", "Turnover and Dwelling Type"),
     ("ROW-turnover", [("turnover", 12)]),
     ("ROW-dwelling", [("vacancy-dwelling", 12)]),
 ]
@@ -560,7 +578,9 @@ def build_native_filters(chart_ids: dict) -> list:
         },
         {
             "id": f"NATIVE_FILTER-{uuid.uuid4().hex[:8]}",
-            "name": "Bedroom type",
+            # Title Case per docs/filter_standards.md rule 1 (was "Bedroom
+            # type", the follow-up that doc flagged for this dashboard).
+            "name": "Bedroom Type",
             "filterType": "filter_select",
             "targets": [{"datasetId": DATASET_RENT_YOY, "column": {"name": "bedroom_type_label"}}],
             "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},

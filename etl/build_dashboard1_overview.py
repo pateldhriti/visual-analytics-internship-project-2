@@ -302,11 +302,17 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     resp.raise_for_status()
 
 
+# Both tables on this dashboard have 4 rows -- at 55 (the bar-chart
+# height) each left a large blank area under its last row. 40 matches the
+# zone snapshot table on Dashboard 3 (etl/build_story2_dashboard.py).
+TABLE_HEIGHT = 40
+
+
 def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 25) -> dict:
-    # Default height, used only by big_number_total KPI tiles (every
-    # bar/table chart below passes its own height=55) -- was 50, which
-    # left a large empty gap above the number inside every KPI card,
-    # confirmed visually, not a guess.
+    # Default height, used only by big_number_total KPI tiles (every bar
+    # chart below passes its own height=55, tables TABLE_HEIGHT) -- was
+    # 50, which left a large empty gap above the number inside every KPI
+    # card, confirmed visually, not a guess.
     return {
         "type": "CHART",
         "id": node_id,
@@ -389,7 +395,7 @@ def build_position_json(chart_ids: dict) -> dict:
     )
     position["ROW-rental-table"] = row_node("ROW-rental-table", ["CHART-rental-yoy-table"])
     position["CHART-rental-yoy-table"] = chart_node(
-        "CHART-rental-yoy-table", "ROW-rental-table", chart_ids["rental-yoy-table"], 12, 55
+        "CHART-rental-yoy-table", "ROW-rental-table", chart_ids["rental-yoy-table"], 12, TABLE_HEIGHT
     )
 
     position["HEADER-supply"] = header_node("HEADER-supply", "Housing Supply")
@@ -406,7 +412,7 @@ def build_position_json(chart_ids: dict) -> dict:
     position["HEADER-cma"] = header_node("HEADER-cma", "Windsor vs Canadian CMAs")
     position["ROW-cma"] = row_node("ROW-cma", ["CHART-cma-benchmark-table"])
     position["CHART-cma-benchmark-table"] = chart_node(
-        "CHART-cma-benchmark-table", "ROW-cma", chart_ids["cma-benchmark-table"], 12, 55
+        "CHART-cma-benchmark-table", "ROW-cma", chart_ids["cma-benchmark-table"], 12, TABLE_HEIGHT
     )
 
     return position
