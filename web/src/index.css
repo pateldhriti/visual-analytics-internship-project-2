@@ -3120,3 +3120,79 @@ body,
   color: #6a6470;
   font-family: "Source Sans 3", system-ui, sans-serif;
 }
+
+/* ---------- Story 5: conclusion cards ----------
+   One card per story: label, title, chart snapshot, key insights.
+   Two columns on wide screens, one on narrow ones. In the Neighbourhood
+   theme each card gets the same house roof as every other .card (the
+   "every box is a house" block above), so it needs room under the roof. */
+.conclusion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: 24px;
+}
+
+.conclusion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 24px 24px;
+}
+
+.conclusion-story {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.conclusion-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.conclusion-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.conclusion-insights {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  line-height: 1.55;
+}
+
+.conclusion-live-link {
+  margin: 18px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.story-page[data-theme="neighbourhood"] .conclusion-card {
+  padding-top: calc(var(--roof-h) + 18px);
+}
+
+.story-page[data-theme="neighbourhood"] .conclusion-card:nth-child(4n + 1) {
+  --tile: var(--rose);
+}
+
+.story-page[data-theme="neighbourhood"] .conclusion-card:nth-child(4n + 2) {
+  --tile: var(--blue);
+}
+
+.story-page[data-theme="neighbourhood"] .conclusion-card:nth-child(4n + 3) {
+  --tile: var(--teal);
+}
+
+.story-page[data-theme="neighbourhood"] .conclusion-card:nth-child(4n + 4) {
+  --tile: var(--violet);
+}

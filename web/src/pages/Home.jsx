@@ -101,7 +101,7 @@ const STORIES = [
     to: "/stories/integrated-analysis",
     label: "Story 5",
     title: "How do affordability, rental conditions, and supply fit together?",
-    blurb: "A combined read across all four stories -- in progress, not yet built.",
+    blurb: "One headline conclusion from each story, read together.",
     icon: "integrated",
     accent: "blue",
   },

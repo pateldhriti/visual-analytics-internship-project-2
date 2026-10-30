@@ -125,6 +125,17 @@ households and a 2016-2025 trend, with a Year filter):
 .venv\Scripts\python.exe etl\build_story3_dashboard.py
 ```
 
+Build Story 5's dashboard ("How do affordability, rental conditions, and
+supply fit together?" -- one headline conclusion from each of Stories 1-4,
+as pie charts for the three share-of-a-whole conclusions and a bar chart for
+Story 4's ranking, each with its key insight), then render the PNG snapshots
+the React Story 5 page shows (`web/public/story5/`) -- re-run both after a
+data refresh:
+```
+.venv\Scripts\python.exe etl\build_story5_dashboard.py
+.venv\Scripts\python.exe etl\render_story5_snapshots.py
+```
+
 Build Story 4's dashboard ("How does Windsor compare to similar
 markets?" -- Windsor vs. the 4 real comparator CMAs on vacancy, rent,
 and the real rent-growth side of the affordability-gap index):
