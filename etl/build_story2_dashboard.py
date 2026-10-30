@@ -1,7 +1,9 @@
 """
 Build the Story 2 Superset dashboard ("What is happening in Windsor's
 rental market?"): a 4-tile KPI section (Average Rent, Vacancy, Turnover,
-Rental Stock), rent by bedroom type and zone, rent and vacancy over the
+Rental Stock), a zone-level section (rental stock, vacancy, vacancy over
+time and a 4-metric snapshot table per zone, alongside rent by zone and
+bedroom type), rent and vacancy over the
 project's real 6-year span (Oct-20 to Oct-25 -- not 10 years, see
 sql/story2_views.sql's own header comment), turnover by bedroom type,
 vacancy by dwelling type, with native filters for zone, bedroom type,
@@ -35,7 +37,7 @@ fix_story1_tenure_filter_scope.py). Rental Stock's dataset
 (v_dashboard1_rental_yoy) doesn't even have a bedroom_type_label column,
 so including it in the Bedroom-type filter's scope would error outright.
 
-Requires the 5 Story 2 views already registered as Superset datasets
+Requires the 7 Story 2 views already registered as Superset datasets
 (etl/register_superset_datasets.py) and Superset running.
 
 Run from the project virtual environment:
@@ -61,6 +63,8 @@ DATASET_RENT_ZONE = 14  # v_story2_rent_by_zone_bedroom
 # reuse would mean a second view computing the same real
 # fact_rental_market rows the Dashboard 1 one already does.
 DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
+DATASET_ZONE_SNAPSHOT = 19  # v_story2_zone_snapshot
+DATASET_ZONE_VACANCY = 20  # v_story2_vacancy_by_zone_trend
 
 COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
 
@@ -115,11 +119,11 @@ CHARTS = {
         "params": {
             "metric": {
                 "expressionType": "SQL",
-                "sqlExpression": "AVG(vacancy_rate_pct)",
+                "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
                 "label": "Vacancy Rate",
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "subheader": "October 2025, Combined dwelling types",
         },
     },
@@ -147,11 +151,11 @@ CHARTS = {
         "params": {
             "metric": {
                 "expressionType": "SQL",
-                "sqlExpression": "AVG(turnover_rate_pct)",
+                "sqlExpression": "AVG(turnover_rate_pct) / 100.0",
                 "label": "Turnover Rate",
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "subheader": "October 2025, Combined dwelling types",
         },
     },
@@ -230,7 +234,118 @@ CHARTS = {
             "rich_tooltip": True,
             "y_axis_format": "$,.0f",
             "x_axis_label": "Zone",
+            "x_ticks_layout": "45°",
+            "bottom_margin": "auto",
             "y_axis_label": "Average Rent ($)",
+        },
+    },
+    # Zone-level section: stock, vacancy and a 4-metric snapshot table on
+    # v_story2_zone_snapshot, plus vacancy over time on
+    # v_story2_vacancy_by_zone_trend. Both views are already scoped to
+    # Combined / Total bedroom / real zones only, so these charts need no
+    # adhoc_filters of their own -- which is also what makes them safe to
+    # put in the Zone filter's scope (zone_label is their groupby, never a
+    # hardcoded value; docs/filter_standards.md rule 4).
+    "zone-stock": {
+        "slice_name": "Rental Stock by Zone (Oct-25)",
+        "description": (
+            "Surveyed rental units per zone, Combined dwelling types -- warehouse.v_story2_zone_snapshot. "
+            "The 7 zones sum to the Windsor CMA total (19,883)."
+        ),
+        "dataset_id": DATASET_ZONE_SNAPSHOT,
+        "viz_type": "dist_bar",
+        "params": {
+            "groupby": ["zone_label"],
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "SUM(rental_universe)", "label": "Rental Units"}
+            ],
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_legend": False,
+            "rich_tooltip": True,
+            "y_axis_format": ",.0f",
+            "x_axis_label": "Zone",
+            "x_ticks_layout": "45°",
+            "bottom_margin": "auto",
+            "y_axis_label": "Rental Units",
+        },
+    },
+    "zone-vacancy": {
+        "slice_name": "Vacancy Rate by Zone (Oct-25)",
+        "description": "Combined dwelling types, Total bedroom type -- warehouse.v_story2_zone_snapshot.",
+        "dataset_id": DATASET_ZONE_SNAPSHOT,
+        "viz_type": "dist_bar",
+        "params": {
+            "groupby": ["zone_label"],
+            "metrics": [
+                {
+                    "expressionType": "SQL",
+                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
+                    "label": "Vacancy Rate",
+                }
+            ],
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_legend": False,
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_label": "Zone",
+            "x_ticks_layout": "45°",
+            "bottom_margin": "auto",
+            "y_axis_label": "Vacancy Rate (%)",
+        },
+    },
+    "zone-vacancy-trend": {
+        "slice_name": "Vacancy Rate by Zone and Period (Oct-20 to Oct-25)",
+        "description": (
+            "Combined dwelling types, Total bedroom type -- warehouse.v_story2_vacancy_by_zone_trend. "
+            "Zone 7 has no data before Oct-23 and Zone 5's Oct-22/Oct-24 values are suppressed by "
+            "CMHC; both show as gaps, not zeros."
+        ),
+        "dataset_id": DATASET_ZONE_VACANCY,
+        "viz_type": "dist_bar",
+        "params": {
+            "groupby": ["period_label"],
+            "columns": ["zone_label"],
+            "metrics": [
+                {
+                    "expressionType": "SQL",
+                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
+                    "label": "Vacancy Rate",
+                }
+            ],
+            "row_limit": 100,
+            "color_scheme": COLOR_SCHEME,
+            "show_legend": True,
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_label": "Period",
+            "y_axis_label": "Vacancy Rate (%)",
+        },
+    },
+    "zone-table": {
+        "slice_name": "Zone Snapshot: Rent, Vacancy, Stock and Turnover (Oct-25)",
+        "description": (
+            "One row per zone, Combined dwelling types, Total bedroom type -- warehouse.v_story2_zone_snapshot. "
+            "Reliability letters are CMHC's own (a = excellent ... d = fair, use with caution)."
+        ),
+        "dataset_id": DATASET_ZONE_SNAPSHOT,
+        "viz_type": "table",
+        "params": {
+            "query_mode": "raw",
+            "columns": [
+                "zone_label",
+                "average_rent",
+                "rent_reliability",
+                "vacancy_rate_pct",
+                "vacancy_reliability",
+                "rental_universe",
+                "share_of_zone_stock_pct",
+                "turnover_rate_pct",
+            ],
+            "order_by_cols": ['["zone_label", true]'],
+            "row_limit": 10,
+            "server_pagination": False,
         },
     },
     "rent-trend": {
@@ -265,7 +380,7 @@ CHARTS = {
             "metrics": [
                 {
                     "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct)",
+                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
                     "label": "Vacancy Rate",
                 }
             ],
@@ -274,7 +389,7 @@ CHARTS = {
             "color_scheme": COLOR_SCHEME,
             "show_legend": True,
             "rich_tooltip": True,
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "x_axis_label": "Period",
             "y_axis_label": "Vacancy Rate (%)",
         },
@@ -289,7 +404,7 @@ CHARTS = {
             "metrics": [
                 {
                     "expressionType": "SQL",
-                    "sqlExpression": "AVG(turnover_rate_pct)",
+                    "sqlExpression": "AVG(turnover_rate_pct) / 100.0",
                     "label": "Turnover Rate",
                 }
             ],
@@ -298,7 +413,7 @@ CHARTS = {
             "color_scheme": COLOR_SCHEME,
             "show_legend": False,
             "rich_tooltip": True,
-            "y_axis_format": ".1f",
+            "y_axis_format": ".1%",
             "x_axis_label": "Bedroom Type",
             "y_axis_label": "Turnover Rate (%)",
         },
@@ -307,14 +422,47 @@ CHARTS = {
 
 DASHBOARD_TITLE = "Story 2: What is happening in Windsor's rental market?"
 
-# width units sum to 12 per row, same grid convention as Story 1's dashboard.
+# Top-to-bottom grid entries: a HEADER-* id with its text, or a ROW-* id
+# with (chart key, width) pairs -- widths sum to 12 per row, same grid
+# convention as Story 1's dashboard.
+#
+# Every section has a header, matching Dashboards 1, 2 and 4 (this was the
+# only dashboard without them). KPI tiles follow Dashboard 1's rental row
+# order (Rent, Vacancy, Stock, Turnover) so the same 4 numbers read in the
+# same order wherever they appear. The rent and vacancy trend charts are
+# full width rather than side by side: each draws 4 bedroom types x 6
+# periods = 24 bars, which crowds badly in a half-width cell once the
+# dashboard is embedded in the React story page's narrower iframe.
 LAYOUT = [
-    ("ROW-kpi", [("kpi-vacancy", 3), ("kpi-rent", 3), ("kpi-turnover", 3), ("kpi-stock", 3)]),
+    ("HEADER-kpi", "Windsor CMA at a Glance (Oct-25)"),
+    ("ROW-kpi", [("kpi-rent", 3), ("kpi-vacancy", 3), ("kpi-stock", 3), ("kpi-turnover", 3)]),
+    ("HEADER-zone", "Zone-Level Rental Market"),
+    ("ROW-zone-bars", [("zone-stock", 6), ("zone-vacancy", 6)]),
     ("ROW-zone", [("rent-zone", 12)]),
-    ("ROW-trends", [("rent-trend", 6), ("vacancy-trend", 6)]),
+    ("ROW-zone-trend", [("zone-vacancy-trend", 12)]),
+    ("ROW-zone-table", [("zone-table", 12)]),
+    ("HEADER-trends", "Rent and Vacancy Trends (Oct-20 to Oct-25)"),
+    ("ROW-rent-trend", [("rent-trend", 12)]),
+    ("ROW-vacancy-trend", [("vacancy-trend", 12)]),
+    ("HEADER-turnover", "Turnover and Dwelling Type"),
     ("ROW-turnover", [("turnover", 12)]),
     ("ROW-dwelling", [("vacancy-dwelling", 12)]),
 ]
+
+# Chart heights in Superset grid units (8px each). KPI tiles stay
+# compact; the zone table only has 7 rows, so 55 would leave a large
+# blank area under it.
+KPI_HEIGHT = 25
+TABLE_HEIGHT = 40
+CHART_HEIGHT = 55
+
+
+def chart_height(key: str) -> int:
+    if key.startswith("kpi"):
+        return KPI_HEIGHT
+    if CHARTS[key]["viz_type"] == "table":
+        return TABLE_HEIGHT
+    return CHART_HEIGHT
 
 
 def ensure_chart(session, headers, key: str, spec: dict) -> int:
@@ -346,12 +494,26 @@ def build_position_json(chart_ids: dict) -> dict:
         "GRID_ID": {
             "type": "GRID",
             "id": "GRID_ID",
-            "children": [row_id for row_id, _ in LAYOUT],
+            "children": [node_id for node_id, _ in LAYOUT],
             "parents": ["ROOT_ID"],
         },
     }
 
     for row_id, charts_in_row in LAYOUT:
+        if row_id.startswith("HEADER-"):
+            position[row_id] = {
+                "type": "HEADER",
+                "id": row_id,
+                "children": [],
+                "parents": ["ROOT_ID", "GRID_ID"],
+                "meta": {
+                    "text": charts_in_row,
+                    "headerSize": "MEDIUM_HEADER",
+                    "background": "BACKGROUND_TRANSPARENT",
+                },
+            }
+            continue
+
         chart_node_ids = [f"CHART-{key}" for key, _ in charts_in_row]
         position[row_id] = {
             "type": "ROW",
@@ -372,7 +534,7 @@ def build_position_json(chart_ids: dict) -> dict:
                     # 25, not 50, for KPI tiles -- 50 left a large empty
                     # gap above the number inside every big_number_total
                     # card, confirmed visually, not a guess.
-                    "height": 25 if key.startswith("kpi") else 55,
+                    "height": chart_height(key),
                     "uuid": str(uuid.uuid4()),
                 },
             }
@@ -398,7 +560,13 @@ def build_native_filters(chart_ids: dict) -> list:
             "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
             "type": "NATIVE_FILTER",
             "description": "",
-            "chartsInScope": [chart_ids["rent-zone"]],
+            "chartsInScope": [
+                chart_ids["rent-zone"],
+                chart_ids["zone-stock"],
+                chart_ids["zone-vacancy"],
+                chart_ids["zone-vacancy-trend"],
+                chart_ids["zone-table"],
+            ],
             "tabsInScope": [],
             "controlValues": {
                 "enableEmptyFilter": False,
@@ -410,7 +578,9 @@ def build_native_filters(chart_ids: dict) -> list:
         },
         {
             "id": f"NATIVE_FILTER-{uuid.uuid4().hex[:8]}",
-            "name": "Bedroom type",
+            # Title Case per docs/filter_standards.md rule 1 (was "Bedroom
+            # type", the follow-up that doc flagged for this dashboard).
+            "name": "Bedroom Type",
             "filterType": "filter_select",
             "targets": [{"datasetId": DATASET_RENT_YOY, "column": {"name": "bedroom_type_label"}}],
             "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},

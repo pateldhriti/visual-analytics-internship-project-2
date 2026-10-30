@@ -131,6 +131,12 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story1_burden_by_income_band](id:7)",
     "[Windsor Housing Data].[v_story1_burden_by_household_type](id:8)",
     "[Windsor Housing Data].[v_story1_burden_severity](id:15)",
+    # Story 1's severity-breakdown chart (chart 32) -- added to dashboard 3
+    # after this list was written and never granted, so the React Story 1
+    # page (which embeds dashboard 3 anonymously) showed it as an error:
+    # GET /api/v1/chart/32/data/ returned 404 for an anonymous request
+    # while chart 2 on the same dashboard returned 200.
+    "[Windsor Housing Data].[v_story1_burden_severity_breakdown](id:18)",
     # Story 2's dashboard (id TBD) -- added proactively alongside the
     # dashboard build itself, not after an embed exposed a gap this time.
     "[Windsor Housing Data].[v_story2_rent_yoy_change](id:9)",
@@ -138,6 +144,9 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story2_vacancy_trend](id:6)",
     "[Windsor Housing Data].[v_story2_turnover_by_bedroom](id:11)",
     "[Windsor Housing Data].[v_story2_rent_by_zone_bedroom](id:14)",
+    # Dashboard 3's zone-level section (etl/build_story2_dashboard.py).
+    "[Windsor Housing Data].[v_story2_zone_snapshot](id:19)",
+    "[Windsor Housing Data].[v_story2_vacancy_by_zone_trend](id:20)",
     # Dashboard 1 (Windsor Housing Executive Overview) -- Housing Supply
     # section reuses the already-public Story 3 dataset, plus 2 new
     # dashboard-1-only views for the Rental Market YoY and CMA Benchmark

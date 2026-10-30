@@ -55,8 +55,14 @@ SELECT
     'Oct-25' AS latest_period_label,
     m2.value AS latest_value,
     ROUND(m2.value - m1.value, 1) AS change_value,
-    CASE WHEN m1.metric_type IN ('average_rent', 'universe') THEN 'units' ELSE 'percentage_points' END
-        AS change_unit
+    -- average_rent's change is in dollars, not "units" -- the table on
+    -- Dashboard 1 shows this column as-is, so "+65 units" for a rent
+    -- change read as a rental-stock change.
+    CASE
+        WHEN m1.metric_type = 'average_rent' THEN 'dollars'
+        WHEN m1.metric_type = 'universe' THEN 'units'
+        ELSE 'percentage_points'
+    END AS change_unit
 FROM metrics m1
 JOIN metrics m2
     ON m2.metric_type = m1.metric_type AND m2.period_label = 'Oct-25'
