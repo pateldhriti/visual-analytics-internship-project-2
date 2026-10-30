@@ -31,6 +31,9 @@ jobs:
       - name: Run pytest
         working-directory: etl
         run: python -m pytest test_affordability_etl.py -v
+      - name: Run pytest (guest-token API)
+        working-directory: api
+        run: python -m pytest test_guest_token_server.py -v
 
   web-lint-and-build:
     name: web lint + build
