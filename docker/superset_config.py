@@ -138,6 +138,9 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story2_vacancy_trend](id:6)",
     "[Windsor Housing Data].[v_story2_turnover_by_bedroom](id:11)",
     "[Windsor Housing Data].[v_story2_rent_by_zone_bedroom](id:14)",
+    # Dashboard 3's zone-level section (etl/build_story2_dashboard.py).
+    "[Windsor Housing Data].[v_story2_zone_snapshot](id:19)",
+    "[Windsor Housing Data].[v_story2_vacancy_by_zone_trend](id:20)",
     # Dashboard 1 (Windsor Housing Executive Overview) -- Housing Supply
     # section reuses the already-public Story 3 dataset, plus 2 new
     # dashboard-1-only views for the Rental Market YoY and CMA Benchmark

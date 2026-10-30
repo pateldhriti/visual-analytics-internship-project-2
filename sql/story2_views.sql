@@ -187,3 +187,80 @@ WHERE f.metric_type = 'average_rent'
   AND d.dwelling_type_label = 'Combined'
   AND p.period_label = 'Oct-25'
   AND z.zone_label NOT IN ('Windsor CMA', 'Windsor City (Zones 1-4)');
+
+-- ============================================================
+-- v_story2_zone_snapshot
+-- One row per real Windsor zone (zone_level = 'zone', so the CMA and
+-- Windsor City rollups and the Story 4 comparator CMAs are excluded by
+-- the dimension's own classification, not a hand-maintained name list):
+-- average rent, vacancy rate, rental stock (universe) and turnover for
+-- the latest survey (Oct-25), Combined dwelling types, Total bedroom type.
+-- Built for Dashboard 3's zone-level section -- the 4 metrics side by
+-- side, so a zone's rent can be read against its vacancy and size rather
+-- than in isolation. share_of_zone_stock_pct is each zone's share of the
+-- 7 zones' combined universe (they sum to the CMA total). Universe rows
+-- carry no CMHC reliability letter (a count, not a sampled estimate);
+-- rent and vacancy keep theirs so a 'd'-rated figure can be flagged.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story2_zone_snapshot AS
+WITH zone_metrics AS (
+    SELECT
+        z.zone_label,
+        p.period_label,
+        MAX(f.value) FILTER (WHERE f.metric_type = 'average_rent') AS average_rent,
+        MAX(f.reliability_letter) FILTER (WHERE f.metric_type = 'average_rent') AS rent_reliability,
+        MAX(f.value) FILTER (WHERE f.metric_type = 'vacancy_rate') AS vacancy_rate_pct,
+        MAX(f.reliability_letter) FILTER (WHERE f.metric_type = 'vacancy_rate') AS vacancy_reliability,
+        MAX(f.value) FILTER (WHERE f.metric_type = 'universe') AS rental_universe,
+        MAX(f.value) FILTER (WHERE f.metric_type = 'turnover_rate') AS turnover_rate_pct
+    FROM warehouse.fact_rental_market f
+    JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+    JOIN warehouse.dim_period p ON p.period_key = f.period_key
+    JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+    JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+    WHERE z.zone_level = 'zone'
+      AND p.period_label = 'Oct-25'
+      AND d.dwelling_type_label = 'Combined'
+      AND b.bedroom_type_label = 'Total'
+      AND f.metric_type IN ('average_rent', 'vacancy_rate', 'universe', 'turnover_rate')
+    GROUP BY z.zone_label, p.period_label
+)
+SELECT
+    zone_label,
+    period_label,
+    average_rent,
+    rent_reliability,
+    vacancy_rate_pct,
+    vacancy_reliability,
+    rental_universe,
+    ROUND(100.0 * rental_universe / NULLIF(SUM(rental_universe) OVER (), 0), 1)
+        AS share_of_zone_stock_pct,
+    turnover_rate_pct
+FROM zone_metrics;
+
+-- ============================================================
+-- v_story2_vacancy_by_zone_trend
+-- One row per (zone, period): vacancy rate across the real 6-year span,
+-- Combined dwelling types, Total bedroom type. Zone 7 (South Essex
+-- County) has no rows before Oct-23 -- CMHC only began publishing it
+-- then (docs/rms_historical_extraction.md) -- so its earlier periods are
+-- absent, not zero. Zone 5 (Amherstburg) has NULL vacancy for Oct-22 and
+-- Oct-24 (suppressed by CMHC for sample size); those rows stay NULL so a
+-- chart shows a gap rather than a fabricated 0.0.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story2_vacancy_by_zone_trend AS
+SELECT
+    z.zone_label,
+    p.period_label,
+    p.period_year,
+    f.value AS vacancy_rate_pct,
+    f.reliability_letter
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type = 'vacancy_rate'
+  AND z.zone_level = 'zone'
+  AND d.dwelling_type_label = 'Combined'
+  AND b.bedroom_type_label = 'Total';

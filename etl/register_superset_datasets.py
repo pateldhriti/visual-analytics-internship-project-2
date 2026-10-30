@@ -138,6 +138,38 @@ VIEWS = {
             "description": "Average rent, Oct-25, by Windsor's 7 real zones and bedroom type -- excludes the Windsor CMA and Windsor City rollup rows. Some zone/bedroom-type cells are NULL (suppressed by CMHC for sample size), excluded by AVG() rather than treated as 0.",
         },
     ],
+    "v_story2_zone_snapshot": [
+        {
+            "metric_name": "avg_vacancy_rate",
+            "expression": "AVG(vacancy_rate_pct)",
+            "verbose_name": "Average Vacancy Rate (%)",
+            "metric_type": "avg",
+            "description": "Oct-25 vacancy rate by Windsor zone, Combined dwelling types, Total bedroom type.",
+        },
+        {
+            "metric_name": "total_rental_universe",
+            "expression": "SUM(rental_universe)",
+            "verbose_name": "Rental Stock (Units)",
+            "metric_type": "sum",
+            "description": "Oct-25 rental universe (surveyed rental units) by zone. Summing all 7 zones gives the Windsor CMA total (19,883) -- the rollup rows are excluded from this view, so nothing is double-counted.",
+        },
+        {
+            "metric_name": "avg_rent",
+            "expression": "AVG(average_rent)",
+            "verbose_name": "Average Rent ($)",
+            "metric_type": "avg",
+            "description": "Oct-25 average rent by zone, all bedroom types blended (CMHC's Total row).",
+        },
+    ],
+    "v_story2_vacancy_by_zone_trend": [
+        {
+            "metric_name": "avg_vacancy_rate",
+            "expression": "AVG(vacancy_rate_pct)",
+            "verbose_name": "Average Vacancy Rate (%)",
+            "metric_type": "avg",
+            "description": "Vacancy rate by Windsor zone and period, Oct-20 to Oct-25. Zone 7 starts at Oct-23 and Zone 5 has 2 suppressed (NULL) periods -- AVG() excludes those rather than treating them as 0.",
+        },
+    ],
     "v_story3_starts_completions_by_dwelling_type": [
         {
             "metric_name": "total_units",
