@@ -5,7 +5,7 @@ only proved the schema works via a single rolled-back smoke-test row per
 fact table (see docs/conceptual_er_model.md) -- this script does the actual
 bulk load.
 
-Loads all five fact tables, from five staging CSVs -- one table per
+Loads all six fact tables, from seven staging CSVs -- one table per
 source, per this project's schema rule (sql/warehouse_schema.sql):
   - fact_shelter_cost   <- data/staging/windsor_shelter_cost_long.csv (90,720 rows)
   - fact_census_profile <- data/staging/windsor_census_profile_long.csv (360 rows)
@@ -26,13 +26,19 @@ source, per this project's schema rule (sql/warehouse_schema.sql):
       exactly why.
   Tenure is always 'Renter' for both rental-market sources (this data is
   rental-only, per docs/conceptual_er_model.md).
+  - fact_starts_completions <- data/staging/ontario_canada_starts_completions.csv
+      (CMHC quarterly workbook, Ontario/Canada).
+  - fact_windsor_starts_completions <-
+      data/staging/windsor_starts_completions_monthly.csv (1,935 rows,
+      Jan-2016 to Sep-2026), from etl/extract_windsor_starts_completions.py
+      -- StatCan 34-10-0154-01, Windsor CMA monthly.
 
 Every dimension key is resolved by joining on real values already verified
 to match the seeded dimension tables exactly (geography DGUID, period
 label, income-band label text, tenure name, zone label, bedroom-type
 label) -- not assumed or guessed.
 
-Safe to re-run: all three fact tables are truncated before loading.
+Safe to re-run: every fact table is truncated before loading.
 
 Run from the project virtual environment (after etl/create_warehouse_schema.py):
     .venv\\Scripts\\python.exe etl\\load_warehouse_facts.py
@@ -53,6 +59,7 @@ RENTAL_MARKET_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.c
 RENTAL_MARKET_HISTORICAL_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market_historical.csv"
 RMS_CANADA_COMPARISON_CSV = PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv"
 STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "ontario_canada_starts_completions.csv"
+WINDSOR_STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_starts_completions_monthly.csv"
 
 
 def fetch_dim(engine, table: str, key_col: str, *value_cols: str) -> pd.DataFrame:
@@ -342,6 +349,26 @@ def load_starts_completions_facts(engine) -> dict:
     return {"source_rows": len(source), "loaded_rows": rows}
 
 
+def load_windsor_starts_completions_facts(engine) -> dict:
+    """Straight copy, same as load_starts_completions_facts() -- the
+    extract already mapped StatCan's labels to this table's own
+    activity/dwelling_type values (etl/extract_windsor_starts_completions.py)."""
+    source = pd.read_csv(WINDSOR_STARTS_COMPLETIONS_CSV, dtype=str)
+
+    out = pd.DataFrame({
+        "dguid": source["dguid"],
+        "ref_month": source["ref_month"],
+        "period_year": source["period_year"].astype(int),
+        "period_month": source["period_month"].astype(int),
+        "activity": source["activity"],
+        "dwelling_type": source["dwelling_type"],
+        "units": pd.to_numeric(source["units"], errors="coerce"),
+    })
+
+    rows = copy_dataframe(engine, out, "fact_windsor_starts_completions")
+    return {"source_rows": len(source), "loaded_rows": rows}
+
+
 if __name__ == "__main__":
     engine = get_engine()
 
@@ -349,7 +376,7 @@ if __name__ == "__main__":
         conn.execute(text(
             "TRUNCATE warehouse.fact_shelter_cost, warehouse.fact_census_profile, "
             "warehouse.fact_rental_market, warehouse.fact_rental_market_comparison, "
-            "warehouse.fact_starts_completions"
+            "warehouse.fact_starts_completions, warehouse.fact_windsor_starts_completions"
         ))
 
     print("Loading fact_shelter_cost...")
@@ -382,10 +409,16 @@ if __name__ == "__main__":
     for key, value in starts_stats.items():
         print(f"  {key}: {value}")
 
+    print("Loading fact_windsor_starts_completions...")
+    windsor_starts_stats = load_windsor_starts_completions_facts(engine)
+    for key, value in windsor_starts_stats.items():
+        print(f"  {key}: {value}")
+
     print()
     with engine.connect() as conn:
         for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market",
-                      "fact_rental_market_comparison", "fact_starts_completions"):
+                      "fact_rental_market_comparison", "fact_starts_completions",
+                      "fact_windsor_starts_completions"):
             count = conn.execute(text(f'SELECT COUNT(*) FROM warehouse."{table}"')).scalar()
             print(f"warehouse.{table}: {count} rows")
 

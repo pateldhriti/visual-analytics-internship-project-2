@@ -1,4 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
+import SupersetEmbed from "../components/SupersetEmbed.jsx";
 
 // Narrative paragraphs reused verbatim from docs/story3_narrative_v1.md's
 // own draft text -- real, already-verified figures, not written fresh here.
@@ -33,8 +34,8 @@ const DEFINITIONS = [
 ];
 
 const LIMITATIONS = [
-  "These figures are Ontario- and Canada-wide only -- CMHC's source table has no Windsor-specific breakdown, so there's no Windsor-only starts/completions figure here yet.",
-  "Only one quarter (Second Quarter 2026) has been extracted so far -- not a multi-year time series, so trend questions can't be answered from this data yet.",
+  "The narrative and KPI cards above are Ontario-wide, from CMHC's quarterly table (Second Quarter 2026), which has no Windsor breakdown. The dashboard below is Windsor CMA specifically, from StatCan table 34-10-0154-01 (CMHC's survey at CMA level, 2016 onward).",
+  "Starts per 1,000 households divides every year by the 2021 Census household count (165,665), since no annual household estimate is available -- read it as a trend against a fixed base.",
 ];
 
 const FILTERS = [
@@ -65,8 +66,14 @@ export default function StoryHousingSupply() {
       theme="neighbourhood"
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
+      dashboard={
+        <SupersetEmbed
+          dashboardId={7}
+          title="Story 3: Is Windsor building enough housing? (Superset dashboard)"
+        />
+      }
       limitations={LIMITATIONS}
-      source="CMHC Quarterly Starts, Completions, Units Under Construction (Ontario/Canada, Second Quarter 2026) -- warehouse.fact_starts_completions"
+      source="CMHC Quarterly Starts, Completions, Units Under Construction (Ontario/Canada, Second Quarter 2026) -- warehouse.fact_starts_completions; Windsor CMA: StatCan 34-10-0154-01 -- warehouse.fact_windsor_starts_completions"
     />
   );
 }
