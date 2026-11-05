@@ -149,6 +149,40 @@ Apply `docs/filter_standards.md`'s naming rule to Story 1's dashboard
 .venv\Scripts\python.exe etl\apply_filter_standards_story1.py
 ```
 
+## Weekly scheduled refresh and schema guard
+
+`etl/scheduled_refresh.py` is the job to schedule. Each run:
+
+1. downloads the latest StatCan 34-10-0154-01 zip (Windsor housing starts, updated monthly; the CMHC and Census files are annual and are placed in `data/raw` by hand);
+2. runs the **schema guard** (`etl/schema_guard.py`), which compares every source file's columns, sheets and header rows with the saved snapshot in `etl/configs/source_schemas.json`;
+3. only if the guard passes, runs every extract/reshape script and then `refresh_all.py`.
+
+If the download, the guard or any step fails, the run stops (the database keeps the last good data), appends the reason to `logs/refresh_alerts.log`, and posts it to `ALERT_WEBHOOK_URL` (a Microsoft Teams or Slack incoming webhook) if that is set in `.env`. Every run's full output is in `logs/scheduled_refresh_<time>.log`. Exit codes: 0 success, 1 download failed, 2 schema guard failed, 3 a step failed.
+
+```
+.venv\Scripts\python.exe etl\scheduled_refresh.py                 # full run
+.venv\Scripts\python.exe etl\scheduled_refresh.py --check-only    # download + guard only
+.venv\Scripts\python.exe etl\scheduled_refresh.py --no-download   # use the files already in data/raw
+.venv\Scripts\python.exe etl\schema_guard.py                      # guard on its own
+```
+
+The guard ignores numbers in headings, so a new edition with new years (`Oct-25` → `Oct-26`) passes, while a renamed, added, removed or reordered column fails. A real example it catches: CMHC renamed the "Bachelor" column to "Studio" between the 2024 and 2025 Windsor workbooks.
+
+**When the guard fails:** read the reported change, update the extract script that reads that file, check its output, then accept the new structure with:
+```
+.venv\Scripts\python.exe etl\schema_guard.py --update
+```
+Also run `--update` after adding a new edition's workbook to `schema_guard.SOURCES`.
+
+**Schedule it weekly.** On Windows (Monday 06:00 by default; Docker Desktop must be running then):
+```
+powershell -ExecutionPolicy Bypass -File etl\register_weekly_refresh.ps1
+```
+On a Linux server, add to the deploying user's crontab (`crontab -e`), Mondays at 06:00:
+```
+0 6 * * 1 cd /srv/windsor-housing && .venv/bin/python etl/scheduled_refresh.py >> logs/cron.log 2>&1
+```
+
 ## Add a dataset
 
 There are two real paths in this project, depending on what the new data

@@ -232,3 +232,6 @@ data/staging/*
 
 # Database backups (docker/backup.sh) -- may contain real data, never commit.
 backups/
+
+# Scheduled refresh run logs and alerts (etl/scheduled_refresh.py).
+logs/
