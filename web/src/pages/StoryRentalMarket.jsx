@@ -1,40 +1,74 @@
 import StoryPage from "../components/StoryPage.jsx";
+import SupersetEmbed from "../components/SupersetEmbed.jsx";
+
+// Text condensed from docs/story2_narrative_final.md. Every figure comes
+// from the warehouse.v_story2_* views behind the Story 2 dashboard (id 4);
+// re-check both after a data refresh.
+const INTRO =
+  "Windsor has 19,883 purpose-built rental units. Each October, CMHC surveys them for rent, " +
+  "vacancy and how often tenants move. This story follows those measures from 2020 to 2025 and " +
+  "across the area's seven rental zones.";
+
+const NARRATIVE = [
+  "Rents rose every year. The average rent across all unit sizes went from $953 a month in 2020 " +
+    "to $1,293 in 2025, up 35.7% in five years. Two-bedroom units rose the most, by $413 (39.8%) " +
+    "to $1,451. Three-bedroom units are the exception, but their figures rest on a small sample " +
+    "and CMHC publishes no 2025 value for them.",
+  "Vacancy dipped, then recovered. It fell from 3.5% in 2020 to a low of 1.8% in 2022, when very " +
+    "few units were free, and climbed back to 3.6% in 2025, around the level usually seen as " +
+    "balanced. Rents kept rising through the recovery, by 8.1% in 2024 and 5.9% in 2025, so more " +
+    "vacancy has not yet meant lower rents.",
+  "Most rentals are in the city, and the city is cheaper. The four Windsor city zones hold 82% of " +
+    "units; the Centre is the cheapest zone at $1,155 a month, with the highest vacancy (4.6%). " +
+    "The county zones are smaller, pricier and tighter: Amherstburg averages $1,955, $800 more " +
+    "than the Centre, and county vacancy is 2.0% to 2.7%.",
+  "Small units turn over most. About 1 in 8 units changed tenants in the past year: 15.0% of " +
+    "studios but only 5.3% of three-bedroom units, where households, often families, stay longer. " +
+    "At 30% of income, Story 1's median renter income of $48,400 affords about $1,210 a month, " +
+    "already below the 2025 average rent.",
+];
 
 const DEFINITIONS = [
   {
     term: "Vacancy rate",
-    text: "Share of surveyed rental units that were unoccupied and available for rent at survey date.",
+    text: "Share of surveyed rental units that were empty and available for rent at the October survey.",
   },
   {
     term: "Turnover rate",
-    text: "Share of occupied units where the tenant changed over the past 12 months -- a proxy for how often units in a zone or unit type change hands.",
+    text: "Share of occupied units where the tenant changed in the past 12 months.",
+  },
+  {
+    term: "Average rent",
+    text: "Average monthly rent of all surveyed units, occupied and vacant. Not the asking rent for a vacant unit, which is usually higher.",
   },
   {
     term: "Zone",
-    text: "CMHC's own geographic breakdown of the Windsor CMA into 7 zones plus 2 aggregate rows, used consistently across every rental-market table in this story.",
+    text: "CMHC's division of the Windsor area into 7 rental zones: 4 in the City of Windsor and 3 in Essex County.",
   },
   {
     term: "Reliability letter",
-    text: "CMHC's own data-quality grade on a cell: a/b/c are good-to-excellent, d means use with caution, and ‘**’ means the value was suppressed for sample size or confidentiality.",
+    text: "CMHC's grade for each figure: a excellent, b very good, c good, d fair (use with caution). Suppressed values are shown as gaps.",
   },
 ];
 
 const LIMITATIONS = [
-  "Row/townhouse-only figures are heavily suppressed in Windsor's workbook -- row housing is a small share of the rental stock, so many zone x bedroom-type cells for that segment carry no reliable value.",
-  "Universe (unit-count) tables carry no reliability letters or suppression at all -- raw counts are always a plain number, which is a real structural difference from the rate and rent tables, not an inconsistency.",
+  "Purpose-built rentals only: rented condos, basements and houses are not part of the survey.",
+  "Average rent includes long-time tenants, so it is lower than what a new tenant pays today.",
+  "Some zone and unit-size figures are suppressed by CMHC; three-bedroom and row-house figures are the least reliable.",
+  "Rents are not adjusted for inflation.",
 ];
 
 const FILTERS = [
-  { label: "Geography", value: "Windsor CMA" },
-  { label: "Period", value: "October 2025" },
-  { label: "Unit scope", value: "Combined (apartment + row)" },
+  { label: "Geography", value: "Windsor CMA, 7 zones" },
+  { label: "Period", value: "October 2020 to October 2025" },
+  { label: "Unit scope", value: "Apartments and row houses" },
 ];
 
 const KPIS = [
+  { label: "Average monthly rent, all units", value: "$1,293", accent: "violet", trend: "up" },
   { label: "Vacancy rate", value: "3.6%", accent: "blue", trend: "up" },
-  { label: "Average 2-bedroom rent", value: "$1,451", accent: "violet", trend: "up" },
-  { label: "Turnover rate", value: "11.9%", accent: "teal", trend: "up" },
-  { label: "Rental stock", value: "19,883 units", accent: "rose", trend: "up" },
+  { label: "Rent increase since 2020", value: "35.7%", accent: "rose", trend: "up" },
+  { label: "Rental units", value: "19,883", accent: "teal", trend: "flat" },
 ];
 
 export default function StoryRentalMarket() {
@@ -42,6 +76,7 @@ export default function StoryRentalMarket() {
     <StoryPage
       storyLabel="Story 2"
       title="What is happening in Windsor’s rental market?"
+      intro={INTRO}
       questions={[
         "How do average rents, vacancy, rental stock and turnover vary by unit type and zone?",
         "Which parts of the market appear tighter or more affordable?",
@@ -50,9 +85,17 @@ export default function StoryRentalMarket() {
       kpis={KPIS}
       variant="ticker"
       theme="neighbourhood"
+      dashboard={
+        <SupersetEmbed
+          dashboardId={4}
+          title="Story 2: What is happening in Windsor's rental market? (Superset dashboard)"
+          height={1600}
+        />
+      }
+      narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
-      source="CMHC Rental Market Survey, Windsor CMA 2025 (Oct-24/Oct-25) -- warehouse.fact_rental_market"
+      source="CMHC Rental Market Survey, Windsor CMA, October 2020 to October 2025"
     />
   );
 }
