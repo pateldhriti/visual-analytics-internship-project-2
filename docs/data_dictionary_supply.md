@@ -4,7 +4,7 @@ Every column kept by `etl/extract_cmhc_starts_completions.py`, the CMHC starts/c
 
 **Pipeline stage this covers:** `data/raw/cmhc/quarterly-starts-completions-under-construction-06-26-en.xlsx` → `data/staging/ontario_canada_starts_completions.csv` (6 columns, melted from Tables C1 and C2's wide layout).
 
-**Status note:** there is currently no `warehouse.fact_starts_completions` table on `main` to extend this dictionary into — one existed briefly earlier in this project's history but was removed along with other work during a history rewrite. The 6 columns below are what's real right now: the staging CSV's own columns. If/when a warehouse table is rebuilt for this source, this dictionary should be extended to cover its resolved dimension keys too, not just replaced.
+**Status note (updated 5 November 2026):** this source is loaded into `warehouse.fact_starts_completions` (50 rows; `sql/warehouse_schema.sql`), with the same 6 columns as below plus its `fact_id` key; `province` and `dwelling_type` are kept as text rather than linked to `dim_zone` / `dim_dwelling_type` because their categories differ. Windsor's own monthly figures come from a separate source and table, `warehouse.fact_windsor_starts_completions` (see `docs/data_dictionary.md`, section 2.3).
 
 | Column | Meaning | Unit | Source |
 |---|---|---|---|
