@@ -1,0 +1,4783 @@
+{
+ "statcan_shelter_cost": {
+  "path": "data/raw/shelter_cost/98100252.csv",
+  "columns": [
+   "REF_DATE",
+   "GEO",
+   "DGUID",
+   "Household total income groups (#)",
+   "Household type including census family structure (#)",
+   "Housing suitability (#)",
+   "Dwelling condition (#)",
+   "Statistics (#C)",
+   "Shelter-cost-to-income ratio (#)",
+   "Coordinate",
+   "Tenure (#):Total - Tenure[#]",
+   "Symbol",
+   "Tenure (#):Owner[#]",
+   "Symbol",
+   "Tenure (#):Renter[#]",
+   "Symbol"
+  ]
+ },
+ "statcan_census_profile": {
+  "path": "data/raw/statcan/98-401-X2021002_English_CSV_data.csv",
+  "columns": [
+   "CENSUS_YEAR",
+   "DGUID",
+   "ALT_GEO_CODE",
+   "GEO_LEVEL",
+   "GEO_NAME",
+   "TNR_SF",
+   "TNR_LF",
+   "DATA_QUALITY_FLAG",
+   "CHARACTERISTIC_ID",
+   "CHARACTERISTIC_NAME",
+   "CHARACTERISTIC_NOTE",
+   "C#_COUNT_TOTAL",
+   "SYMBOL",
+   "C#_COUNT_MEN+",
+   "SYMBOL",
+   "C#_COUNT_WOMEN+",
+   "SYMBOL",
+   "C#_RATE_TOTAL",
+   "SYMBOL",
+   "C#_RATE_MEN+",
+   "SYMBOL",
+   "C#_RATE_WOMEN+",
+   "SYMBOL"
+  ]
+ },
+ "statcan_windsor_starts": {
+  "path": "data/raw/statcan/34100154-eng.zip",
+  "columns": [
+   "REF_DATE",
+   "GEO",
+   "DGUID",
+   "Housing estimates",
+   "Type of unit",
+   "UOM",
+   "UOM_ID",
+   "SCALAR_FACTOR",
+   "SCALAR_ID",
+   "VECTOR",
+   "COORDINATE",
+   "VALUE",
+   "STATUS",
+   "SYMBOL",
+   "TERMINATED",
+   "DECIMALS"
+  ]
+ },
+ "cmhc_rms_windsor_2025": {
+  "path": "data/raw/cmhc/rmr-windsor-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Windsor, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Windsor CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Quartile and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Quartiles",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Windsor CMA"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_windsor_2024": {
+  "path": "data/raw/cmhc/rmr-windsor-2024-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Windsor, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Windsor CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Range and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Range",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Windsor CMA"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_windsor_2023": {
+  "path": "data/raw/cmhc/rmr-windsor-2023-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Windsor, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Windsor CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Range and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Range",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Windsor CMA"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_windsor_2022": {
+  "path": "data/raw/cmhc/rmr-windsor-2022-en.xlsx",
+  "sheets": {
+   "Index": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Windsor, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Windsor CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Range and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Range",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Windsor CMA"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "#+ Bedroom",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate(%) and Universe by Household Income Quintiles / Monthly Rent Affordable to Income Quintile* by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "#+ Bedroom",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_windsor_2021": {
+  "path": "data/raw/cmhc/rmr-windsor-2021-en.xlsx",
+  "sheets": {
+   "Index": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Windsor, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Windsor CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Range and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Range",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Windsor CMA"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "#+ Bedroom",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate(%) and Universe by Household Income Quintiles / Monthly Rent Affordable to Income Quintile* by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "#+ Bedroom",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Bachelor",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_canada_2025": {
+  "path": "data/raw/cmhc/rmr-canada-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Canada, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.0": [
+    [],
+    [],
+    [
+     "#.# Rental Market Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental - October #"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe"
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental"
+    ]
+   ],
+   "Table 4.2": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 5.0": [
+    [],
+    [
+     "#.# Rental Arrears - Privately Initiated Row (Townhouse) and Apartment Structures of Three Units and Over - Provinces and Major Centres#"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+     "Arrears Rate Compared to Last Year"
+    ],
+    [
+     "Percentage of structures among those in arrears"
+    ]
+   ],
+   "Table 6.0": [
+    [],
+    [
+     "#.# Average Rent for Turnover and Non-turnover Units"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Turnover units",
+     "Non-turnover units"
+    ],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total",
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ]
+   ],
+   "Table 6.1": [
+    [],
+    [
+     "#.# Contribution of Turnover Units to the Year-To-Year Percentage Change in Average Rent"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Year-over-year percentage change in average rent Two Bedroom (%) (Existing Structures, turnover and non turnover units)",
+     "Contribution of turnover units# to Year-over-year percentage change in average rent for Two Bedroom (%) (Existing Structures)"
+    ],
+    [
+     "Centre",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 6.2": [
+    [],
+    [
+     "#.# Percent Difference in Rent for Turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Average difference (%) in rent# between turnover and non turnover units",
+     "Quartile of the difference (%) in rent# per structure between turnover and non turnover units"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ]
+  }
+ },
+ "cmhc_quarterly_starts": {
+  "path": "data/raw/cmhc/quarterly-starts-completions-under-construction-06-26-en.xlsx",
+  "sheets": {
+   "Index": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Housing Information Monthly"
+    ],
+    [
+     "Quarterly Starts, Completions, and Under Construction (Canada and Provincial) (Available at end of Quarter)"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    [
+     "TABLE OF CONTENTS"
+    ]
+   ],
+   "Notes": [
+    [
+     "Note to readers:"
+    ],
+    [
+     "As of January, #, data contained within this publication reflect # Census geography in line with Statistics Canada's Standard Geographical Classification (SGC). The following is a summary of geography changes:"
+    ],
+    [
+     "Census Metropolitan Area (CMA) and Census Agglomeration (CA) changes:"
+    ],
+    [
+     "# new CMAs: Chilliwack, Drummondville, Fredericton, Kamloops, Nanaimo and Red Deer"
+    ],
+    [
+     "Ottawa CMA: Arnprior T and Carleton Place T are now merged with Ottawa CMA"
+    ],
+    [
+     "East Hants MD: almagated with Halifax CMA"
+    ],
+    [
+     "Essex T : merged with Windsor CMA"
+    ],
+    [
+     "Leamington MU: merged with Windsor CMA"
+    ]
+   ],
+   "Table C1": [
+    [
+     "Table C#"
+    ],
+    [
+     "Construction Activity by Dwelling Type"
+    ],
+    [
+     "Second Quarter #"
+    ],
+    [],
+    [
+     "Activity",
+     "Province",
+     "Singles",
+     "Semis",
+     "Row",
+     "Apartment and Other",
+     "Total"
+    ]
+   ],
+   "Table C2": [
+    [
+     "Table C#"
+    ],
+    [
+     "Construction Activity by Dwelling Type"
+    ],
+    [
+     "January to June #"
+    ],
+    [],
+    [
+     "Activity",
+     "Province",
+     "Singles",
+     "Semis",
+     "Row",
+     "Apartment and Other",
+     "Total"
+    ]
+   ],
+   "Table C3": [
+    [
+     "Table C#"
+    ],
+    [
+     "Construction Activity by Market Type"
+    ],
+    [
+     "Second Quarter #"
+    ],
+    [],
+    [
+     "Activity",
+     "Province",
+     "Homeownership",
+     "Rental",
+     "Condo",
+     "Co-op",
+     "Not Available",
+     "Total"
+    ]
+   ],
+   "Table C4": [
+    [
+     "Table C#"
+    ],
+    [
+     "Construction Activity by Market Type"
+    ],
+    [
+     "January to June #"
+    ],
+    [],
+    [
+     "Activity",
+     "Province",
+     "Homeownership",
+     "Rental",
+     "Condo",
+     "Co-op",
+     "Not Available",
+     "Total"
+    ]
+   ],
+   "Symbols ": [
+    [
+     "Symbols / Signes conventionnels"
+    ],
+    [],
+    [
+     "** Not available / Non disponible"
+    ],
+    [
+     "*** Infinity / Indéfini"
+    ],
+    [
+     "+ Less than #,# units / Moins de # # unités"
+    ],
+    [
+     "- Nil or Zero / Néant ou zéro"
+    ],
+    [
+     "-- Amount too small to be expressed / Chiffre trop petit pour être indiqué"
+    ],
+    [
+     "(r) Revised / Chiffres révisés"
+    ]
+   ],
+   "Coverage and Geography": [
+    [
+     "Survey Coverage"
+    ],
+    [
+     "As part of the Starts and Completions Survey, both housing starts and housing completions are enumerated monthly in urban areas with populations in excess of #,# as defined by the # Census. Housing starts only are enumerated monthly in urban centres of #,# to #,#. In urban areas with populations of #,# to #,#, housing starts only are enumerated in the last month of each quarter (i.e. four times a year, in March, June, September and December). Monthly starts activity in quarterly locations are statistically estimated at a provincial level for single and multi categories. In centres with populations below #,# housing starts only are enumerated on a sample basis, also in the last month of each quarter (i.e. in March, June, September and December)."
+    ],
+    [],
+    [
+     "The Market Absorption Survey is carried out in conjunction with the Starts and Completions Survey in urban areas with populations in excess of #,#. When a structure is recorded as completed, a report is also made as to whether or not a unit has been sold. The dwellings are then enumerated each month until such time as absorption occurs."
+    ],
+    [],
+    [
+     "The survey of conversions and demolitions is conducted monthly and only in urban areas with a population of #,# as defined by the # census."
+    ],
+    [],
+    [
+     "Definitions of Census Areas referred to in this Publication are as follows:"
+    ]
+   ],
+   "Concepts and Definitions": [
+    [
+     "Concepts and Definitions"
+    ],
+    [
+     "A “start” for the purposes of the Starts and Completions Survey, is defined as the beginning of construction work on a building, usually when the concrete has been poured for the whole of the footing around the structure, or an equivalent stage where a basement will not be part of the structure."
+    ],
+    [
+     "A “completion” is defined as the stage at which all proposed construction work on the building has been performed, although under some circumstances a building may be counted as completed where up to # percent of the proposed work remains to be done."
+    ],
+    [
+     "For multiple-dwelling structures, the definition of a Start or a Completion applies to the structure rather than to the individual dwelling units therein."
+    ],
+    [],
+    [
+     "The number of units “under construction” as at the end of the period shown, takes into account certain adjustments which are necessary for various reasons. For example, after a start on a dwelling has commenced construction may cease, or a structure when completed may contain more or fewer dwelling units than were reported at start."
+    ],
+    [],
+    [
+     "A dwelling is defined as being “absorbed” when a binding, non-conditional agreement is made to buy the dwelling."
+    ]
+   ]
+  }
+ }
+}

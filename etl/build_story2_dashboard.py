@@ -37,6 +37,20 @@ fix_story1_tenure_filter_scope.py). Rental Stock's dataset
 (v_dashboard1_rental_yoy) doesn't even have a bedroom_type_label column,
 so including it in the Bedroom-type filter's scope would error outright.
 
+Review pass (labels, units and filter defaults):
+  - Rents are monthly and cover apartments and row houses ("Combined");
+    every rent label and KPI subheader now says so.
+  - The zone snapshot table shows readable column names (set as the
+    dataset's column labels) and $ / % formats instead of raw names and
+    plain numbers.
+  - Filter defaults: "Dwelling Scope" starts on Apartment + Combined
+    (row-house figures are mostly suppressed by CMHC); "Bedroom Type" no
+    longer offers "Total", which every chart in its scope excludes and so
+    always returned an empty chart. Every filter has a description, and
+    filter ids are fixed so a re-run doesn't reset saved filter state.
+  - A "About the Data" note explains reliability letters, suppression and
+    what the survey covers.
+
 Requires the 7 Story 2 views already registered as Superset datasets
 (etl/register_superset_datasets.py) and Superset running.
 
@@ -113,7 +127,7 @@ def bedroom_filter(bedroom="Total"):
 CHARTS = {
     "kpi-vacancy": {
         "slice_name": "Windsor CMA Vacancy Rate",
-        "description": "Combined dwelling types, Total bedroom type, Oct-25 -- warehouse.v_story2_vacancy_trend.",
+        "description": "Share of purpose-built rental units (apartments and row houses) vacant and available, October 2025. CMHC Rental Market Survey -- warehouse.v_story2_vacancy_trend.",
         "dataset_id": DATASET_VACANCY,
         "viz_type": "big_number_total",
         "params": {
@@ -124,12 +138,12 @@ CHARTS = {
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": ".1%",
-            "subheader": "October 2025, Combined dwelling types",
+            "subheader": "October 2025, apartments and row houses",
         },
     },
     "kpi-rent": {
         "slice_name": "Windsor CMA Average Rent",
-        "description": "All bedroom types blended, Oct-25 -- warehouse.v_story2_rent_yoy_change.",
+        "description": "Average monthly rent across all unit sizes, apartments and row houses (Combined), October 2025. CMHC Rental Market Survey -- warehouse.v_story2_rent_yoy_change.",
         "dataset_id": DATASET_RENT_YOY,
         "viz_type": "big_number_total",
         "params": {
@@ -140,12 +154,12 @@ CHARTS = {
             },
             "adhoc_filters": [bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": "$,.0f",
-            "subheader": "October 2025, all bedroom types",
+            "subheader": "per month, October 2025, all unit sizes",
         },
     },
     "kpi-turnover": {
         "slice_name": "Windsor CMA Turnover Rate",
-        "description": "Combined dwelling types, Total bedroom type, Oct-25 -- warehouse.v_story2_turnover_by_bedroom.",
+        "description": "Share of occupied units whose tenant changed in the past 12 months, apartments and row houses, October 2025. CMHC Rental Market Survey -- warehouse.v_story2_turnover_by_bedroom.",
         "dataset_id": DATASET_TURNOVER,
         "viz_type": "big_number_total",
         "params": {
@@ -156,7 +170,7 @@ CHARTS = {
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": ".1%",
-            "subheader": "October 2025, Combined dwelling types",
+            "subheader": "October 2025, apartments and row houses",
         },
     },
     "kpi-stock": {
@@ -184,7 +198,7 @@ CHARTS = {
                 combined_filter("dwelling_type_label"),
             ],
             "y_axis_format": ",.0f",
-            "subheader": "October 2025, Combined dwelling types, total rental universe",
+            "subheader": "purpose-built rental units, October 2025",
         },
     },
     "vacancy-dwelling": {
@@ -212,20 +226,20 @@ CHARTS = {
             "show_legend": True,
             "rich_tooltip": True,
             "y_axis_format": ".1%",
-            "x_axis_label": "Period",
+            "x_axis_label": "Survey (October)",
             "y_axis_label": "Vacancy Rate (%)",
         },
     },
     "rent-zone": {
         "slice_name": "Average Rent by Zone and Bedroom Type",
-        "description": "Oct-25, excludes the Windsor CMA/Windsor City rollup rows and the Total bedroom-type row -- warehouse.v_story2_rent_by_zone_bedroom.",
+        "description": "Average monthly rent by zone and unit size, October 2025, apartments and row houses. Blank bars are values CMHC suppressed. Excludes the Windsor CMA/Windsor City totals -- warehouse.v_story2_rent_by_zone_bedroom.",
         "dataset_id": DATASET_RENT_ZONE,
         "viz_type": "dist_bar",
         "params": {
             "groupby": ["zone_label"],
             "columns": ["bedroom_type_label"],
             "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average Rent"}
+                {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average monthly rent"}
             ],
             "adhoc_filters": [EXCLUDE_TOTAL_BEDROOM],
             "row_limit": 50,
@@ -236,7 +250,7 @@ CHARTS = {
             "x_axis_label": "Zone",
             "x_ticks_layout": "45°",
             "bottom_margin": "auto",
-            "y_axis_label": "Average Rent ($)",
+            "y_axis_label": "Average monthly rent ($)",
         },
     },
     # Zone-level section: stock, vacancy and a 4-metric snapshot table on
@@ -319,7 +333,7 @@ CHARTS = {
             "show_legend": True,
             "rich_tooltip": True,
             "y_axis_format": ".1%",
-            "x_axis_label": "Period",
+            "x_axis_label": "Survey (October)",
             "y_axis_label": "Vacancy Rate (%)",
         },
     },
@@ -327,7 +341,8 @@ CHARTS = {
         "slice_name": "Zone Snapshot: Rent, Vacancy, Stock and Turnover (Oct-25)",
         "description": (
             "One row per zone, Combined dwelling types, Total bedroom type -- warehouse.v_story2_zone_snapshot. "
-            "Reliability letters are CMHC's own (a = excellent ... d = fair, use with caution)."
+            "Rent is monthly; rates are percentages. Reliability letters are CMHC's own "
+            "(a = excellent, b = very good, c = good, d = fair, use with caution)."
         ),
         "dataset_id": DATASET_ZONE_SNAPSHOT,
         "viz_type": "table",
@@ -346,18 +361,27 @@ CHARTS = {
             "order_by_cols": ['["zone_label", true]'],
             "row_limit": 10,
             "server_pagination": False,
+            # Display formats; the readable column names come from the
+            # dataset's column labels (ZONE_SNAPSHOT_LABELS below).
+            "column_config": {
+                "average_rent": {"d3NumberFormat": "$,.0f"},
+                "vacancy_rate_pct": {"d3NumberFormat": ".1f"},
+                "rental_universe": {"d3NumberFormat": ",.0f"},
+                "share_of_zone_stock_pct": {"d3NumberFormat": ".1f"},
+                "turnover_rate_pct": {"d3NumberFormat": ".1f"},
+            },
         },
     },
     "rent-trend": {
         "slice_name": "Average Rent by Period and Bedroom Type (Oct-20 to Oct-25)",
-        "description": "Real 6-year span this project has data for -- warehouse.v_story2_rent_yoy_change. Excludes the Total bedroom-type row.",
+        "description": "Average monthly rent by unit size, October 2020 to October 2025, apartments and row houses. CMHC does not publish 3-bedroom+ rent for every year -- warehouse.v_story2_rent_yoy_change.",
         "dataset_id": DATASET_RENT_YOY,
         "viz_type": "dist_bar",
         "params": {
             "groupby": ["period_label"],
             "columns": ["bedroom_type_label"],
             "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average Rent"}
+                {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average monthly rent"}
             ],
             "adhoc_filters": [EXCLUDE_TOTAL_BEDROOM],
             "row_limit": 50,
@@ -365,8 +389,8 @@ CHARTS = {
             "show_legend": True,
             "rich_tooltip": True,
             "y_axis_format": "$,.0f",
-            "x_axis_label": "Period",
-            "y_axis_label": "Average Rent ($)",
+            "x_axis_label": "Survey (October)",
+            "y_axis_label": "Average monthly rent ($)",
         },
     },
     "vacancy-trend": {
@@ -390,7 +414,7 @@ CHARTS = {
             "show_legend": True,
             "rich_tooltip": True,
             "y_axis_format": ".1%",
-            "x_axis_label": "Period",
+            "x_axis_label": "Survey (October)",
             "y_axis_label": "Vacancy Rate (%)",
         },
     },
@@ -422,6 +446,35 @@ CHARTS = {
 
 DASHBOARD_TITLE = "Story 2: What is happening in Windsor's rental market?"
 
+# Readable column names for the zone snapshot table, set as the dataset's
+# column labels (Superset's table chart shows a column's label as its
+# header).
+ZONE_SNAPSHOT_LABELS = {
+    "zone_label": "Zone",
+    "period_label": "Survey",
+    "average_rent": "Average monthly rent",
+    "rent_reliability": "Rent reliability",
+    "vacancy_rate_pct": "Vacancy rate (%)",
+    "vacancy_reliability": "Vacancy reliability",
+    "rental_universe": "Rental units",
+    "share_of_zone_stock_pct": "Share of Windsor's units (%)",
+    "turnover_rate_pct": "Turnover rate (%)",
+}
+
+DATA_NOTES_MARKDOWN = """**About the data**
+
+- **Source:** CMHC Rental Market Survey, Windsor CMA, every October from 2020 to 2025.
+- **Coverage:** purpose-built rental buildings with 3 or more units. Rented condos,
+  basements and houses are not included.
+- **"Combined"** means apartments and row houses together. Most charts use it because
+  CMHC suppresses most row-house-only figures in Windsor.
+- **Rent** is the average monthly rent of all surveyed units, occupied and vacant,
+  not the asking rent for a vacant unit.
+- **Reliability letters** are CMHC's grades: a excellent, b very good, c good, d fair
+  (use with caution).
+- **Blank bars** are values CMHC suppressed for reliability or confidentiality, not zeros.
+"""
+
 # Top-to-bottom grid entries: a HEADER-* id with its text, or a ROW-* id
 # with (chart key, width) pairs -- widths sum to 12 per row, same grid
 # convention as Story 1's dashboard.
@@ -447,7 +500,11 @@ LAYOUT = [
     ("HEADER-turnover", "Turnover and Dwelling Type"),
     ("ROW-turnover", [("turnover", 12)]),
     ("ROW-dwelling", [("vacancy-dwelling", 12)]),
+    ("HEADER-notes", "About the Data"),
+    ("ROW-notes", [("md:notes", 12)]),
 ]
+
+MARKDOWN = {"md:notes": (DATA_NOTES_MARKDOWN, 45)}
 
 # Chart heights in Superset grid units (8px each). KPI tiles stay
 # compact; the zone table only has 7 rows, so 55 would leave a large
@@ -514,7 +571,9 @@ def build_position_json(chart_ids: dict) -> dict:
             }
             continue
 
-        chart_node_ids = [f"CHART-{key}" for key, _ in charts_in_row]
+        chart_node_ids = [
+            f"MARKDOWN-{key[3:]}" if key.startswith("md:") else f"CHART-{key}" for key, _ in charts_in_row
+        ]
         position[row_id] = {
             "type": "ROW",
             "id": row_id,
@@ -523,6 +582,16 @@ def build_position_json(chart_ids: dict) -> dict:
             "meta": {"background": "BACKGROUND_TRANSPARENT"},
         }
         for (key, width), node_id in zip(charts_in_row, chart_node_ids):
+            if key.startswith("md:"):
+                code, height = MARKDOWN[key]
+                position[node_id] = {
+                    "type": "MARKDOWN",
+                    "id": node_id,
+                    "children": [],
+                    "parents": ["ROOT_ID", "GRID_ID", row_id],
+                    "meta": {"width": width, "height": height, "code": code, "uuid": str(uuid.uuid4())},
+                }
+                continue
             position[node_id] = {
                 "type": "CHART",
                 "id": node_id,
@@ -542,6 +611,9 @@ def build_position_json(chart_ids: dict) -> dict:
     return position
 
 
+DWELLING_DEFAULT = ["Apartment", "Combined"]
+
+
 def build_native_filters(chart_ids: dict) -> list:
     non_kpi_bedroom_charts = [
         chart_ids["rent-zone"],
@@ -551,7 +623,7 @@ def build_native_filters(chart_ids: dict) -> list:
     ]
     return [
         {
-            "id": f"NATIVE_FILTER-{uuid.uuid4().hex[:8]}",
+            "id": "NATIVE_FILTER-story2-zone",
             "name": "Zone",
             "filterType": "filter_select",
             "targets": [{"datasetId": DATASET_RENT_ZONE, "column": {"name": "zone_label"}}],
@@ -559,7 +631,7 @@ def build_native_filters(chart_ids: dict) -> list:
             "cascadeParentIds": [],
             "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
             "type": "NATIVE_FILTER",
-            "description": "",
+            "description": "Show only the selected CMHC zones. Leave empty for all 7 zones.",
             "chartsInScope": [
                 chart_ids["rent-zone"],
                 chart_ids["zone-stock"],
@@ -577,17 +649,22 @@ def build_native_filters(chart_ids: dict) -> list:
             },
         },
         {
-            "id": f"NATIVE_FILTER-{uuid.uuid4().hex[:8]}",
+            "id": "NATIVE_FILTER-story2-bedroom",
             # Title Case per docs/filter_standards.md rule 1 (was "Bedroom
             # type", the follow-up that doc flagged for this dashboard).
             "name": "Bedroom Type",
             "filterType": "filter_select",
             "targets": [{"datasetId": DATASET_RENT_YOY, "column": {"name": "bedroom_type_label"}}],
             "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
+            # Pre-filter the list of values: every chart in this filter's
+            # scope already excludes the "Total" row, so offering it only
+            # ever produced empty charts.
+            "adhoc_filters": [EXCLUDE_TOTAL_BEDROOM],
+            "time_range": "No filter",
             "cascadeParentIds": [],
             "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
             "type": "NATIVE_FILTER",
-            "description": "",
+            "description": "Show only the selected unit sizes. Leave empty for all.",
             "chartsInScope": non_kpi_bedroom_charts,
             "tabsInScope": [],
             "controlValues": {
@@ -599,11 +676,20 @@ def build_native_filters(chart_ids: dict) -> list:
             },
         },
         {
-            "id": f"NATIVE_FILTER-{uuid.uuid4().hex[:8]}",
+            "id": "NATIVE_FILTER-story2-dwelling",
             "name": "Dwelling Scope",
             "filterType": "filter_select",
             "targets": [{"datasetId": DATASET_VACANCY, "column": {"name": "dwelling_type_label"}}],
-            "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
+            # Starts on Apartment + Combined: CMHC suppresses most Windsor
+            # row-house-only figures, so including Row by default added a
+            # mostly empty series. Users can still add it.
+            "defaultDataMask": {
+                "extraFormData": {
+                    "filters": [{"col": "dwelling_type_label", "op": "IN", "val": DWELLING_DEFAULT}]
+                },
+                "filterState": {"value": DWELLING_DEFAULT},
+                "ownState": {},
+            },
             "cascadeParentIds": [],
             "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
             "type": "NATIVE_FILTER",
@@ -617,7 +703,7 @@ def build_native_filters(chart_ids: dict) -> list:
             # scoped ONLY to the one new chart built specifically to vary
             # by dwelling type (both scopes have full real 6-period
             # coverage there -- confirmed directly, not assumed).
-            "description": "",
+            "description": "Apartments, row houses, or both combined. Row-house figures are often suppressed by CMHC.",
             "chartsInScope": [chart_ids["vacancy-dwelling"]],
             "tabsInScope": [],
             "controlValues": {
@@ -629,6 +715,39 @@ def build_native_filters(chart_ids: dict) -> list:
             },
         },
     ]
+
+
+# Keys Superset's dataset PUT accepts for each column.
+DATASET_COLUMN_KEYS = (
+    "id",
+    "column_name",
+    "verbose_name",
+    "description",
+    "expression",
+    "filterable",
+    "groupby",
+    "is_active",
+    "is_dttm",
+    "python_date_format",
+    "type",
+    "advanced_data_type",
+    "extra",
+)
+
+
+def set_column_labels(session, headers, dataset_id: int, labels: dict) -> None:
+    """Set readable labels (verbose_name) on a dataset's columns, keeping
+    every other column property as it is."""
+    resp = session.get(f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}", headers=headers)
+    resp.raise_for_status()
+    columns = []
+    for col in resp.json()["result"]["columns"]:
+        kept = {k: col[k] for k in DATASET_COLUMN_KEYS if k in col}
+        if col["column_name"] in labels:
+            kept["verbose_name"] = labels[col["column_name"]]
+        columns.append(kept)
+    resp = session.put(f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}", headers=headers, json={"columns": columns})
+    resp.raise_for_status()
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
@@ -674,6 +793,9 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
 if __name__ == "__main__":
     session, headers = get_session()
     print("Logged in to Superset.")
+
+    set_column_labels(session, headers, DATASET_ZONE_SNAPSHOT, ZONE_SNAPSHOT_LABELS)
+    print("Zone snapshot column labels set.")
 
     chart_ids = {}
     for key, spec in CHARTS.items():
