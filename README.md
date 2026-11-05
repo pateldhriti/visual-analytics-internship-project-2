@@ -113,3 +113,19 @@ The first Superset start runs database migrations and can take a few minutes —
 - `etl/create_warehouse_schema.py` — creates and seeds the conceptual dimensional model (`warehouse` schema)
 
 See **[docs/data_architecture.md](docs/data_architecture.md)** for how the `public`, `raw`, and `warehouse` schemas relate (and what's still unreconciled between them).
+
+## Production deployment
+
+`docker/docker-compose.prod.yml` adds HTTPS (Caddy with automatic certificates), the guest-token API and a daily database backup on top of the base stack:
+
+```
+docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
+```
+
+See **[docs/production_hardening.md](docs/production_hardening.md)** for HTTPS, secrets, backups and restore, firewall rules, and the deployment checklist.
+
+## Key documents
+
+- [docs/data_dictionary.md](docs/data_dictionary.md) — every table and view, and how they connect
+- [docs/decision_log.md](docs/decision_log.md) — design and data decisions, with reasons
+- [docs/story1_narrative_final.md](docs/story1_narrative_final.md) — final Story 1 text

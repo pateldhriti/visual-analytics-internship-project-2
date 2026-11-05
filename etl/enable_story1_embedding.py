@@ -6,7 +6,7 @@ the React Story 1 page can embed it with embedDashboard().
 POST /api/v1/dashboard/<id>/embedded creates the dashboard's embedded
 configuration, or updates it if one already exists, keeping the same
 UUID -- so this is safe to re-run, e.g. after adding an origin to
-ALLOWED_DOMAINS. allowed_domains is the list of sites Superset lets frame
+FRONTEND_ORIGINS in .env. allowed_domains is the list of sites Superset lets frame
 the embedded dashboard; it must match the frontend's origin exactly
 (scheme, host and port), the same origin docker/superset_config.py's
 FRONTEND_ORIGINS adds to the CSP frame-ancestors.
@@ -18,10 +18,23 @@ Run from the project virtual environment:
     .venv\\Scripts\\python.exe etl\\enable_story1_embedding.py
 """
 
+import os
+
 from setup_superset_dashboard import SUPERSET_URL, get_session
 
 DASHBOARD_ID = 3  # Story 1: Who faces the greatest affordability pressure?
-ALLOWED_DOMAINS = ["http://localhost:5173"]
+DEFAULT_ORIGINS = "http://localhost:5173"
+
+
+def allowed_domains() -> list[str]:
+    """The same FRONTEND_ORIGINS variable superset_config.py reads (comma-
+    separated), so production only needs the .env value changed and this
+    script re-run. Read after get_session(), which loads .env."""
+    return [
+        origin.strip()
+        for origin in os.environ.get("FRONTEND_ORIGINS", DEFAULT_ORIGINS).split(",")
+        if origin.strip()
+    ]
 
 
 def main() -> str:
@@ -29,7 +42,7 @@ def main() -> str:
     resp = session.post(
         f"{SUPERSET_URL}/api/v1/dashboard/{DASHBOARD_ID}/embedded",
         headers=headers,
-        json={"allowed_domains": ALLOWED_DOMAINS},
+        json={"allowed_domains": allowed_domains()},
     )
     resp.raise_for_status()
     result = resp.json()["result"]

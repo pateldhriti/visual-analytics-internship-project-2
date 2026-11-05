@@ -38,8 +38,30 @@ SQLALCHEMY_DATABASE_URI = (
 # `frame_options: None` so the legacy X-Frame-Options header doesn't
 # re-block framing in a browser that ignores frame-ancestors. Update
 # FRONTEND_ORIGINS below once a real hosting origin exists
-# (docs/hosting_decision.md) -- this list is dev-only right now.
-FRONTEND_ORIGINS = ["http://localhost:5173"]
+# (docs/hosting_decision.md).
+#
+# Production hardening (docs/production_hardening.md): the allowed website
+# origins come from the FRONTEND_ORIGINS environment variable (comma-
+# separated, e.g. "https://windsorhousing.ca") so no code change is needed
+# to deploy; the default is the local dev server.
+FRONTEND_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+    if origin.strip()
+]
+
+# SUPERSET_HTTPS=true (set by docker/docker-compose.prod.yml) when Superset
+# runs behind the Caddy HTTPS proxy. Caddy terminates TLS and redirects
+# HTTP to HTTPS, so Superset itself does not force a redirect; it trusts
+# the proxy's X-Forwarded-* headers (so generated URLs use https) and only
+# sends its session cookie over HTTPS.
+RUNNING_BEHIND_HTTPS = os.environ.get("SUPERSET_HTTPS", "false").lower() == "true"
+ENABLE_PROXY_FIX = RUNNING_BEHIND_HTTPS
+SESSION_COOKIE_SECURE = RUNNING_BEHIND_HTTPS
+SESSION_COOKIE_HTTPONLY = True
+# "None" is required for the embedded dashboard's iframe on another site to
+# keep its session; browsers only accept it together with Secure (HTTPS).
+SESSION_COOKIE_SAMESITE = "None" if RUNNING_BEHIND_HTTPS else "Lax"
 
 TALISMAN_ENABLED = True
 TALISMAN_CONFIG = {
@@ -56,7 +78,7 @@ TALISMAN_CONFIG = {
     },
     "content_security_policy_nonce_in": ["script-src"],
     "force_https": False,
-    "session_cookie_secure": False,
+    "session_cookie_secure": RUNNING_BEHIND_HTTPS,
     "frame_options": None,
 }
 

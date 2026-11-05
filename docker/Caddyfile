@@ -1,0 +1,42 @@
+# Public HTTPS entry point (docker/docker-compose.prod.yml).
+# Caddy gets and renews a Let's Encrypt certificate for each site address
+# automatically and redirects HTTP to HTTPS. Both domains must point at
+# this server (DNS A record) with ports 80 and 443 open.
+
+{
+	email {$ACME_EMAIL}
+}
+
+# React website, plus the guest-token API on the same origin.
+{$SITE_DOMAIN} {
+	encode gzip
+
+	handle /api/* {
+		reverse_proxy token-api:8090
+	}
+
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# Apache Superset (dashboards embedded by the website).
+{$SUPERSET_DOMAIN} {
+	encode gzip
+	reverse_proxy superset:8088
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+}

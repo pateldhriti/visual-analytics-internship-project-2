@@ -1,12 +1,24 @@
 """
 Finalize Story 1's dashboard layout: organize the existing charts into
-named sections (Gap KPIs, Income-Group Analysis, Household-Type
-Analysis, Burden Severity, Census Validation), add 2 new Burden Severity
-KPI tiles on warehouse.v_story1_burden_severity, add a Census Validation
-markdown note referencing docs/story1_validation.md's already-verified
-reconciliation, and resize the income-band/household-type/tenure charts
-to full width now that they each have their own section instead of
-sharing a row.
+named sections (Key Figures, Burden by Household Income, Burden by
+Household Type, How Far Over the 30% Line, Validation and Data Notes),
+add 2 KPI tiles and a stacked bar on warehouse.v_story1_burden_severity
+(and _breakdown), add a validation and data-notes markdown block, and
+resize the income-band/household-type/tenure charts to full width.
+
+Review pass (supervisor comments):
+  - Plain-language section headers instead of internal names ("Gap KPIs").
+  - Metric labels say what the number is ("Share spending 30%+ on
+    shelter"), not "Burden Rate (%)" on an axis already shown in percent.
+  - The 30%-to-under-100% band is no longer called "severe": it starts
+    just above the 30% line. The remainder of the 30%+ group is labelled
+    as households spending 100% or more of income on shelter (derived;
+    see sql/story1_views.sql).
+  - Every chart has a description saying what it measures and its source.
+  - A data note explains suppressed values and StatCan's rounding.
+
+Renamed charts are found by their previous name (legacy_names), so a
+re-run updates them in place instead of creating duplicates.
 
 Requires warehouse.v_story1_burden_severity already registered as a
 Superset dataset (etl/register_superset_datasets.py) and Superset
@@ -39,15 +51,16 @@ EXISTING = {
 
 NEW_CHARTS = {
     "kpi-severity-renter": {
-        "slice_name": "Renter Households in Severe Range (30-99%)",
-        "description": "Of renter households already spending 30%+ on shelter, the share in the 30%-to-under-100% band -- warehouse.v_story1_burden_severity.",
+        "slice_name": "Burdened Renters Spending 30% to Under 100%",
+        "legacy_names": ["Renter Households in Severe Range (30-99%)"],
+        "description": "Of renter households already spending 30%+ of income on shelter, the share spending 30% to under 100%. The rest spend 100% or more. StatCan 98-10-0252-01, 2021 Census -- warehouse.v_story1_burden_severity.",
         "dataset_id": DATASET_SEVERITY,
         "viz_type": "big_number_total",
         "params": {
             "metric": {
                 "expressionType": "SQL",
                 "sqlExpression": "MAX(severe_pct_of_burdened) / 100.0",
-                "label": "Severe Range Share",
+                "label": "Share spending 30% to under 100%",
             },
             "adhoc_filters": [
                 {
@@ -61,20 +74,21 @@ NEW_CHARTS = {
             "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "of renter burdened households spend 30%-99% of income on shelter",
+            "subtitle": "of burdened renters spend 30% to under 100% of income on shelter",
             "color_scheme": "windsor_housing",
         },
     },
     "kpi-severity-owner": {
-        "slice_name": "Owner Households in Severe Range (30-99%)",
-        "description": "Of owner households already spending 30%+ on shelter, the share in the 30%-to-under-100% band -- warehouse.v_story1_burden_severity.",
+        "slice_name": "Burdened Owners Spending 30% to Under 100%",
+        "legacy_names": ["Owner Households in Severe Range (30-99%)"],
+        "description": "Of owner households already spending 30%+ of income on shelter, the share spending 30% to under 100%. The rest spend 100% or more. StatCan 98-10-0252-01, 2021 Census -- warehouse.v_story1_burden_severity.",
         "dataset_id": DATASET_SEVERITY,
         "viz_type": "big_number_total",
         "params": {
             "metric": {
                 "expressionType": "SQL",
                 "sqlExpression": "MAX(severe_pct_of_burdened) / 100.0",
-                "label": "Severe Range Share",
+                "label": "Share spending 30% to under 100%",
             },
             "adhoc_filters": [
                 {
@@ -88,15 +102,17 @@ NEW_CHARTS = {
             "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "of owner burdened households spend 30%-99% of income on shelter",
+            "subtitle": "of burdened owners spend 30% to under 100% of income on shelter",
             "color_scheme": "windsor_housing",
         },
     },
     "severity-breakdown": {
-        "slice_name": "Severity Breakdown of Burdened Households by Tenure",
+        "slice_name": "How Far Over the 30% Line? Burdened Households by Tenure",
+        "legacy_names": ["Severity Breakdown of Burdened Households by Tenure"],
         "description": (
-            "Stacked composition of each tenure's burdened households -- Severe (30-99%) vs. "
-            "Unaccounted -- each tenure's 2 segments sum to 100%. "
+            "Each tenure's burdened households split into those spending 30% to under 100% of "
+            "income on shelter and those spending 100% or more (derived: 30%+ minus the "
+            "30%-to-under-100% band). Each bar sums to 100%. StatCan 98-10-0252-01, 2021 Census -- "
             "warehouse.v_story1_burden_severity_breakdown."
         ),
         "dataset_id": DATASET_SEVERITY_BREAKDOWN,
@@ -124,13 +140,70 @@ NEW_CHARTS = {
     },
 }
 
-VALIDATION_MARKDOWN = """**Validated against StatCan's own published figures.** The Renter Burden
-Rate (34.8%) and Owner Burden Rate (10.9%) KPIs above were independently
-reproduced from two different StatCan products -- the shelter-cost-to-income
-ratio table (98-10-0252-01) this dashboard queries, and StatCan's own
-pre-computed Census Profile rate characteristics (98-401-X2021002, items
-1484/1492) -- and match exactly. Full reconciliation: `docs/story1_validation.md`.
+VALIDATION_MARKDOWN = """**Validated against StatCan's own published figures.** The renter (34.8%)
+and owner (10.9%) burden rates above were reproduced from two StatCan
+products -- the shelter-cost-to-income ratio table (98-10-0252-01) this
+dashboard queries, and the Census Profile's own rates (98-401-X2021002,
+items 1484/1492) -- and match exactly. Reconciliation: `docs/story1_validation.md`.
+
+**Data notes**
+
+- **Suppressed values:** StatCan suppresses (symbol "x") 40 cells in
+  Windsor's table. All 40 are the median or average *income* of
+  "Not applicable" households (zero or negative income). None of the
+  household counts on this dashboard is suppressed.
+- **Not applicable households** (zero or negative income, or living on a
+  farm they operate) have no shelter-cost ratio and are left out of every
+  burden-rate denominator, as StatCan does.
+- **Rounding:** StatCan rounds every count to a multiple of 5, so totals
+  can differ slightly (28,740 burdened by tenure vs 28,745 in the total row).
+- **100% or more** is derived (30%+ minus the 30%-to-under-100% band);
+  StatCan does not publish it as its own row.
+- **Year:** 2021 Census, income from 2020. One snapshot, not a trend.
 """
+
+# Review pass on the original Story 1 charts (built before this script):
+# plain metric labels and a description on every chart. Applied as a merge
+# into each chart's existing params, so nothing else about the chart changes.
+EXISTING_CHART_UPDATES = {
+    2: {
+        "description": "Share of owner and renter households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census.",
+    },
+    3: {
+        "description": "Share of renter households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_tenure.",
+    },
+    4: {
+        "description": "Share of owner households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_tenure.",
+    },
+    5: {
+        "description": "Number of Windsor households (owners and renters) spending 30% or more of income on shelter. StatCan 98-10-0252-01, 2021 Census -- warehouse.v_story1_burden_by_tenure.",
+    },
+    6: {
+        "description": "Share of households in each 2020 income band spending 30% or more of income on shelter. Households with no computable ratio are excluded. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_income_band.",
+        "params": {
+            "metrics": [
+                {
+                    "expressionType": "SQL",
+                    "label": "Share spending 30%+ on shelter",
+                    "sqlExpression": "MAX(burden_rate_pct) / 100.0",
+                }
+            ],
+            "x_axis_label": "Household income (2020)",
+        },
+    },
+    7: {
+        "description": "Share of households of each type spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_household_type.",
+        "params": {
+            "metrics": [
+                {
+                    "expressionType": "SQL",
+                    "label": "Share spending 30%+ on shelter",
+                    "sqlExpression": "MAX(burden_rate_pct) / 100.0",
+                }
+            ],
+        },
+    },
+}
 
 
 def ensure_chart(session, headers, spec: dict) -> int:
@@ -144,6 +217,10 @@ def ensure_chart(session, headers, spec: dict) -> int:
         "params": params_json,
     }
     existing = find_existing(session, headers, "chart", "slice_name", spec["slice_name"])
+    for old_name in spec.get("legacy_names", []):
+        if existing:
+            break
+        existing = find_existing(session, headers, "chart", "slice_name", old_name)
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/chart/{existing}", headers=headers, json=body)
         resp.raise_for_status()
@@ -151,6 +228,20 @@ def ensure_chart(session, headers, spec: dict) -> int:
     resp = session.post(f"{SUPERSET_URL}/api/v1/chart/", headers=headers, json=body)
     resp.raise_for_status()
     return resp.json()["id"]
+
+
+def update_existing_chart(session, headers, chart_id: int, update: dict) -> None:
+    """Merge a description and selected params into an existing chart,
+    leaving the rest of its params as they are."""
+    resp = session.get(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers)
+    resp.raise_for_status()
+    params = json.loads(resp.json()["result"]["params"] or "{}")
+    params.update(update.get("params", {}))
+    body = {"params": json.dumps(params)}
+    if "description" in update:
+        body["description"] = update["description"]
+    resp = session.put(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json=body)
+    resp.raise_for_status()
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
@@ -229,7 +320,7 @@ def build_position_json(chart_ids: dict) -> dict:
         },
     }
 
-    position["HEADER-gap-kpis"] = header_node("HEADER-gap-kpis", "Gap KPIs")
+    position["HEADER-gap-kpis"] = header_node("HEADER-gap-kpis", "Key Figures: Renters vs Owners")
     position["ROW-kpi"] = row_node("ROW-kpi", ["CHART-kpi-renter", "CHART-kpi-owner", "CHART-kpi-total"])
     position["CHART-kpi-renter"] = chart_node(
         "CHART-kpi-renter", "ROW-kpi", chart_ids["kpi-renter"], 4
@@ -242,19 +333,19 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-tenure-bar", "ROW-tenure-bar", chart_ids["tenure-bar"], 12, 55
     )
 
-    position["HEADER-income"] = header_node("HEADER-income", "Income-Group Analysis")
+    position["HEADER-income"] = header_node("HEADER-income", "Burden by Household Income")
     position["ROW-income"] = row_node("ROW-income", ["CHART-income-band"])
     position["CHART-income-band"] = chart_node(
         "CHART-income-band", "ROW-income", chart_ids["income-band"], 12, 55
     )
 
-    position["HEADER-household"] = header_node("HEADER-household", "Household-Type Analysis")
+    position["HEADER-household"] = header_node("HEADER-household", "Burden by Household Type")
     position["ROW-household"] = row_node("ROW-household", ["CHART-household-type"])
     position["CHART-household-type"] = chart_node(
         "CHART-household-type", "ROW-household", chart_ids["household-type"], 12, 55
     )
 
-    position["HEADER-severity"] = header_node("HEADER-severity", "Burden Severity")
+    position["HEADER-severity"] = header_node("HEADER-severity", "How Far Over the 30% Line?")
     position["ROW-severity"] = row_node(
         "ROW-severity", ["CHART-severity-renter", "CHART-severity-owner"]
     )
@@ -272,10 +363,10 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-severity-breakdown", "ROW-severity-breakdown", chart_ids["severity-breakdown"], 12, 55
     )
 
-    position["HEADER-validation"] = header_node("HEADER-validation", "Census Validation")
+    position["HEADER-validation"] = header_node("HEADER-validation", "Validation and Data Notes")
     position["ROW-validation"] = row_node("ROW-validation", ["MARKDOWN-validation"])
     position["MARKDOWN-validation"] = markdown_node(
-        "MARKDOWN-validation", "ROW-validation", VALIDATION_MARKDOWN
+        "MARKDOWN-validation", "ROW-validation", VALIDATION_MARKDOWN, height=60
     )
 
     return position
@@ -329,6 +420,9 @@ if __name__ == "__main__":
     print("Logged in to Superset.")
 
     chart_ids = dict(EXISTING)
+    for chart_id, update in EXISTING_CHART_UPDATES.items():
+        update_existing_chart(session, headers, chart_id, update)
+        print(f"Chart {chart_id}: labels and description updated.")
     for key, spec in NEW_CHARTS.items():
         chart_id = ensure_chart(session, headers, spec)
         chart_ids[key] = chart_id

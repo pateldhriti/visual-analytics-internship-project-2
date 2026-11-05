@@ -229,3 +229,6 @@ data/raw/*
 data/staging/*
 !data/raw/.gitkeep
 !data/staging/.gitkeep
+
+# Database backups (docker/backup.sh) -- may contain real data, never commit.
+backups/

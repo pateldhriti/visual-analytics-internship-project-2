@@ -24,6 +24,7 @@ function indexNumeral(storyLabel) {
 export default function StoryPage({
   storyLabel,
   title,
+  intro, // optional one-paragraph lead-in shown under the title
   questions,
   filters,
   kpis,
@@ -60,6 +61,11 @@ export default function StoryPage({
               {storyLabel}
             </motion.p>
             <motion.h1 variants={fadeUp}>{title}</motion.h1>
+            {intro && (
+              <motion.p variants={fadeUp} className="story-intro">
+                {intro}
+              </motion.p>
+            )}
             {questions?.length > 0 && (
               <motion.ul variants={fadeUp} className="story-questions">
                 {questions.map((q) => (

@@ -83,7 +83,7 @@ VIEWS = {
             "expression": "AVG(pct_of_burdened)",
             "verbose_name": "Average Share of Burdened Households (%)",
             "metric_type": "avg",
-            "description": "Share of each tenure's burdened households in a given severity category (Severe 30-99%, or Unaccounted), averaged across whatever rows are in scope.",
+            "description": "Share of each tenure's burdened households in each band: 30% to under 100% of income on shelter, or 100% or more (derived).",
         },
     ],
     "v_story2_rent_yoy_change": [

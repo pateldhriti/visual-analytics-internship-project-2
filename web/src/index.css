@@ -497,6 +497,14 @@ a.card:hover,
 /* ============================================================
    Story pages
    ============================================================ */
+.story-intro {
+  max-width: 68ch;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+
 .story-questions {
   color: var(--ink-muted);
   padding-left: 20px;
