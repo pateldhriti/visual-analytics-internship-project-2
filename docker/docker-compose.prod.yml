@@ -1,0 +1,94 @@
+# Production additions, layered on top of docker-compose.yml:
+#
+#   docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
+#
+# Adds three services:
+#   caddy      -- the only public entry point. Serves the React build and
+#                 proxies Superset and the guest-token API over HTTPS, with
+#                 certificates from Let's Encrypt obtained and renewed
+#                 automatically.
+#   token-api  -- api/guest_token_server.py in a container, reachable only
+#                 inside the Docker network (Caddy forwards /api/* to it).
+#   db-backup  -- pg_dump of both databases once a day, kept for
+#                 BACKUP_RETENTION_DAYS days (docker/backup.sh).
+#
+# Postgres, Redis and Superset publish no public ports: the base file binds
+# them to BIND_ADDRESS (127.0.0.1 by default), and Docker's port publishing
+# bypasses host firewalls such as ufw, so binding to localhost is what
+# actually keeps them private. See docs/production_hardening.md.
+
+services:
+  superset:
+    environment:
+      SUPERSET_HTTPS: "true"
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: windsor_housing_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      SUPERSET_DOMAIN: ${SUPERSET_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../web/dist:/srv/web:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      - superset
+      - token-api
+
+  token-api:
+    image: python:3.12-slim
+    container_name: windsor_housing_token_api
+    restart: unless-stopped
+    working_dir: /app
+    env_file:
+      - ../.env
+    environment:
+      SUPERSET_URL: http://superset:8088
+      GUEST_TOKEN_API_HOST: 0.0.0.0
+      GUEST_TOKEN_API_PORT: "8090"
+    volumes:
+      - ../api:/app/api:ro
+    command: >
+      sh -c "pip install --quiet --no-cache-dir requests python-dotenv &&
+      python api/guest_token_server.py"
+    depends_on:
+      - superset
+
+  db-backup:
+    image: postgres:16-alpine
+    container_name: windsor_housing_db_backup
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_DATABASES: "${POSTGRES_DB} ${SUPERSET_METADATA_DB}"
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./backup.sh:/usr/local/bin/backup.sh:ro
+      # A Docker-managed volume, not a folder in the project: writing large
+      # dumps through a bind mount into a synced folder (OneDrive) crashed
+      # Docker Desktop during testing. Copy backups off the server with
+      # `docker cp` (docs/production_hardening.md).
+      - dbbackups:/backups
+    # One backup at start-up, then one every 24 hours.
+    entrypoint: ["sh", "-c", "while true; do sh /usr/local/bin/backup.sh; sleep 86400; done"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  caddydata:
+  caddyconfig:
+  dbbackups:
