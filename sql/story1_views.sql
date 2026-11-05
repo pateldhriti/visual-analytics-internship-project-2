@@ -134,14 +134,21 @@ GROUP BY ht.household_type_key, ht.household_type_label, ht.parent_member_id;
 -- v_story1_burden_severity
 -- One row per tenure (Owner, Renter): of the households already spending
 -- 30%+ of income on shelter, how many are in the "30% to less than 100%"
--- band StatCan's own table directly publishes, vs. an unaccounted gap.
--- StatCan's table has no "100% or more" row -- 30%-under-100% is the only
--- severity sub-band this source publishes at all. The gap (burdened minus
--- the 30-99% band) is reported honestly as "unaccounted", not assumed to
--- be a 100%+ band with no source label for that assumption -- see
--- docs/story1_exploratory_findings.md Finding 4, which found this same
--- 91.2%/8.8% split at the citywide level; this view adds the by-tenure
--- breakdown that finding didn't include.
+-- band, and how many spend 100% or more.
+--
+-- StatCan's table publishes "30% to less than 100%" as a sub-category of
+-- "Spending 30% or more" (member 4 has parent member 3 in
+-- data/raw/shelter_cost/98100252_MetaData.csv) and has no separate
+-- "100% or more" row. Because the parent is the sum of its parts, the
+-- remainder (30%+ minus 30%-to-under-100%) is the households spending 100%
+-- or more of income on shelter. It is derived, not published, and StatCan
+-- rounds every count to a multiple of 5, so treat it as approximate.
+--
+-- Column names are kept from the first version of this view (severe_* and
+-- unaccounted_*) so existing Superset charts keep working:
+--   severe_30_to_99 / severe_pct_of_burdened   -> the 30%-to-under-100% band
+--   unaccounted_households / _pct_of_burdened  -> the derived 100%-or-more group
+-- "Severe" is not an official StatCan term; chart labels use the band names.
 -- ============================================================
 CREATE OR REPLACE VIEW warehouse.v_story1_burden_severity AS
 SELECT
@@ -184,14 +191,14 @@ GROUP BY t.tenure_name;
 -- v_story1_burden_severity_breakdown
 -- Long-format reshape of v_story1_burden_severity, built for a stacked
 -- chart: one row per (tenure, category), category being either
--- "Severe (30-99%)" or "Unaccounted" -- the same 2 real percentages
--- v_story1_burden_severity already reports as separate columns,
--- reshaped so a single stacked bar per tenure can show both segments
--- together (a composition-of-a-whole view, not a new computation).
+-- "30% to under 100%" or "100% or more" -- the same 2 percentages
+-- v_story1_burden_severity reports as separate columns, reshaped so a
+-- single stacked bar per tenure shows both segments (each tenure sums to
+-- 100%).
 -- ============================================================
 CREATE OR REPLACE VIEW warehouse.v_story1_burden_severity_breakdown AS
-SELECT tenure, 'Severe (30-99%)' AS category, severe_pct_of_burdened AS pct_of_burdened
+SELECT tenure, '30% to under 100%' AS category, severe_pct_of_burdened AS pct_of_burdened
 FROM warehouse.v_story1_burden_severity
 UNION ALL
-SELECT tenure, 'Unaccounted' AS category, unaccounted_pct_of_burdened AS pct_of_burdened
+SELECT tenure, '100% or more' AS category, unaccounted_pct_of_burdened AS pct_of_burdened
 FROM warehouse.v_story1_burden_severity;
