@@ -63,6 +63,19 @@ const KPIS = [
   { label: "Burden rate, income under $10,000", value: "93.1%", accent: "violet", trend: "up" },
 ];
 
+// Story 5 findings that combine this story's data with another story's
+// (docs/story5_combined_analysis.md; re-check after a data refresh).
+const CONNECTIONS = [
+  {
+    with: "With Story 2's rents",
+    text: "An average Windsor 2-bedroom ($1,451) needs a household income of about $58,000 under the 30% rule. The median renter household earned $48,400, so about 61% of renter households earn less than that.",
+  },
+  {
+    with: "With Story 4's comparison cities",
+    text: "Windsor has the lowest rent of the five cities but also the second-lowest renter incomes: a year of 2-bedroom rent takes 36% of the median renter's income, the same as Hamilton. Its share of renters spending 30% or more (34.8%) is still the lowest of the five.",
+  },
+];
+
 export default function StoryAffordability() {
   return (
     <StoryPage
@@ -92,6 +105,7 @@ export default function StoryAffordability() {
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
+      connections={CONNECTIONS}
       source="Statistics Canada, Table 98-10-0252-01, Shelter-cost-to-income ratio by tenure, Windsor CMA, 2021 Census"
     />
   );

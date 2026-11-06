@@ -70,6 +70,19 @@ const RANKING = [
   { label: "Kitchener-Cambridge-Waterloo CMA", value: "$1,832" },
 ];
 
+// Story 5 findings that combine this story's data with another story's
+// (docs/story5_combined_analysis.md; re-check after a data refresh).
+const CONNECTIONS = [
+  {
+    with: "With Story 1's renter incomes",
+    text: "Windsor's rent is the lowest of the five cities, but so are its renters' incomes: a year of 2-bedroom rent takes 36% of the median renter's income, about the same as in every other city. Windsor is cheap, not more affordable.",
+  },
+  {
+    with: "With Story 3's construction",
+    text: "Windsor builds the least of the five: 8.4 homes started a year per 1,000 households, and from 2016 to 2021 only 59% of the homes its population growth needed (72% to 91% elsewhere).",
+  },
+];
+
 export default function StoryComparison() {
   return (
     <StoryPage
@@ -95,6 +108,7 @@ export default function StoryComparison() {
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
+      connections={CONNECTIONS}
       source="CMHC Rental Market Survey data tables, Canada, October 2024 and October 2025 (apartments)"
     />
   );
