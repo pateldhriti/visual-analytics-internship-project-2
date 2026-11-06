@@ -60,6 +60,7 @@ EXTRACT_STEPS = [
     "extract_rms_canada_comparison.py",
     "extract_cmhc_starts_completions.py",
     "extract_windsor_starts_completions.py",
+    "extract_peer_cma_context.py",
 ]
 LOAD_STEP = "refresh_all.py"
 

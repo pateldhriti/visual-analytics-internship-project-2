@@ -315,3 +315,30 @@ CREATE TABLE warehouse.fact_windsor_starts_completions (
     units         NUMERIC,
     UNIQUE (ref_month, activity, dwelling_type)
 );
+
+-- Windsor and its four comparison CMAs (London, Hamilton,
+-- St. Catharines-Niagara, Kitchener-Cambridge-Waterloo): the incomes,
+-- households and construction behind Story 5's combined views. Long format,
+-- one row per city / source / indicator / breakdown, from
+-- etl/extract_peer_cma_context.py. cma_name uses the same spelling as the
+-- Story 4 rent comparison ("London CMA"), so the two join on name.
+--   98-10-0252-01   households, households_30pct_plus (category = income band),
+--                   median_household_income, average_household_income
+--   98-401-X2021002 private_households, renter_households,
+--                   median_household_income, pct_spending_30pct_plus,
+--                   median_monthly_shelter_cost
+--   34-10-0154-01   starts, completions (category = 'Total' or
+--                   'Apartment and Other'; full calendar years only)
+-- Census and shelter-cost rows have period_year 2021 (incomes are for 2020).
+CREATE TABLE warehouse.fact_peer_cma_context (
+    fact_id      BIGSERIAL PRIMARY KEY,
+    cma_code     TEXT NOT NULL,
+    cma_name     TEXT NOT NULL,
+    source_table TEXT NOT NULL,
+    indicator    TEXT NOT NULL,
+    tenure       TEXT CHECK (tenure IN ('Total', 'Renter')),
+    category     TEXT,
+    period_year  INTEGER NOT NULL,
+    value        NUMERIC,
+    UNIQUE NULLS NOT DISTINCT (cma_code, source_table, indicator, tenure, category, period_year)
+);
