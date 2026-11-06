@@ -14,7 +14,13 @@ SECRET_KEY = os.environ["SUPERSET_SECRET_KEY"]
 # endpoint and embedDashboard()'s iframe. GUEST_TOKEN_JWT_SECRET signs those
 # tokens; must be a real secret (see .env.example), not left at Superset's
 # own unsafe default.
-FEATURE_FLAGS = {"EMBEDDED_SUPERSET": True}
+# ENABLE_TEMPLATE_PROCESSING: Jinja in dataset SQL. Used by Story 2's
+# explanation-panel dataset (story2_panel_by_unit_size) to read the
+# Bedroom Type filter with filter_values() and pick the matching unit size
+# (or all unit sizes). Only users who can edit datasets or use SQL Lab can
+# write templates -- the Public role cannot -- and Superset runs them in a
+# sandbox. The panel's template only compares the value to a fixed list.
+FEATURE_FLAGS = {"EMBEDDED_SUPERSET": True, "ENABLE_TEMPLATE_PROCESSING": True}
 GUEST_TOKEN_JWT_SECRET = os.environ["GUEST_TOKEN_JWT_SECRET"]
 
 SQLALCHEMY_DATABASE_URI = (
@@ -73,7 +79,13 @@ TALISMAN_CONFIG = {
         "connect-src": ["'self'", "https://api.mapbox.com", "https://events.mapbox.com"],
         "object-src": "'none'",
         "style-src": ["'self'", "'unsafe-inline'"],
-        "script-src": ["'self'", "'strict-dynamic'"],
+        # 'unsafe-eval' is required by Superset's Handlebars chart, which
+        # compiles its template in the browser (Story 2's explanation panel;
+        # without it the panel shows a CSP error). Trade-off: it relaxes one
+        # browser protection on Superset pages; scripts must still pass the
+        # nonce/'strict-dynamic' check, chart HTML is sanitized
+        # (HTML_SANITIZATION), and the Public role is read-only.
+        "script-src": ["'self'", "'strict-dynamic'", "'unsafe-eval'"],
         "frame-ancestors": ["'self'", *FRONTEND_ORIGINS],
     },
     "content_security_policy_nonce_in": ["script-src"],
@@ -81,6 +93,12 @@ TALISMAN_CONFIG = {
     "session_cookie_secure": RUNNING_BEHIND_HTTPS,
     "frame_options": None,
 }
+
+# Superset sanitizes HTML in Markdown and Handlebars charts and, by default,
+# strips every attribute -- so Story 2's explanation panel could not be
+# styled at all. Allow only the inline `style` attribute (no <style> or
+# <script> tags, no event handlers); inline CSS cannot run code.
+HTML_SANITIZATION_SCHEMA_EXTENSIONS = {"attributes": {"*": ["style"]}}
 
 CACHE_CONFIG = {
     "CACHE_TYPE": "RedisCache",
@@ -169,6 +187,10 @@ PUBLIC_DATASOURCE_NAMES = [
     # Dashboard 3's zone-level section (etl/build_story2_dashboard.py).
     "[Windsor Housing Data].[v_story2_zone_snapshot](id:19)",
     "[Windsor Housing Data].[v_story2_vacancy_by_zone_trend](id:20)",
+    # Story 2's explanation panel (Handlebars chart).
+    "[Windsor Housing Data].[v_story2_zone_explanation](id:23)",
+    # The panel's virtual dataset (follows the Bedroom Type filter).
+    "[Windsor Housing Data].[story2_panel_by_unit_size](id:24)",
     # Dashboard 1 (Windsor Housing Executive Overview) -- Housing Supply
     # section reuses the already-public Story 3 dataset, plus 2 new
     # dashboard-1-only views for the Rental Market YoY and CMA Benchmark

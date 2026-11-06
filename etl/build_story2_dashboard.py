@@ -59,6 +59,7 @@ Run from the project virtual environment:
 """
 
 import json
+import re
 import uuid
 
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
@@ -121,6 +122,228 @@ def bedroom_filter(bedroom="Total"):
     }
 
 
+DATASET_ZONE_EXPLANATION = 23  # v_story2_zone_explanation (all unit sizes)
+
+# The explanation panel's dataset: a virtual (SQL) dataset over
+# warehouse.v_story2_zone_bedroom_explanation that keeps one unit size --
+# the one chosen in the Bedroom Type filter (or clicked in a unit-size
+# chart), else 'Total' (all unit sizes) -- so the panel recalculates when
+# the filter changes. filter_values() is Superset's Jinja macro for the
+# values of an active filter (needs ENABLE_TEMPLATE_PROCESSING, see
+# docker/superset_config.py). The chosen value is only compared with a
+# fixed list, never pasted into the SQL as typed.
+PANEL_DATASET_NAME = "story2_panel_by_unit_size"
+PANEL_DATASET_SQL = """{% set allowed = ['Studio', '1 Bedroom', '2 Bedroom', '3 Bedroom +', 'Total'] %}
+{% set chosen = filter_values('bedroom_type_label') %}
+{% set unit = chosen[0] if chosen and chosen[0] in allowed else 'Total' %}
+SELECT *
+FROM warehouse.v_story2_zone_bedroom_explanation
+WHERE bedroom_type_label = '{{ unit }}'"""
+
+ACCENT = "#2a78d6"  # the project's blue accent (slot 1 of windsor_housing)
+# The windsor_housing palette (docker/superset_config.py), as Superset
+# stores it in color_scheme_domain.
+COLOR_DOMAIN = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
+ZONES = [
+    "Zone 1 - Centre",
+    "Zone 2 - East Inner",
+    "Zone 3 - East Outer",
+    "Zone 4 - West",
+    "Zone 5 - Amherstburg",
+    "Zone 6 - North Essex County",
+    "Zone 7 - South Essex County",
+]
+ZONE_COLORS = dict(zip(ZONES, COLOR_DOMAIN))
+
+
+def zone_bar_params(sql: str, label: str, number_format: str) -> dict:
+    """Horizontal ECharts bar, one bar per zone, clickable.
+
+    In Superset 3.1 an ECharts bar chart emits a cross-filter for the
+    *series* (group-by) value of the clicked bar, not for its x-axis
+    category -- clicking a plain one-series bar does nothing (tested). So
+    the zone is also the series: each zone is its own series, stacked so
+    every bar keeps its full width, and a click emits that zone. Each zone
+    also keeps the same colour as its line in the zone trend chart."""
+    return {
+        # Same column under another label: Superset rejects a query whose
+        # x-axis and series have the same label.
+        "x_axis": {"expressionType": "SQL", "sqlExpression": "zone_label", "label": "Zone"},
+        "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label}],
+        "groupby": ["zone_label"],
+        "stack": True,
+        "adhoc_filters": [],
+        "orientation": "horizontal",
+        "row_limit": 50,
+        "color_scheme": COLOR_SCHEME,
+        "show_value": True,
+        "show_legend": False,
+        # Item tooltip: each zone is its own series, so the default
+        # all-series tooltip listed 7 rows with 6 of them empty.
+        "rich_tooltip": False,
+        "y_axis_format": number_format,
+        "x_axis_title": "",
+        "y_axis_title": "",
+        "truncateYAxis": False,
+        "y_axis_bounds": [None, None],
+    }
+
+
+def echarts_params(
+    viz: str,
+    x_axis: str,
+    sql: str,
+    label: str,
+    number_format: str,
+    groupby: list | None = None,
+    filters: list | None = None,
+    rotate: int = 0,
+) -> dict:
+    """ECharts bar/line chart with a category x-axis. With a group-by
+    (series) the rows are pivoted on the x-axis, which sorts survey labels
+    Oct-20 ... Oct-25 oldest first -- the legacy charts sorted by value."""
+    params = {
+        "x_axis": x_axis,
+        "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label}],
+        "groupby": groupby or [],
+        "adhoc_filters": filters or [],
+        "row_limit": 100,
+        "color_scheme": COLOR_SCHEME,
+        "show_legend": bool(groupby),
+        "legendType": "scroll",
+        "legendOrientation": "top",
+        "rich_tooltip": True,
+        "tooltipSortByMetric": True,
+        "y_axis_format": number_format,
+        "x_axis_title": "",
+        "y_axis_title": "",
+        "xAxisLabelRotation": rotate,
+        "truncateYAxis": False,
+        "y_axis_bounds": [None, None],
+    }
+    if viz == "line":
+        params.update({"markerEnabled": True, "markerSize": 6, "seriesType": "line", "connectNulls": False})
+    else:
+        params.update({"show_value": False})
+    return params
+
+
+EXPLANATION_COLUMNS = [
+    "zone_label", "bedroom_type_label", "unit_label", "average_rent",
+    "rent_text", "vacancy_text", "units_text", "turnover_text",
+    "cma_rent_text", "cma_vacancy_text", "cma_units_text", "cma_turnover_text",
+    "priciest_zone", "priciest_rent_text", "cheapest_zone", "cheapest_rent_text",
+    "tightest_zone", "tightest_vacancy_text", "largest_zone", "largest_units_text",
+    "rent_vs_text", "vacancy_vs_text", "turnover_vs_text", "units_vs_text", "rank_text",
+    "size_rank_text", "rent_bullet", "vacancy_bullet", "stock_bullet", "turnover_bullet",
+    "reliability_note", "takeaway", "overview_takeaway",
+]
+
+# Rendered by Superset's Handlebars chart from the panel's query result
+# ("data" = the rows left after the Zone filter and any cross-filter).
+# Four sections: Zone Overview, Key Numbers, What This Means, Key Takeaway.
+# 2+ rows: the Windsor-wide version; 1 row: the selected zone against
+# Windsor; 0 rows: a message. Every value and sentence is a column of
+# warehouse.v_story2_zone_explanation, computed from the survey data.
+# Class names are replaced by inline styles below (INLINE_STYLES).
+EXPLANATION_TEMPLATE = """{{#if data.[1]}}{{#with data.[0]}}
+<div class="xp">
+<div class="xp-sec">Zone overview</div>
+<div class="xp-name">All 7 zones &middot; Windsor CMA</div>
+<div class="xp-cta">&#128070; Click a zone in the table or a chart, or pick one in the Zone filter, to explain it here. Bedroom Type switches the figures to one unit size.</div>
+<div class="xp-sec">Key numbers &middot; Oct 2025 &middot; {{unit_label}}</div>
+<div class="xp-tiles">
+<div class="xp-tile"><span class="xp-l">Average rent</span><span class="xp-v">{{cma_rent_text}}</span><span class="xp-d">per month</span></div>
+<div class="xp-tile"><span class="xp-l">Vacancy</span><span class="xp-v">{{cma_vacancy_text}}</span><span class="xp-d">of units vacant</span></div>
+<div class="xp-tile"><span class="xp-l">Rental units</span><span class="xp-v">{{cma_units_text}}</span><span class="xp-d">purpose-built</span></div>
+<div class="xp-tile"><span class="xp-l">Turnover</span><span class="xp-v">{{cma_turnover_text}}</span><span class="xp-d">changed tenants</span></div>
+</div>
+<div class="xp-sec">What this means</div>
+<div class="xp-li">&bull; Most expensive: <strong>{{priciest_zone}}</strong> ({{priciest_rent_text}})</div>
+<div class="xp-li">&bull; Least expensive: <strong>{{cheapest_zone}}</strong> ({{cheapest_rent_text}})</div>
+<div class="xp-li">&bull; Tightest market: <strong>{{tightest_zone}}</strong> ({{tightest_vacancy_text}} vacant)</div>
+<div class="xp-li">&bull; Most units: <strong>{{largest_zone}}</strong> ({{largest_units_text}})</div>
+<div class="xp-sec">Key takeaway</div>
+<div class="xp-take">{{overview_takeaway}}</div>
+</div>
+{{/with}}{{else}}{{#if data.[0]}}{{#with data.[0]}}
+<div class="xp">
+<div class="xp-sec">Zone overview</div>
+<div class="xp-name">{{zone_label}}</div>
+<div class="xp-chips"><span class="xp-chip">{{rank_text}}</span><span class="xp-chip">{{units_vs_text}}</span></div>
+<div class="xp-sec">Key numbers &middot; Oct 2025 &middot; {{unit_label}}</div>
+<div class="xp-tiles">
+<div class="xp-tile"><span class="xp-l">Average rent</span><span class="xp-v">{{rent_text}}</span><span class="xp-d">{{rent_vs_text}} ({{cma_rent_text}})</span></div>
+<div class="xp-tile"><span class="xp-l">Vacancy</span><span class="xp-v">{{vacancy_text}}</span><span class="xp-d">{{vacancy_vs_text}} ({{cma_vacancy_text}})</span></div>
+<div class="xp-tile"><span class="xp-l">Rental units</span><span class="xp-v">{{units_text}}</span><span class="xp-d">{{size_rank_text}}</span></div>
+<div class="xp-tile"><span class="xp-l">Turnover</span><span class="xp-v">{{turnover_text}}</span><span class="xp-d">{{turnover_vs_text}} ({{cma_turnover_text}})</span></div>
+</div>
+<div class="xp-sec">What this means</div>
+<div class="xp-li">&bull; {{rent_bullet}}</div>
+<div class="xp-li">&bull; {{vacancy_bullet}}</div>
+<div class="xp-li">&bull; {{stock_bullet}}</div>
+<div class="xp-li">&bull; {{turnover_bullet}}</div>
+{{#if reliability_note}}<div class="xp-note">{{reliability_note}}</div>{{/if}}
+<div class="xp-sec">Key takeaway</div>
+<div class="xp-take">{{takeaway}}</div>
+<div class="xp-clear"><a class="xp-reset" href="?standalone=2">&#8634; Reset to all zones</a> or click {{zone_label}} again.</div>
+</div>
+{{/with}}{{else}}
+<div class="xp"><div class="xp-sec">Zone overview</div><div class="xp-name">No data for this selection</div><div class="xp-cta">CMHC publishes no zone figures for the current filters and selection. <a class="xp-reset" href="?standalone=2">&#8634; Reset the dashboard</a></div></div>
+{{/if}}{{/if}}"""
+
+# Superset 3.1 sanitizes Handlebars output: it drops <style> tags and, by
+# default, every attribute. docker/superset_config.py allows the inline
+# `style` attribute only (HTML_SANITIZATION_SCHEMA_EXTENSIONS), so the
+# template's class names are turned into inline styles here.
+INLINE_STYLES = {
+    "xp": "color:#1d2433;font-size:13px;line-height:1.4;padding:0 2px;",
+    "xp-sec": (
+        f"color:{ACCENT};font-size:11px;font-weight:700;letter-spacing:.07em;"
+        "text-transform:uppercase;margin:12px 0 5px;padding-bottom:3px;border-bottom:1px solid #e3e9f2;"
+    ),
+    "xp-name": "font-size:20px;font-weight:800;line-height:1.2;margin:2px 0 6px;",
+    "xp-cta": f"background:#eef5fd;border:1px dashed {ACCENT};border-radius:8px;padding:6px 9px;font-size:12px;color:#1d2433;",
+    "xp-chips": "display:flex;flex-wrap:wrap;gap:6px;",
+    "xp-chip": f"background:#eef5fd;color:{ACCENT};border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;",
+    "xp-tiles": "display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;",
+    "xp-tile": f"border:1px solid #e3e9f2;border-left:3px solid {ACCENT};border-radius:8px;padding:5px 9px;background:#fbfcfe;",
+    "xp-l": "display:block;color:#5f6b7d;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;",
+    "xp-v": "display:block;font-size:18px;font-weight:800;line-height:1.25;",
+    "xp-d": "display:block;color:#5f6b7d;font-size:11px;",
+    "xp-li": "margin:0 0 3px;",
+    "xp-note": "margin:5px 0 0;padding:5px 8px;background:#fff6e0;border-radius:6px;font-size:11.5px;",
+    "xp-take": f"background:{ACCENT};color:#ffffff;border-radius:8px;padding:8px 10px;font-weight:600;",
+    "xp-clear": "margin-top:8px;color:#5f6b7d;font-size:11.5px;",
+    "xp-reset": (
+        f"display:inline-block;background:#ffffff;border:1px solid {ACCENT};color:{ACCENT};"
+        "border-radius:999px;padding:2px 10px;font-weight:700;text-decoration:none;margin-right:4px;"
+    ),
+}
+
+EXPLANATION_TEMPLATE = re.sub(
+    r'class="([a-z-]+)"', lambda m: f'style="{INLINE_STYLES[m.group(1)]}"', EXPLANATION_TEMPLATE
+)
+
+CHART_GUIDE_MARKDOWN = """**How to read this dashboard**
+
+- **Interact:** click a zone in the *Zone Snapshot* table, a zone bar or a zone trend line. The
+  other zone charts and the explanation panel switch to that zone. To see every zone again, click
+  it a second time or the ✕ next to it under **Cross-filters** in the filter bar. The filters on
+  the left (Zone, Bedroom Type, Dwelling Scope) narrow the charts too; **Clear all** resets them.
+- **Zone Snapshot** compares the 7 zones on rent, vacancy, size and turnover; the bar inside each
+  cell shows how each zone compares with the others.
+- **Rental Stock by Zone** shows where the rental housing is. Bigger zones affect the Windsor
+  average more.
+- **Vacancy Rate by Zone:** a lower rate means a tighter market, where fewer units are free and
+  rents tend to rise faster.
+- **Average Rent by Zone and Bedroom Type** shows what each unit size costs in each zone.
+- **Trend lines** follow each survey from October 2020 to October 2025, oldest first. Hover a
+  point for exact values. Clicking a unit-size line or bar filters the other unit-size charts.
+- **Turnover** is the share of units whose tenant changed in the past year.
+"""
+
+
 # Each entry: internal key, slice_name, dataset id, viz_type, params.
 # KPI tiles are "big_number_total" (same viz_type Story 1's KPI tiles
 # use); everything else is "dist_bar".
@@ -138,7 +361,7 @@ CHARTS = {
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": ".1%",
-            "subheader": "October 2025, apartments and row houses",
+            "subheader": "Windsor benchmark · all units",
         },
     },
     "kpi-rent": {
@@ -154,7 +377,7 @@ CHARTS = {
             },
             "adhoc_filters": [bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": "$,.0f",
-            "subheader": "per month, October 2025, all unit sizes",
+            "subheader": "Windsor benchmark · per month",
         },
     },
     "kpi-turnover": {
@@ -170,7 +393,7 @@ CHARTS = {
             },
             "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
             "y_axis_format": ".1%",
-            "subheader": "October 2025, apartments and row houses",
+            "subheader": "Windsor benchmark · all units",
         },
     },
     "kpi-stock": {
@@ -198,248 +421,186 @@ CHARTS = {
                 combined_filter("dwelling_type_label"),
             ],
             "y_axis_format": ",.0f",
-            "subheader": "purpose-built rental units, October 2025",
+            "subheader": "Windsor benchmark · all units",
         },
     },
     "vacancy-dwelling": {
         "slice_name": "Vacancy Rate by Period and Dwelling Type (Oct-20 to Oct-25)",
         "description": (
-            "Total bedroom type, real 6-year span -- warehouse.v_story2_vacancy_trend. Apartment "
-            "and Combined both have full 6-period coverage for this scope (confirmed directly), so "
-            "comparing them side by side is safe, not a sparse-data gap."
+            "Vacancy rate each October from 2020 to 2025 for apartments, and for apartments and row "
+            "houses combined (all unit sizes). The two lines move together, so the Combined figures "
+            "used elsewhere are a fair guide -- warehouse.v_story2_vacancy_trend."
         ),
         "dataset_id": DATASET_VACANCY,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["period_label"],
-            "columns": ["dwelling_type_label"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
-                    "label": "Vacancy Rate",
-                }
-            ],
-            "adhoc_filters": [bedroom_filter("Total")],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": True,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Survey (October)",
-            "y_axis_label": "Vacancy Rate (%)",
-        },
+        "viz_type": "echarts_timeseries_line",
+        "params": echarts_params(
+            "line", "period_label", "AVG(vacancy_rate_pct) / 100.0", "Vacancy rate", ".1%",
+            groupby=["dwelling_type_label"], filters=[bedroom_filter("Total")],
+        ),
     },
     "rent-zone": {
         "slice_name": "Average Rent by Zone and Bedroom Type",
-        "description": "Average monthly rent by zone and unit size, October 2025, apartments and row houses. Blank bars are values CMHC suppressed. Excludes the Windsor CMA/Windsor City totals -- warehouse.v_story2_rent_by_zone_bedroom.",
+        "description": (
+            "Average monthly rent by zone and unit size, October 2025, apartments and row houses. "
+            "Compare bars within a zone to see the price step between unit sizes. Missing bars are "
+            "values CMHC suppressed. Click a unit size to filter the other unit-size charts -- "
+            "warehouse.v_story2_rent_by_zone_bedroom."
+        ),
         "dataset_id": DATASET_RENT_ZONE,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["zone_label"],
-            "columns": ["bedroom_type_label"],
-            "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average monthly rent"}
-            ],
-            "adhoc_filters": [EXCLUDE_TOTAL_BEDROOM],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": True,
-            "rich_tooltip": True,
-            "y_axis_format": "$,.0f",
-            "x_axis_label": "Zone",
-            "x_ticks_layout": "45°",
-            "bottom_margin": "auto",
-            "y_axis_label": "Average monthly rent ($)",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": echarts_params(
+            "bar", "zone_label", "AVG(average_rent)", "Average monthly rent", "$,.0f",
+            groupby=["bedroom_type_label"], filters=[EXCLUDE_TOTAL_BEDROOM], rotate=30,
+        ),
     },
-    # Zone-level section: stock, vacancy and a 4-metric snapshot table on
-    # v_story2_zone_snapshot, plus vacancy over time on
-    # v_story2_vacancy_by_zone_trend. Both views are already scoped to
-    # Combined / Total bedroom / real zones only, so these charts need no
-    # adhoc_filters of their own -- which is also what makes them safe to
-    # put in the Zone filter's scope (zone_label is their groupby, never a
-    # hardcoded value; docs/filter_standards.md rule 4).
     "zone-stock": {
         "slice_name": "Rental Stock by Zone (Oct-25)",
         "description": (
-            "Surveyed rental units per zone, Combined dwelling types -- warehouse.v_story2_zone_snapshot. "
-            "The 7 zones sum to the Windsor CMA total (19,883)."
+            "Purpose-built rental units in each zone, October 2025, apartments and row houses. "
+            "Shows where Windsor's rental housing is. Click a bar to explore that zone. "
+            "The 7 zones sum to the Windsor CMA total (19,883) -- warehouse.v_story2_zone_snapshot."
         ),
         "dataset_id": DATASET_ZONE_SNAPSHOT,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["zone_label"],
-            "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "SUM(rental_universe)", "label": "Rental Units"}
-            ],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": False,
-            "rich_tooltip": True,
-            "y_axis_format": ",.0f",
-            "x_axis_label": "Zone",
-            "x_ticks_layout": "45°",
-            "bottom_margin": "auto",
-            "y_axis_label": "Rental Units",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": zone_bar_params("SUM(rental_universe)", "Rental units", ",.0f"),
     },
     "zone-vacancy": {
         "slice_name": "Vacancy Rate by Zone (Oct-25)",
-        "description": "Combined dwelling types, Total bedroom type -- warehouse.v_story2_zone_snapshot.",
+        "description": (
+            "Share of each zone's rental units that were empty and available, October 2025. "
+            "Lower means a tighter market where it is harder to find a unit. Click a bar to "
+            "explore that zone -- warehouse.v_story2_zone_snapshot."
+        ),
         "dataset_id": DATASET_ZONE_SNAPSHOT,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["zone_label"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
-                    "label": "Vacancy Rate",
-                }
-            ],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": False,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Zone",
-            "x_ticks_layout": "45°",
-            "bottom_margin": "auto",
-            "y_axis_label": "Vacancy Rate (%)",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": zone_bar_params("AVG(vacancy_rate_pct) / 100.0", "Vacancy rate", ".1%"),
     },
     "zone-vacancy-trend": {
         "slice_name": "Vacancy Rate by Zone and Period (Oct-20 to Oct-25)",
         "description": (
-            "Combined dwelling types, Total bedroom type -- warehouse.v_story2_vacancy_by_zone_trend. "
-            "Zone 7 has no data before Oct-23 and Zone 5's Oct-22/Oct-24 values are suppressed by "
-            "CMHC; both show as gaps, not zeros."
+            "Vacancy rate in each zone every October from 2020 to 2025, apartments and row houses. "
+            "Shows whether a zone is getting tighter (line falling) or looser (rising). Zone 7 has "
+            "no data before Oct-23 and two Zone 5 values are suppressed by CMHC; gaps are not zeros. "
+            "Click a line to select that zone -- warehouse.v_story2_vacancy_by_zone_trend."
         ),
         "dataset_id": DATASET_ZONE_VACANCY,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["period_label"],
-            "columns": ["zone_label"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
-                    "label": "Vacancy Rate",
-                }
-            ],
-            "row_limit": 100,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": True,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Survey (October)",
-            "y_axis_label": "Vacancy Rate (%)",
-        },
+        "viz_type": "echarts_timeseries_line",
+        "params": echarts_params(
+            "line", "period_label", "AVG(vacancy_rate_pct) / 100.0", "Vacancy rate", ".1%",
+            groupby=["zone_label"],
+        ),
     },
     "zone-table": {
         "slice_name": "Zone Snapshot: Rent, Vacancy, Stock and Turnover (Oct-25)",
         "description": (
-            "One row per zone, Combined dwelling types, Total bedroom type -- warehouse.v_story2_zone_snapshot. "
-            "Rent is monthly; rates are percentages. Reliability letters are CMHC's own "
-            "(a = excellent, b = very good, c = good, d = fair, use with caution)."
+            "One row per zone, October 2025, apartments and row houses. The bars inside each "
+            "column compare the zones at a glance. Click a zone name to filter the rest of the "
+            "dashboard to it; click it again to clear -- warehouse.v_story2_zone_snapshot."
         ),
         "dataset_id": DATASET_ZONE_SNAPSHOT,
         "viz_type": "table",
         "params": {
-            "query_mode": "raw",
-            "columns": [
-                "zone_label",
-                "average_rent",
-                "rent_reliability",
-                "vacancy_rate_pct",
-                "vacancy_reliability",
-                "rental_universe",
-                "share_of_zone_stock_pct",
-                "turnover_rate_pct",
+            # Aggregate mode (one row per zone): a Table chart emits a
+            # cross-filter when a value in a group-by column is clicked.
+            "query_mode": "aggregate",
+            "groupby": ["zone_label"],
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(average_rent)", "label": "Average monthly rent"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(vacancy_rate_pct) / 100.0", "label": "Vacancy rate"},
+                {"expressionType": "SQL", "sqlExpression": "SUM(rental_universe)", "label": "Rental units"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(share_of_zone_stock_pct) / 100.0", "label": "Share of Windsor's units"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(turnover_rate_pct) / 100.0", "label": "Turnover rate"},
             ],
-            "order_by_cols": ['["zone_label", true]'],
+            "all_columns": [],
+            "percent_metrics": [],
+            "timeseries_limit_metric": {
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(average_rent)",
+                "label": "Average monthly rent",
+            },
+            "order_desc": True,
             "row_limit": 10,
             "server_pagination": False,
-            # Display formats; the readable column names come from the
-            # dataset's column labels (ZONE_SNAPSHOT_LABELS below).
+            "include_search": False,
+            "show_cell_bars": True,
+            "color_pn": False,
+            "allow_rearrange_columns": False,
             "column_config": {
-                "average_rent": {"d3NumberFormat": "$,.0f"},
-                "vacancy_rate_pct": {"d3NumberFormat": ".1f"},
-                "rental_universe": {"d3NumberFormat": ",.0f"},
-                "share_of_zone_stock_pct": {"d3NumberFormat": ".1f"},
-                "turnover_rate_pct": {"d3NumberFormat": ".1f"},
+                "Average monthly rent": {"d3NumberFormat": "$,.0f"},
+                "Vacancy rate": {"d3NumberFormat": ".1%"},
+                "Rental units": {"d3NumberFormat": ",.0f"},
+                "Share of Windsor's units": {"d3NumberFormat": ".1%"},
+                "Turnover rate": {"d3NumberFormat": ".1%"},
             },
+        },
+    },
+    "zone-explain": {
+        "slice_name": "What the Zone Data Says",
+        "description": (
+            "Explanation panel. With no zone selected it summarizes Windsor; select a zone (click "
+            "a zone bar or table row, or use the Zone filter) and it explains that zone against "
+            "Windsor CMA. Choosing a Bedroom Type recalculates it for that unit size. Every figure "
+            "and sentence is computed in warehouse.v_story2_zone_bedroom_explanation from CMHC's "
+            "October 2025 survey."
+        ),
+        "dataset_id": DATASET_ZONE_EXPLANATION,
+        "viz_type": "handlebars",
+        "params": {
+            "query_mode": "raw",
+            "all_columns": EXPLANATION_COLUMNS,
+            "order_by_cols": ['["average_rent", false]'],
+            "row_limit": 10,
+            "server_pagination": False,
+            "handlebarsTemplate": EXPLANATION_TEMPLATE,
+            "styleTemplate": "",
         },
     },
     "rent-trend": {
         "slice_name": "Average Rent by Period and Bedroom Type (Oct-20 to Oct-25)",
-        "description": "Average monthly rent by unit size, October 2020 to October 2025, apartments and row houses. CMHC does not publish 3-bedroom+ rent for every year -- warehouse.v_story2_rent_yoy_change.",
+        "description": (
+            "Average monthly rent for each unit size every October from 2020 to 2025, apartments and "
+            "row houses. Every line rises: rent went up each year. CMHC does not publish 3-bedroom+ "
+            "rent for every year -- warehouse.v_story2_rent_yoy_change."
+        ),
         "dataset_id": DATASET_RENT_YOY,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["period_label"],
-            "columns": ["bedroom_type_label"],
-            "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average monthly rent"}
-            ],
-            "adhoc_filters": [EXCLUDE_TOTAL_BEDROOM],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": True,
-            "rich_tooltip": True,
-            "y_axis_format": "$,.0f",
-            "x_axis_label": "Survey (October)",
-            "y_axis_label": "Average monthly rent ($)",
-        },
+        "viz_type": "echarts_timeseries_line",
+        "params": echarts_params(
+            "line", "period_label", "AVG(average_rent)", "Average monthly rent", "$,.0f",
+            groupby=["bedroom_type_label"], filters=[EXCLUDE_TOTAL_BEDROOM],
+        ),
     },
     "vacancy-trend": {
         "slice_name": "Vacancy Rate by Period and Bedroom Type (Oct-20 to Oct-25)",
-        "description": "Combined dwelling types, real 6-year span -- warehouse.v_story2_vacancy_trend. Excludes the Total bedroom-type row.",
+        "description": (
+            "Vacancy rate for each unit size every October from 2020 to 2025, apartments and row "
+            "houses. All sizes dipped to their lowest around 2022 and recovered by 2025 -- "
+            "warehouse.v_story2_vacancy_trend."
+        ),
         "dataset_id": DATASET_VACANCY,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["period_label"],
-            "columns": ["bedroom_type_label"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
-                    "label": "Vacancy Rate",
-                }
-            ],
-            "adhoc_filters": [combined_filter(), EXCLUDE_TOTAL_BEDROOM],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": True,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Survey (October)",
-            "y_axis_label": "Vacancy Rate (%)",
-        },
+        "viz_type": "echarts_timeseries_line",
+        "params": echarts_params(
+            "line", "period_label", "AVG(vacancy_rate_pct) / 100.0", "Vacancy rate", ".1%",
+            groupby=["bedroom_type_label"], filters=[combined_filter(), EXCLUDE_TOTAL_BEDROOM],
+        ),
     },
     "turnover": {
         "slice_name": "Turnover Rate by Bedroom Type (Oct-25)",
-        "description": "Combined dwelling types -- warehouse.v_story2_turnover_by_bedroom. Excludes the Total bedroom-type row.",
+        "description": (
+            "Share of units in each size whose tenant changed in the past year, October 2025. Small "
+            "units turn over most; households in 3-bedroom+ units stay longest -- "
+            "warehouse.v_story2_turnover_by_bedroom."
+        ),
         "dataset_id": DATASET_TURNOVER,
-        "viz_type": "dist_bar",
+        "viz_type": "echarts_timeseries_bar",
         "params": {
-            "groupby": ["bedroom_type_label"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(turnover_rate_pct) / 100.0",
-                    "label": "Turnover Rate",
-                }
-            ],
-            "adhoc_filters": [combined_filter(), EXCLUDE_TOTAL_BEDROOM, period_filter("Oct-25")],
-            "row_limit": 50,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": False,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Bedroom Type",
-            "y_axis_label": "Turnover Rate (%)",
+            **echarts_params(
+                "bar", "bedroom_type_label", "AVG(turnover_rate_pct) / 100.0", "Turnover rate", ".1%",
+                filters=[combined_filter(), EXCLUDE_TOTAL_BEDROOM, period_filter("Oct-25")],
+            ),
+            "show_value": True,
+            # Highest turnover first, instead of alphabetical (Studio last).
+            "x_axis_sort": "Turnover rate",
+            "x_axis_sort_asc": False,
         },
     },
 }
@@ -459,6 +620,22 @@ ZONE_SNAPSHOT_LABELS = {
     "rental_universe": "Rental units",
     "share_of_zone_stock_pct": "Share of Windsor's units (%)",
     "turnover_rate_pct": "Turnover rate (%)",
+}
+
+# Compact guide shown under the KPI cards.
+HOW_TO_MARKDOWN = """**How to use this dashboard** &nbsp;
+**1 · Pick a zone:** click a row in *Zone Snapshot*, a zone bar or a zone trend line, or choose one
+in the **Zone** filter. &nbsp; **2 · Read it:** the zone charts and the panel on the right switch
+to that zone; **Bedroom Type** switches the panel to one unit size. &nbsp; **3 · Clear it:** click
+the zone again, the ✕ beside it under **Cross-filters**, or **↺ Reset** in the panel. &nbsp;
+**Note:** the four cards above are fixed Windsor benchmarks and do not change with filters or clicks.
+"""
+
+COMMON_LABELS = {
+    "zone_label": "Zone",
+    "bedroom_type_label": "Bedroom Type",
+    "dwelling_type_label": "Dwelling Type",
+    "period_label": "Survey",
 }
 
 DATA_NOTES_MARKDOWN = """**About the data**
@@ -487,24 +664,56 @@ DATA_NOTES_MARKDOWN = """**About the data**
 # periods = 24 bars, which crowds badly in a half-width cell once the
 # dashboard is embedded in the React story page's narrower iframe.
 LAYOUT = [
-    ("HEADER-kpi", "Windsor CMA at a Glance (Oct-25)"),
+    ("HEADER-kpi", "Windsor CMA Benchmarks (Oct-25): Fixed Totals, All Zones, Apartments + Row Houses"),
+    ("ROW-howto", [("md:howto", 12)]),
     ("ROW-kpi", [("kpi-rent", 3), ("kpi-vacancy", 3), ("kpi-stock", 3), ("kpi-turnover", 3)]),
-    ("HEADER-zone", "Zone-Level Rental Market"),
+    ("HEADER-zone", "Explore by Zone: Click a Zone to Filter"),
+    ("ROW-zone-table", [("zone-table", 7), ("zone-explain", 5)]),
     ("ROW-zone-bars", [("zone-stock", 6), ("zone-vacancy", 6)]),
     ("ROW-zone", [("rent-zone", 12)]),
     ("ROW-zone-trend", [("zone-vacancy-trend", 12)]),
-    ("ROW-zone-table", [("zone-table", 12)]),
     ("HEADER-trends", "Rent and Vacancy Trends (Oct-20 to Oct-25)"),
     ("ROW-rent-trend", [("rent-trend", 12)]),
     ("ROW-vacancy-trend", [("vacancy-trend", 12)]),
     ("HEADER-turnover", "Turnover and Dwelling Type"),
     ("ROW-turnover", [("turnover", 12)]),
     ("ROW-dwelling", [("vacancy-dwelling", 12)]),
-    ("HEADER-notes", "About the Data"),
-    ("ROW-notes", [("md:notes", 12)]),
+    ("HEADER-notes", "How to Read This Dashboard"),
+    ("ROW-notes", [("md:guide", 6), ("md:notes", 6)]),
 ]
 
-MARKDOWN = {"md:notes": (DATA_NOTES_MARKDOWN, 45)}
+MARKDOWN = {
+    "md:notes": (DATA_NOTES_MARKDOWN, 60),
+    "md:guide": (CHART_GUIDE_MARKDOWN, 60),
+    "md:howto": (HOW_TO_MARKDOWN, 14),
+}
+
+# Charts whose datasets have a zone_label column. Cross-filters on a zone
+# are applied only to these; the KPI tiles and the bedroom-type and
+# dwelling-type charts have no zone column, so a zone cross-filter would
+# make their queries fail.
+ZONE_CHART_KEYS = ["zone-table", "zone-explain", "zone-stock", "zone-vacancy", "rent-zone", "zone-vacancy-trend"]
+# Cross-filter groups. A chart's click filters on the column it groups by
+# (zone for the zone charts; unit size for the rent/vacancy/turnover by
+# bedroom charts), so each group only reaches charts whose dataset has that
+# column. Every ECharts/Table chart on the dashboard must appear in exactly
+# one group or in NO_CROSS_FILTER_KEYS: Superset's frontend computes a
+# configuration for every clickable chart, and any difference from the
+# stored one makes it try to save (see build_cross_filter_config).
+CROSS_FILTER_GROUPS = {
+    "zone": {
+        "emitters": ["zone-table", "zone-stock", "zone-vacancy", "zone-vacancy-trend"],
+        "receivers": ZONE_CHART_KEYS,
+    },
+    "bedroom": {
+        "emitters": ["rent-zone", "rent-trend", "vacancy-trend", "turnover"],
+        "receivers": ["rent-zone", "rent-trend", "vacancy-trend", "turnover", "zone-explain"],
+    },
+}
+# Clickable charts whose clicks should filter nothing: the dwelling-type
+# chart's column only exists in one other dataset, where it is fixed to
+# "Combined", so a dwelling cross-filter could only empty that chart.
+NO_CROSS_FILTER_KEYS = ["vacancy-dwelling"]
 
 # Chart heights in Superset grid units (8px each). KPI tiles stay
 # compact; the zone table only has 7 rows, so 55 would leave a large
@@ -517,6 +726,11 @@ CHART_HEIGHT = 55
 def chart_height(key: str) -> int:
     if key.startswith("kpi"):
         return KPI_HEIGHT
+    if key in ("zone-table", "zone-explain"):
+        # Tall enough for the longest panel content (a zone with a
+        # reliability note, measured at 582px) so the panel never scrolls
+        # inside its card.
+        return 84
     if CHARTS[key]["viz_type"] == "table":
         return TABLE_HEIGHT
     return CHART_HEIGHT
@@ -614,6 +828,16 @@ def build_position_json(chart_ids: dict) -> dict:
 DWELLING_DEFAULT = ["Apartment", "Combined"]
 
 
+def filter_scope(chart_ids: dict, keys: list) -> tuple[dict, list]:
+    """Scope that reaches only the given charts. Superset applies a native
+    filter to every chart its scope covers (chartsInScope is derived from
+    it), so an empty "excluded" list made the Bedroom Type and Dwelling
+    Scope filters reach the KPI cards and empty them ("No data")."""
+    in_scope = sorted(chart_ids[key] for key in keys)
+    excluded = sorted(cid for cid in chart_ids.values() if cid not in in_scope)
+    return {"rootPath": ["ROOT_ID"], "excluded": excluded}, in_scope
+
+
 def build_native_filters(chart_ids: dict) -> list:
     non_kpi_bedroom_charts = [
         chart_ids["rent-zone"],
@@ -621,6 +845,11 @@ def build_native_filters(chart_ids: dict) -> list:
         chart_ids["vacancy-trend"],
         chart_ids["turnover"],
     ]
+    zone_scope, zone_in = filter_scope(chart_ids, ZONE_CHART_KEYS)
+    bedroom_scope, bedroom_in = filter_scope(
+        chart_ids, ["rent-zone", "rent-trend", "vacancy-trend", "turnover", "zone-explain"]
+    )
+    dwelling_scope, dwelling_in = filter_scope(chart_ids, ["vacancy-dwelling"])
     return [
         {
             "id": "NATIVE_FILTER-story2-zone",
@@ -629,16 +858,10 @@ def build_native_filters(chart_ids: dict) -> list:
             "targets": [{"datasetId": DATASET_RENT_ZONE, "column": {"name": "zone_label"}}],
             "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
             "cascadeParentIds": [],
-            "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
+            "scope": zone_scope,
             "type": "NATIVE_FILTER",
             "description": "Show only the selected CMHC zones. Leave empty for all 7 zones.",
-            "chartsInScope": [
-                chart_ids["rent-zone"],
-                chart_ids["zone-stock"],
-                chart_ids["zone-vacancy"],
-                chart_ids["zone-vacancy-trend"],
-                chart_ids["zone-table"],
-            ],
+            "chartsInScope": zone_in,
             "tabsInScope": [],
             "controlValues": {
                 "enableEmptyFilter": False,
@@ -662,10 +885,10 @@ def build_native_filters(chart_ids: dict) -> list:
             "adhoc_filters": [EXCLUDE_TOTAL_BEDROOM],
             "time_range": "No filter",
             "cascadeParentIds": [],
-            "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
+            "scope": bedroom_scope,
             "type": "NATIVE_FILTER",
             "description": "Show only the selected unit sizes. Leave empty for all.",
-            "chartsInScope": non_kpi_bedroom_charts,
+            "chartsInScope": bedroom_in,
             "tabsInScope": [],
             "controlValues": {
                 "enableEmptyFilter": False,
@@ -691,7 +914,7 @@ def build_native_filters(chart_ids: dict) -> list:
                 "ownState": {},
             },
             "cascadeParentIds": [],
-            "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
+            "scope": dwelling_scope,
             "type": "NATIVE_FILTER",
             # Every other chart on this dashboard already hardcodes
             # dwelling_type_label == 'Combined' in its own adhoc_filters
@@ -704,7 +927,7 @@ def build_native_filters(chart_ids: dict) -> list:
             # by dwelling type (both scopes have full real 6-period
             # coverage there -- confirmed directly, not assumed).
             "description": "Apartments, row houses, or both combined. Row-house figures are often suppressed by CMHC.",
-            "chartsInScope": [chart_ids["vacancy-dwelling"]],
+            "chartsInScope": dwelling_in,
             "tabsInScope": [],
             "controlValues": {
                 "enableEmptyFilter": False,
@@ -733,6 +956,28 @@ DATASET_COLUMN_KEYS = (
     "advanced_data_type",
     "extra",
 )
+
+
+def ensure_panel_dataset(session, headers) -> int:
+    """Create or update the panel's virtual dataset; returns its id."""
+    existing = find_existing(session, headers, "dataset", "table_name", PANEL_DATASET_NAME)
+    if existing:
+        resp = session.put(f"{SUPERSET_URL}/api/v1/dataset/{existing}", headers=headers, json={"sql": PANEL_DATASET_SQL})
+        resp.raise_for_status()
+        dataset_id = existing
+    else:
+        ref = session.get(f"{SUPERSET_URL}/api/v1/dataset/{DATASET_ZONE_EXPLANATION}", headers=headers)
+        ref.raise_for_status()
+        database_id = ref.json()["result"]["database"]["id"]
+        resp = session.post(
+            f"{SUPERSET_URL}/api/v1/dataset/",
+            headers=headers,
+            json={"database": database_id, "schema": "warehouse", "table_name": PANEL_DATASET_NAME, "sql": PANEL_DATASET_SQL},
+        )
+        resp.raise_for_status()
+        dataset_id = resp.json()["id"]
+    session.put(f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}/refresh", headers=headers).raise_for_status()
+    return dataset_id
 
 
 def set_column_labels(session, headers, dataset_id: int, labels: dict) -> None:
@@ -766,20 +1011,89 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     resp.raise_for_status()
 
 
-def ensure_dashboard(session, headers, position_json: dict, native_filters: list) -> int:
+def build_cross_filter_config(chart_ids: dict) -> tuple[dict, dict]:
+    """Superset 3.1 dashboard metadata for cross-filtering: each zone chart
+    may emit, and its cross-filter reaches only the other zone charts.
+
+    Written in exactly the shape Superset's frontend computes on load
+    (chartsInScope sorted by id). If the stored value differs, the frontend
+    tries to save its own version with PUT /api/v1/dashboard/<id>; for an
+    anonymous (Public role) viewer that PUT returns 401 and Superset sends
+    the visitor to the login page -- which would break the public embed on
+    the React Story 2 page. Verified by loading the dashboard anonymously
+    and checking that no PUT is made."""
+    all_ids = list(chart_ids.values())
+    zone_ids = sorted(chart_ids[key] for key in ZONE_CHART_KEYS)
+    other_ids = [cid for key, cid in chart_ids.items() if key not in ZONE_CHART_KEYS]
+    chart_configuration = {}
+    for group in CROSS_FILTER_GROUPS.values():
+        receiver_ids = sorted(chart_ids[key] for key in group["receivers"])
+        for key in group["emitters"]:
+            cid = chart_ids[key]
+            excluded = [c for c in all_ids if c == cid or c not in receiver_ids]
+            chart_configuration[str(cid)] = {
+                "id": cid,
+                "crossFilters": {
+                    "scope": {"rootPath": ["ROOT_ID"], "excluded": excluded},
+                    "chartsInScope": [c for c in receiver_ids if c != cid],
+                },
+            }
+    for key in NO_CROSS_FILTER_KEYS:
+        cid = chart_ids[key]
+        chart_configuration[str(cid)] = {
+            "id": cid,
+            "crossFilters": {"scope": {"rootPath": ["ROOT_ID"], "excluded": all_ids}, "chartsInScope": []},
+        }
+    global_chart_configuration = {
+        "scope": {"rootPath": ["ROOT_ID"], "excluded": other_ids},
+        "chartsInScope": zone_ids,
+    }
+    return chart_configuration, global_chart_configuration
+
+
+def ensure_dashboard(session, headers, position_json: dict, native_filters: list, chart_ids: dict) -> int:
+    chart_configuration, global_chart_configuration = build_cross_filter_config(chart_ids)
+    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
+
+    # Merge into the stored metadata rather than replacing it: Superset's
+    # frontend adds keys of its own (cross_filters_enabled,
+    # color_scheme_domain, label colours, ...), and dropping them makes it
+    # try to re-save on the next load -- the same anonymous-401 problem as
+    # above.
+    metadata = {}
+    if existing:
+        resp = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers)
+        resp.raise_for_status()
+        metadata = json.loads(resp.json()["result"]["json_metadata"] or "{}")
+    metadata.update(
+        {
+            "native_filter_configuration": native_filters,
+            "color_scheme": COLOR_SCHEME,
+            "chart_configuration": chart_configuration,
+            "global_chart_configuration": global_chart_configuration,
+            "cross_filters_enabled": True,
+        }
+    )
+    metadata.setdefault("color_scheme_domain", COLOR_DOMAIN)
+    # One fixed palette colour per zone, so each zone has the same colour
+    # in the zone bars and the zone trend lines, and no two zones share one
+    # (Superset otherwise assigns colours by label and repeated a green).
+    metadata["label_colors"] = ZONE_COLORS
+    for key, default in (
+        ("shared_label_colors", {}),
+        ("timed_refresh_immune_slices", []),
+        ("expanded_slices", {}),
+        ("refresh_frequency", 0),
+    ):
+        metadata.setdefault(key, default)
+
     body = {
         "dashboard_title": DASHBOARD_TITLE,
         "published": True,
         "position_json": json.dumps(position_json),
-        "json_metadata": json.dumps(
-            {
-                "native_filter_configuration": native_filters,
-                "color_scheme": COLOR_SCHEME,
-            }
-        ),
+        "json_metadata": json.dumps(metadata),
     }
 
-    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers, json=body)
         resp.raise_for_status()
@@ -794,8 +1108,20 @@ if __name__ == "__main__":
     session, headers = get_session()
     print("Logged in to Superset.")
 
+    # Pick up columns added to v_story2_zone_explanation (the panel reads them).
+    session.put(f"{SUPERSET_URL}/api/v1/dataset/{DATASET_ZONE_EXPLANATION}/refresh", headers=headers).raise_for_status()
     set_column_labels(session, headers, DATASET_ZONE_SNAPSHOT, ZONE_SNAPSHOT_LABELS)
-    print("Zone snapshot column labels set.")
+    # Cross-filter tags and tooltips show these labels instead of raw
+    # column names such as "zone_label".
+    for dataset_id in (DATASET_RENT_ZONE, DATASET_ZONE_VACANCY, DATASET_ZONE_EXPLANATION,
+                       DATASET_RENT_YOY, DATASET_VACANCY, DATASET_TURNOVER):
+        set_column_labels(session, headers, dataset_id, COMMON_LABELS)
+    print("Dataset column labels set.")
+
+    panel_dataset_id = ensure_panel_dataset(session, headers)
+    CHARTS["zone-explain"]["dataset_id"] = panel_dataset_id
+    set_column_labels(session, headers, panel_dataset_id, COMMON_LABELS)
+    print(f"Panel dataset ready: {PANEL_DATASET_NAME} (id={panel_dataset_id})")
 
     chart_ids = {}
     for key, spec in CHARTS.items():
@@ -805,7 +1131,7 @@ if __name__ == "__main__":
 
     position_json = build_position_json(chart_ids)
     native_filters = build_native_filters(chart_ids)
-    dashboard_id = ensure_dashboard(session, headers, position_json, native_filters)
+    dashboard_id = ensure_dashboard(session, headers, position_json, native_filters, chart_ids)
     print(f"Dashboard ready: id={dashboard_id}")
 
     for key, chart_id in chart_ids.items():

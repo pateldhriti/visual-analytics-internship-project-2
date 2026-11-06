@@ -7,7 +7,8 @@ import SupersetEmbed from "../components/SupersetEmbed.jsx";
 const INTRO =
   "Windsor has 19,883 purpose-built rental units. Each October, CMHC surveys them for rent, " +
   "vacancy and how often tenants move. This story follows those measures from 2020 to 2025 and " +
-  "across the area's seven rental zones.";
+  "across the area's seven rental zones. In the dashboard below, click any zone to filter the " +
+  "zone charts and see that zone explained in plain language.";
 
 const NARRATIVE = [
   "Rents rose every year. The average rent across all unit sizes went from $953 a month in 2020 " +
