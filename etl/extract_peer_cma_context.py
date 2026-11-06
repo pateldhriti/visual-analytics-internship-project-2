@@ -6,7 +6,8 @@ files the project already downloads, for the combined Story 5 views.
                    -> renter households by income band, median renter income,
                       renters spending 30%+ of income on shelter
     98-401-X2021002 Census Profile (2021)
-                   -> private households, renter households, median household
+                   -> population in 2016 and 2021, private households and the
+                      people in them, renter households, median household
                       income, % of tenants spending 30%+, median rent paid
     34-10-0154-01  monthly housing starts and completions
                    -> yearly starts and completions (total and apartments),
@@ -76,7 +77,10 @@ TENURE_COLS = {"Tenure (3):Total - Tenure[1]": "Total", "Tenure (3):Renter[3]": 
 # release's characteristic names; a name check below guards against a
 # re-numbered release.
 PROFILE_ITEMS = {
+    1: ("population_2021", "Total", "Population, 2021"),
+    2: ("population_2016", "Total", "Population, 2016"),
     50: ("private_households", "Total", "Total - Private households by household size"),
+    56: ("persons_in_private_households", "Total", "Number of persons in private households"),
     1416: ("renter_households", "Renter", "Renter"),
     243: ("median_household_income", "Total", "Median total income of household in 2020"),
     1492: ("pct_spending_30pct_plus", "Renter", "% of tenant households spending 30% or more"),

@@ -131,7 +131,7 @@ Build Story 5's dashboard ("How do affordability, rental conditions, and
 supply fit together?"), the combined dashboard: every chart reads a view in
 `sql/story5_views.sql` that joins two stories (renter incomes x rents,
 incomes x comparison cities, completions x vacancy, construction x
-comparison cities), with a Years filter. Needs `extract_peer_cma_context.py`
+comparison cities, completions x population growth), with a Years filter. Needs `extract_peer_cma_context.py`
 and the load step run first; method and findings in
 [docs/story5_combined_analysis.md](../docs/story5_combined_analysis.md):
 ```
