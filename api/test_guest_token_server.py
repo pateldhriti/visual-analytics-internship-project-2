@@ -35,7 +35,7 @@ class FakeClient:
         return f"token-for-{embedded_uuid}"
 
 
-@pytest.mark.parametrize("name, dashboard_id", [("story1", 3), ("story2", 4), ("story3", 7), ("story4", 6)])
+@pytest.mark.parametrize("name, dashboard_id", [("story1", 3), ("story2", 4), ("story3", 7), ("story4", 6), ("story5", 8)])
 def test_each_story_dashboard_returns_token_and_uuid(name, dashboard_id):
     client = FakeClient()
     status, body = server.issue_token(client, name)
@@ -45,12 +45,12 @@ def test_each_story_dashboard_returns_token_and_uuid(name, dashboard_id):
     assert client.requested_ids == [dashboard_id]
 
 
-@pytest.mark.parametrize("name", ["story5", "", None, "3", 3])
+@pytest.mark.parametrize("name", ["story6", "", None, "8", 8])
 def test_unknown_dashboard_is_rejected_without_calling_superset(name):
     client = FakeClient()
     status, body = server.issue_token(client, name)
     assert status == 404
-    assert body["allowed"] == ["story1", "story2", "story3", "story4"]
+    assert body["allowed"] == ["story1", "story2", "story3", "story4", "story5"]
     assert client.requested_ids == []
 
 
