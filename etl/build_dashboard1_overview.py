@@ -62,8 +62,9 @@ def province_filter(value: str = "Ontario"):
 
 NEW_CHARTS = {
     "kpi-rent": {
-        "slice_name": "Windsor Average Rent (Apartment)",
-        "description": "Oct-25, apartment scope -- warehouse.v_dashboard1_rental_yoy.",
+        "slice_name": "Windsor Average Rent",
+        "legacy_names": ["Windsor Average Rent (Apartment)"],
+        "description": "Average monthly rent, all unit sizes, apartments and row houses, Windsor CMA, Oct-25 -- the same figure as Story 2's benchmark card. warehouse.v_dashboard1_rental_yoy.",
         "dataset_id": DATASET_RENTAL_YOY,
         "viz_type": "big_number_total",
         "params": {
@@ -77,13 +78,14 @@ NEW_CHARTS = {
             "y_axis_format": "$,.0f",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Latest CMHC survey -- Oct-25",
+            "subheader": "Windsor benchmark · Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
     "kpi-vacancy": {
-        "slice_name": "Windsor Vacancy Rate (Apartment)",
-        "description": "Oct-25, apartment scope -- warehouse.v_dashboard1_rental_yoy.",
+        "slice_name": "Windsor Vacancy Rate",
+        "legacy_names": ["Windsor Vacancy Rate (Apartment)"],
+        "description": "Vacancy rate, all unit sizes, apartments and row houses, Windsor CMA, Oct-25 -- the same figure as Story 2's benchmark card. warehouse.v_dashboard1_rental_yoy.",
         "dataset_id": DATASET_RENTAL_YOY,
         "viz_type": "big_number_total",
         "params": {
@@ -96,12 +98,13 @@ NEW_CHARTS = {
             "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Latest CMHC survey -- Oct-25",
+            "subheader": "Windsor benchmark · Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
     "kpi-stock": {
-        "slice_name": "Windsor Rental Stock (Combined)",
+        "slice_name": "Windsor Rental Stock",
+        "legacy_names": ["Windsor Rental Stock (Combined)"],
         "description": "Oct-25, Combined dwelling scope (not Apartment -- rental-stock universe isn't published at Apartment scope in this project's data) -- warehouse.v_dashboard1_rental_yoy.",
         "dataset_id": DATASET_RENTAL_YOY,
         "viz_type": "big_number_total",
@@ -116,12 +119,13 @@ NEW_CHARTS = {
             "y_axis_format": ",d",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Latest CMHC survey -- Oct-25, Combined scope",
+            "subheader": "Windsor benchmark · Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
     "kpi-turnover": {
-        "slice_name": "Windsor Turnover Rate (Combined)",
+        "slice_name": "Windsor Turnover Rate",
+        "legacy_names": ["Windsor Turnover Rate (Combined)"],
         "description": "Oct-25, Combined dwelling scope -- warehouse.v_dashboard1_rental_yoy.",
         "dataset_id": DATASET_RENTAL_YOY,
         "viz_type": "big_number_total",
@@ -135,7 +139,7 @@ NEW_CHARTS = {
             "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Latest CMHC survey -- Oct-25, Combined scope",
+            "subheader": "Windsor benchmark · Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
@@ -278,6 +282,10 @@ def ensure_chart(session, headers, spec: dict) -> int:
         "params": json.dumps(spec["params"]),
     }
     existing = find_existing(session, headers, "chart", "slice_name", spec["slice_name"])
+    for old_name in spec.get("legacy_names", []):
+        if existing:
+            break
+        existing = find_existing(session, headers, "chart", "slice_name", old_name)
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/chart/{existing}", headers=headers, json=body)
         resp.raise_for_status()
@@ -438,15 +446,24 @@ if __name__ == "__main__":
         print(f"Chart ready: {spec['slice_name']} (id={chart_id})")
 
     position_json = build_position_json(chart_ids)
+    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
+    # Merge into the stored metadata rather than replacing it: Superset's
+    # frontend keeps its own keys there (cross-filter configuration, colour
+    # domain, ...). Dropping them makes it try to re-save on the next load,
+    # which fails for anonymous viewers (401) and sends them to the login
+    # page -- the problem found and fixed on the Story 2 dashboard.
+    metadata = {}
+    if existing:
+        current = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers)
+        current.raise_for_status()
+        metadata = json.loads(current.json()["result"]["json_metadata"] or "{}")
+    metadata.update({"native_filter_configuration": build_native_filters(), "color_scheme": COLOR_SCHEME})
     body = {
         "dashboard_title": DASHBOARD_TITLE,
         "published": True,
         "position_json": json.dumps(position_json),
-        "json_metadata": json.dumps(
-            {"native_filter_configuration": build_native_filters(), "color_scheme": COLOR_SCHEME}
-        ),
+        "json_metadata": json.dumps(metadata),
     }
-    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers, json=body)
         dashboard_id = existing

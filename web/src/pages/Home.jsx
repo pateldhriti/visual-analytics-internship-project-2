@@ -122,14 +122,18 @@ const HOME_KPIS = [
     value: "$1,451",
     accent: "blue",
     trend: "up",
-    caption: "Windsor CMA, October 2025",
+    // Story 2's figure (apartments + row houses). Story 4/5 show $1,454
+    // because the city comparison is apartments only -- the caption says which.
+    caption: "Windsor CMA, apartments + row houses, October 2025",
   },
   {
-    label: "New housing starts",
-    value: "17,786",
+    // Windsor's own starts, the same figure as Story 3's dashboard card
+    // (warehouse.v_story3_windsor_supply_annual); was an Ontario quarter.
+    label: "Homes started in Windsor",
+    value: "1,262",
     accent: "teal",
-    trend: "up",
-    caption: "Ontario, Second Quarter 2026",
+    trend: "down",
+    caption: "Windsor CMA, 2025",
   },
   {
     label: "Windsor apartment vacancy rank",
@@ -162,13 +166,14 @@ const EXPLORER_METRICS = [
     label: "Supply pipeline",
     max: 162138,
     unit: "units",
+    // Windsor CMA, 2025 -- the same figures as the Story 3 dashboard.
     rows: [
-      { label: "Starts", value: 17786 },
-      { label: "Completions", value: 14083 },
-      { label: "Under construction", value: 162138 },
+      { label: "Starts", value: 1262 },
+      { label: "Completions", value: 1671 },
+      { label: "Under construction", value: 1635 },
     ],
     caption:
-      "CMHC Starts, Completions and Units Under Construction, Ontario, Second Quarter 2026 -- Ontario-wide only, no Windsor-specific figure yet.",
+      "CMHC Starts and Completions Survey (StatCan 34-10-0154-01), Windsor CMA, 2025; under construction at year end.",
     to: "/stories/housing-supply",
   },
   {
