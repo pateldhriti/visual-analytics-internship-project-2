@@ -22,8 +22,9 @@ Row counts are from the local warehouse on 5 November 2026, after `etl/refresh_a
 | `fact_starts_completions` | warehouse | 50 | `docs/data_dictionary_supply.md` |
 | `fact_census_profile` | warehouse | 360 | `docs/data_dictionary_census_comparison.md`, section 1 |
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
+| `fact_peer_cma_context` | warehouse | 500 | [Section 2.4](#24-fact_peer_cma_context) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
-| `v_*` views (23) | warehouse | — | [Section 4](#4-views) |
+| `v_*` views (29) | warehouse | — | [Section 4](#4-views) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
 
 ## How the tables connect
@@ -36,6 +37,8 @@ The fact tables share dimensions, which is what lets two stories be combined in 
 | `income_band_key` | `fact_shelter_cost` (StatCan income brackets) ↔ `fact_rental_market` (CMHC renter income quintiles, Table 3.1.8) |
 | `period_key` | Census year 2021 and CMHC survey months Oct-20 to Oct-25 across all three CMHC/StatCan facts |
 | `zone_key` | `fact_rental_market` (Windsor zones) ↔ `fact_rental_market_comparison` (comparison CMAs) |
+| City (CMA) | `fact_peer_cma_context.cma_name` (Windsor and the 4 comparison CMAs) ↔ `fact_rental_market_comparison` / `v_story4_rent_comparison` market names (Story 5) |
+| Year | `fact_windsor_starts_completions.period_year` ↔ the October survey year in `fact_rental_market` (Story 5) |
 | Windsor CMA | `geography_key` 2021S0503559 (StatCan), `dim_zone` "Windsor CMA" (CMHC), `dguid` 2011S0503559 in `fact_windsor_starts_completions` (older vintage of the same area) |
 
 ---
@@ -95,7 +98,7 @@ The fact tables share dimensions, which is what lets two stories be combined in 
 
 ### 2.1 `fact_shelter_cost`
 
-**Source:** StatCan Table 98-10-0252-01, Shelter-cost-to-income ratio by tenure, 2021 Census (2020 incomes), Windsor CMA. **Grain:** one row per geography × period × income band × household type × tenure × housing suitability × dwelling condition × statistic × shelter-cost ratio. **Used by:** Story 1, Dashboard 1.
+**Source:** StatCan Table 98-10-0252-01, Shelter-cost-to-income ratio by tenure, 2021 Census (2020 incomes), Windsor CMA. **Grain:** one row per geography × period × income band × household type × tenure × housing suitability × dwelling condition × statistic × shelter-cost ratio. **Used by:** Story 1, Dashboard 1, Story 5.
 
 | Column | Meaning | Values / unit |
 |---|---|---|
@@ -148,6 +151,21 @@ Notes: In Story 1's scope, the only suppressed cells (40) are the median/average
 | `dwelling_type` | Structure type (same labels as `fact_starts_completions`) | `Singles`, `Semis`, `Row`, `Apartment and Other`, `Total` |
 | `units` | Number of dwelling units | units |
 
+### 2.4 `fact_peer_cma_context`
+
+**Source:** Windsor's and the four comparison CMAs' rows (London, Hamilton, St. Catharines-Niagara, Kitchener-Cambridge-Waterloo) from three StatCan files: 98-10-0252-01, Census Profile 98-401-X2021002 and 34-10-0154-01 (`etl/extract_peer_cma_context.py`). **Grain:** one row per city × source × indicator × tenure × category × year, long format. **Used by:** Story 5.
+
+| Column | Meaning | Values / unit |
+|---|---|---|
+| `cma_code` | Last 3 digits of the CMA's DGUID, used to match cities across files | `559` Windsor, `555` London, `537` Hamilton, `539` St. Catharines-Niagara, `541` Kitchener-Cambridge-Waterloo |
+| `cma_name` | City, spelled as in Story 4 | e.g. `Windsor CMA` |
+| `source_table` | StatCan table the row came from | `98-10-0252-01`, `98-401-X2021002`, `34-10-0154-01` |
+| `indicator` | What is counted | 98-10-0252-01: `households`, `households_30pct_plus`, `median_household_income`, `average_household_income`. 98-401-X2021002: `population_2016`, `population_2021`, `private_households`, `persons_in_private_households`, `renter_households`, `median_household_income`, `pct_spending_30pct_plus`, `median_monthly_shelter_cost`. 34-10-0154-01: `starts`, `completions` |
+| `tenure` | Whose figure | `Total`, `Renter`, or empty |
+| `category` | Breakdown | income band label (98-10-0252-01), `Total` or `Apartment and Other` (34-10-0154-01), else empty |
+| `period_year` | Year | 2021 for Census rows (incomes are for 2020); 2016 to the last full calendar year for construction |
+| `value` | The figure | households, people, dollars, % or units, by indicator |
+
 ---
 
 ## 3. `raw.load_audit`
@@ -173,7 +191,7 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 
 | View | One row per | Used by |
 |---|---|---|
-| `v_story1_burden_by_tenure` | tenure: burdened households, total, burden rate % | Story 1, Dashboard 1, Story 5 |
+| `v_story1_burden_by_tenure` | tenure: burdened households, total, burden rate % | Story 1, Dashboard 1 |
 | `v_story1_burden_by_income_band` | income bracket: burden rate % | Story 1 |
 | `v_story1_burden_by_household_type` | household type: burden rate % | Story 1 |
 | `v_story1_burden_severity` | tenure: burdened split into 30%–<100% and 100%+ | Story 1 |
@@ -183,16 +201,22 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story2_vacancy_trend` | dwelling type × bedroom type × survey year: vacancy rate | Story 2 |
 | `v_story2_turnover_by_bedroom` | dwelling type × bedroom type × survey year: turnover rate | Story 2 |
 | `v_story2_rent_by_zone_bedroom` | zone × bedroom type × survey year: average rent | Story 2 |
-| `v_story2_zone_snapshot` | zone: Oct-25 rent, vacancy, units, turnover, share of stock | Story 2, Story 5 |
+| `v_story2_zone_snapshot` | zone: Oct-25 rent, vacancy, units, turnover, share of stock | Story 2 |
 | `v_story2_vacancy_by_zone_trend` | zone × period: vacancy rate | Story 2 |
 | `v_story2_zone_explanation` | zone: Oct-25 figures, Windsor CMA figures, rank, and plain-language comparison sentences computed from them | Story 2 explanation panel |
 | `v_story2_zone_bedroom_explanation` | zone × unit size (Studio, 1, 2, 3+ bedroom, Total): the same panel figures and sentences, compared with Windsor's figure for the same unit size; suppressed cells say "not published" | Story 2 panel, through the virtual dataset `story2_panel_by_unit_size` (keeps the Bedroom Type filter's unit size, else Total) |
 | `v_story3_starts_completions_by_dwelling_type` | province × period × activity × dwelling type (CMHC quarterly) | Dashboard 1 |
 | `v_story3_supply_per_1000_households` | province × period: starts total; the per-1,000 rate is deliberately NULL because the source has no Windsor figure | Story 3 (earlier version) |
-| `v_story3_windsor_supply_annual` | year × activity × dwelling type: Windsor units (flags partial years) | Story 3, Story 5 |
+| `v_story3_windsor_supply_annual` | year × activity × dwelling type: Windsor units (flags partial years) | Story 3 |
 | `v_story3_windsor_supply_per_1000_households` | year: Windsor starts and completions per 1,000 households (2021 household count) | Story 3 |
 | `v_story4_vacancy_comparison` | market × period: vacancy rate | Story 4 |
-| `v_story4_rent_comparison` | market × period: average 2-bedroom rent | Story 4, Story 5 |
+| `v_story4_rent_comparison` | market × period: average 2-bedroom rent | Story 4; Story 5 through `v_story5_peer_affordability` |
 | `v_story4_affordability_gap` | market: rent growth %; renter income growth and the gap index stay NULL until an income-growth source exists (`docs/affordability_gap_index.md`) | Story 4 |
 | `v_dashboard1_rental_yoy` | metric × dwelling type: Windsor previous vs latest survey and the change | Dashboard 1 |
 | `v_dashboard1_cma_benchmark` | metric: Windsor vs median of the 5 CMAs, with rank | Dashboard 1 |
+| `v_story5_income_bands` | income band: lower and upper bound, for counting households below an income | Story 5 views |
+| `v_story5_rent_affordability` | unit size: Windsor Oct-25 rent, income needed, median renter income, renters who cannot afford it | Story 5 (Story 1 + 2) |
+| `v_story5_peer_affordability` | city: 2-bedroom rent, median renter income, rent as % of income, % who cannot afford, % spending 30%+ | Story 5 (Story 1 + 4) |
+| `v_story5_supply_vs_rental_market` | year 2020–2025: Windsor starts and completions, October vacancy, rent and rent change | Story 5 (Story 3 + 2) |
+| `v_story5_peer_construction` | city × year: starts, completions, starts per 1,000 households, apartment share | Story 5 (Story 3 + 4) |
+| `v_story5_supply_vs_demand` | city: 2016–2021 population growth, homes needed, homes completed 2016–2020, built per home needed | Story 5 (Story 3 + Census population) |

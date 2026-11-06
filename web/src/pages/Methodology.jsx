@@ -10,13 +10,13 @@ const SOURCES = [
   {
     name: "Shelter-cost-to-income ratio by tenure (Table 98-10-0252-01), 2021 Census",
     agency: "Statistics Canada",
-    use: "Story 1: who spends 30% or more of income on housing.",
+    use: "Story 1: who spends 30% or more of income on housing. Story 5: renter incomes in Windsor and the four comparison cities.",
     url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=9810025201",
   },
   {
     name: "Census Profile, 2021 (98-401-X2021002)",
     agency: "Statistics Canada",
-    use: "Background figures such as the number of households.",
+    use: "Background figures such as the number of households. Story 5: population growth, household size and renters' shelter-cost burden in all five cities.",
     url: "https://www150.statcan.gc.ca/n1/en/catalogue/98-401-X2021002",
   },
   {
@@ -34,7 +34,7 @@ const SOURCES = [
   {
     name: "Housing starts, under construction and completions, selected CMAs, monthly (Table 34-10-0154-01)",
     agency: "Statistics Canada (CMHC survey)",
-    use: "Story 3: homes started and completed in Windsor, from 2016.",
+    use: "Story 3: homes started and completed in Windsor, from 2016. Story 5: the same counts for the four comparison cities.",
     url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410015401",
   },
   {
@@ -59,12 +59,16 @@ const YEARS = [
   ["Rental market (Story 2)", "CMHC survey taken every October, 2020 to 2025."],
   ["Comparison with other cities (Story 4)", "CMHC survey, October 2024 and October 2025."],
   ["Housing supply (Story 3)", "Monthly, January 2016 to the latest month published."],
+  [
+    "Combined analysis (Story 5)",
+    "Joins the sources above; each chart states the years it combines.",
+  ],
 ];
 
 const RULES = [
   {
-    term: "Different years are not mixed into one number",
-    text: "Figures from different years appear side by side, each labelled with its year. Where the site compares them, for example 2020 income with 2025 rent, it says so and explains the gap.",
+    term: "Different years are labelled when combined",
+    text: "Stories 1 to 4 keep each figure to its own year. Story 5 combines sources, sometimes from different years: for example, it compares 2020 incomes with 2025 rents. Each such figure says which years it uses and why the result is an upper bound or an estimate.",
   },
   {
     term: "Places are matched exactly",
@@ -77,6 +81,10 @@ const RULES = [
   {
     term: "Reliability is shown",
     text: "CMHC grades each figure from a (excellent) to d (fair, use with caution). Figures graded d are flagged where they are explained.",
+  },
+  {
+    term: "How the stories are combined",
+    text: "Story 5 joins the sources on what they share: the renter, the city and the year. A rent is counted as affordable to a household earning at least 12 times the rent divided by 0.30 (the 30% rule).",
   },
   {
     term: "Rounding",
