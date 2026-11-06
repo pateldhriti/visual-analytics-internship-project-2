@@ -173,6 +173,22 @@ CREATE INDEX idx_fact_rental_market_dwelling_type ON warehouse.fact_rental_marke
 CREATE INDEX idx_fact_rental_market_tenure ON warehouse.fact_rental_market (tenure_key);
 CREATE INDEX idx_fact_rental_market_income_band ON warehouse.fact_rental_market (income_band_key);
 
+-- Performance indexes for the dashboards' slowest views (measured Nov 2026,
+-- docs/superset_performance.md).
+-- Every Story 1 view reads only the point-estimate rows at total housing
+-- suitability and total dwelling condition: about 1/27 of
+-- fact_shelter_cost. A partial index on exactly those rows lets Postgres
+-- skip the rest instead of scanning all 90,720.
+CREATE INDEX idx_fact_shelter_cost_story_rows ON warehouse.fact_shelter_cost
+    (tenure_key, income_band_key, household_type_key, shelter_cost_ratio)
+    WHERE statistic = 'Number of private households'
+      AND housing_suitability = 'Total - Housing suitability'
+      AND dwelling_condition = 'Total - Dwelling condition';
+-- The Story 2 / Dashboard 1 views pick one metric for one or two survey
+-- periods, then a zone.
+CREATE INDEX idx_fact_rental_market_metric_period ON warehouse.fact_rental_market
+    (metric_type, period_key, zone_key);
+
 -- Source: CMHC Canada RMS 2025 (Table 1.0, apartment-only, national
 -- comparator CMAs) -- a genuinely separate workbook from CMHC Windsor RMS
 -- 2025 above, so it gets its own fact table per this schema's "one table

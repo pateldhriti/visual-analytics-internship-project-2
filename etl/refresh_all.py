@@ -76,6 +76,28 @@ def run_step(script_name: str) -> float:
     return time.monotonic() - start
 
 
+# Superset keeps chart results for 24 hours in Redis database 4
+# (DATA_CACHE_CONFIG in docker/superset_config.py). After a reload that
+# cache is cleared so dashboards show the new data straight away.
+REDIS_CONTAINER = "windsor_housing_redis"
+CHART_CACHE_REDIS_DB = "4"
+
+
+def clear_chart_cache() -> None:
+    try:
+        result = subprocess.run(
+            ["docker", "exec", REDIS_CONTAINER, "redis-cli", "-n", CHART_CACHE_REDIS_DB, "FLUSHDB"],
+            capture_output=True, text=True, timeout=30,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        print(f"\n=== chart cache: not cleared ({exc}); it expires within 24 hours ===", flush=True)
+        return
+    if result.returncode == 0:
+        print("\n=== chart cache cleared (Superset will recompute charts on next view) ===", flush=True)
+    else:
+        print(f"\n=== chart cache: not cleared ({result.stderr.strip()}); it expires within 24 hours ===", flush=True)
+
+
 def main(skip_superset: bool) -> None:
     results = []
 
@@ -88,6 +110,7 @@ def main(skip_superset: bool) -> None:
     elif superset_reachable():
         elapsed = run_step(SUPERSET_STEP)
         results.append((SUPERSET_STEP, elapsed))
+        clear_chart_cache()
     else:
         print(
             f"\n=== {SUPERSET_STEP}: skipped (Superset not reachable at {SUPERSET_URL}) ===",

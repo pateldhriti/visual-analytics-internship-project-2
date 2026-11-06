@@ -34,21 +34,25 @@ const DEFINITIONS = [
 ];
 
 const LIMITATIONS = [
-  "The narrative and KPI cards above are Ontario-wide, from CMHC's quarterly table (Second Quarter 2026), which has no Windsor breakdown. The dashboard below is Windsor CMA specifically, from StatCan table 34-10-0154-01 (CMHC's survey at CMA level, 2016 onward).",
+  "The KPI cards and the dashboard are Windsor CMA, 2025, from StatCan table 34-10-0154-01 (CMHC's survey at CMA level, 2016 onward) -- the same figures as the Story 3 dashboard. The two narrative paragraphs describe Ontario as a whole, from CMHC's quarterly table (Second Quarter 2026), for context.",
   "Starts per 1,000 households divides every year by the 2021 Census household count (165,665), since no annual household estimate is available -- read it as a trend against a fixed base.",
 ];
 
 const FILTERS = [
-  { label: "Geography", value: "Ontario" },
-  { label: "Period", value: "Second Quarter 2026" },
+  { label: "Geography", value: "Windsor CMA" },
+  { label: "Period", value: "2025" },
   { label: "Dwelling type", value: "All types" },
 ];
 
+// Windsor CMA, 2025 -- the same figures as the Story 3 dashboard's cards
+// (warehouse.v_story3_windsor_supply_annual and
+// v_story3_windsor_supply_per_1000_households). These were Ontario figures
+// before, which did not match the Windsor dashboard embedded below.
 const KPIS = [
-  { label: "New housing starts", value: "17,786", accent: "teal", trend: "up" },
-  { label: "Completions", value: "14,083", accent: "blue", trend: "flat" },
-  { label: "Units under construction", value: "162,138", accent: "violet", trend: "up" },
-  { label: "Apartment share of starts", value: "70%", accent: "rose", trend: "flat" },
+  { label: "Homes started in Windsor, 2025", value: "1,262", accent: "teal", trend: "down" },
+  { label: "Homes completed, 2025", value: "1,671", accent: "blue", trend: "flat" },
+  { label: "Under construction at year end", value: "1,635", accent: "violet", trend: "flat" },
+  { label: "Apartment share of 2025 starts", value: "60%", accent: "rose", trend: "up" },
 ];
 
 export default function StoryHousingSupply() {

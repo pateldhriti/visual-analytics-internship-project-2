@@ -109,7 +109,17 @@ CACHE_CONFIG = {
     "CACHE_REDIS_DB": 1,
 }
 
-DATA_CACHE_CONFIG = CACHE_CONFIG
+# Chart query results. The data only changes when etl/refresh_all.py
+# reloads the warehouse (weekly), so results are kept for 24 hours instead
+# of the 5-minute default above -- measured in docs/superset_performance.md.
+# They live in their own Redis database (4) so refresh_all.py can clear
+# exactly this cache after a reload, and visitors never see old figures.
+DATA_CACHE_CONFIG = {
+    **CACHE_CONFIG,
+    "CACHE_DEFAULT_TIMEOUT": 86400,
+    "CACHE_KEY_PREFIX": "superset_data_",
+    "CACHE_REDIS_DB": 4,
+}
 
 # Real gap found while reviewing this file for hosted reliability: only
 # the metadata/chart-data cache above was Redis-backed. Superset's

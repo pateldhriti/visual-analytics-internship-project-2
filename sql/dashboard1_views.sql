@@ -16,16 +16,17 @@ CREATE SCHEMA IF NOT EXISTS warehouse;
 
 -- ============================================================
 -- v_dashboard1_rental_yoy
--- One row per metric: Oct-24 vs Oct-25, Windsor CMA. Rent and vacancy are
--- Apartment-scope (that's what CMHC's workbook publishes a Total-bedroom
--- figure for, Oct-24/Oct-25, matching the KPI tiles elsewhere on this
--- project's site). Turnover and rental-stock (universe) are Combined-scope
--- instead -- the Apartment scope has no turnover/universe figure at all
--- in this project's data, only Combined does (confirmed directly against
--- fact_rental_market; not assumed to exist under Apartment just because
--- rent and vacancy do). dwelling_type_label is included in the output so
--- that scope difference is visible, not hidden behind one blanket
--- "Apartment" label.
+-- One row per metric: Oct-24 vs Oct-25, Windsor CMA, all unit sizes,
+-- Combined scope (apartments and row houses) for all four metrics.
+--
+-- KPI consistency fix (Nov 2026): rent and vacancy used to be
+-- Apartment-scope while turnover and stock were Combined, so this
+-- dashboard showed $1,287 / 3.7% while Story 2's headline cards showed
+-- $1,293 / 3.6% for "Windsor average rent / vacancy". All four now use the
+-- Combined scope -- the only scope with all four metrics -- so the same
+-- KPI shows the same number on every dashboard. Apartment-only figures
+-- remain where they are needed: Story 4 compares Windsor with other
+-- cities, and CMHC publishes that comparison for apartments only.
 -- ============================================================
 CREATE OR REPLACE VIEW warehouse.v_dashboard1_rental_yoy AS
 WITH metrics AS (
@@ -42,10 +43,9 @@ WITH metrics AS (
     WHERE z.zone_label = 'Windsor CMA'
       AND b.bedroom_type_label = 'Total'
       AND p.period_label IN ('Oct-24', 'Oct-25')
-      AND (
-          (f.metric_type IN ('average_rent', 'vacancy_rate') AND d.dwelling_type_label = 'Apartment')
-          OR (f.metric_type IN ('turnover_rate', 'universe') AND d.dwelling_type_label = 'Combined')
-      )
+      AND f.metric_type IN ('average_rent', 'vacancy_rate', 'turnover_rate', 'universe')
+      AND d.dwelling_type_label = 'Combined'
+      AND f.income_band_key IS NULL
 )
 SELECT
     m1.metric_type AS metric,
