@@ -58,11 +58,48 @@ def period_filter(period: str = "Oct-25"):
         "expressionType": "SIMPLE",
     }
 
+ACCENT = "#2a78d6"  # project blue
+PEER_GREY = "#aab6c8"
+MARKETS = [
+    "Windsor CMA",
+    "Hamilton CMA",
+    "Kitchener-Cambridge-Waterloo CMA",
+    "London CMA",
+    "St. Catharines-Niagara CMA",
+]
+# Windsor in the project blue, the four peers in one grey, on every chart.
+MARKET_COLORS = {m: (ACCENT if m == "Windsor CMA" else PEER_GREY) for m in MARKETS}
+
+
+def market_bar_params(sql: str, label: str, number_format: str, filters: list) -> dict:
+    """Horizontal ECharts bar, one bar per city. Each city is its own
+    series (stacked, so bars keep full width) so Windsor can be coloured
+    differently from the peers; the x-axis is the same column under another
+    label because Superset rejects identical x-axis and series labels."""
+    return {
+        "x_axis": {"expressionType": "SQL", "sqlExpression": "market", "label": "City"},
+        "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label}],
+        "groupby": ["market"],
+        "stack": True,
+        "orientation": "horizontal",
+        "adhoc_filters": filters,
+        "row_limit": 20,
+        "color_scheme": COLOR_SCHEME,
+        "show_value": True,
+        "show_legend": False,
+        "rich_tooltip": False,
+        "y_axis_format": number_format,
+        "x_axis_title": "",
+        "y_axis_title": "",
+        "truncateYAxis": False,
+        "y_axis_bounds": [None, None],
+    }
+
 
 CHARTS = {
     "kpi-vacancy": {
         "slice_name": "Windsor Apartment Vacancy Rate",
-        "description": "Oct-25, apartment scope, Total bedroom type -- warehouse.v_story4_vacancy_comparison.",
+        "description": "Windsor's apartment vacancy rate, all unit sizes, Oct-25. Apartments only because CMHC publishes the city comparison for apartments only (Story 2's 3.6% includes row houses). warehouse.v_story4_vacancy_comparison.",
         "dataset_id": DATASET_VACANCY,
         "viz_type": "big_number_total",
         "params": {
@@ -75,13 +112,13 @@ CHARTS = {
             "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Latest CMHC survey -- Oct-25",
+            "subheader": "apartments only · all unit sizes · Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
     "kpi-rent": {
         "slice_name": "Windsor 2-Bedroom Apartment Rent",
-        "description": "Oct-25, apartment scope -- warehouse.v_story4_rent_comparison.",
+        "description": "Windsor's average 2-bedroom apartment rent, Oct-25 -- the unit size CMHC uses to compare cities. warehouse.v_story4_rent_comparison.",
         "dataset_id": DATASET_RENT,
         "viz_type": "big_number_total",
         "params": {
@@ -95,13 +132,13 @@ CHARTS = {
             "y_axis_format": "$,.0f",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Latest CMHC survey -- Oct-25",
+            "subheader": "2-bedroom apartments · per month · Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
     "kpi-rent-growth": {
         "slice_name": "Windsor Rent Growth (Oct-24 to Oct-25)",
-        "description": "CMHC matched-sample rent growth -- warehouse.v_story4_affordability_gap.",
+        "description": "How much 2-bedroom apartment rent rose from Oct-24 to Oct-25 in the same buildings (CMHC's fixed sample), so new, pricier buildings do not inflate it. warehouse.v_story4_affordability_gap.",
         "dataset_id": DATASET_AFFORDABILITY_GAP,
         "viz_type": "big_number_total",
         "params": {
@@ -114,103 +151,55 @@ CHARTS = {
             "y_axis_format": ".1%",
             "header_font_size": 0.5,
             "subheader_font_size": 0.15,
-            "subtitle": "Oct-24 to Oct-25, matched sample",
+            "subheader": "2-bedroom apartments · same units, Oct-24 to Oct-25",
             "color_scheme": COLOR_SCHEME,
         },
     },
     "vacancy-by-market": {
         "slice_name": "Apartment Vacancy Rate by Market (Oct-25)",
-        "description": "Windsor vs. the 4 real comparator CMAs -- warehouse.v_story4_vacancy_comparison.",
+        "description": (
+            "Share of apartments empty and available, Oct-25, Windsor (blue) and four similar Ontario "
+            "cities (grey). Lower means a tighter market where it is harder to find an apartment. "
+            "warehouse.v_story4_vacancy_comparison."
+        ),
         "dataset_id": DATASET_VACANCY,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["market"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
-                    "label": "Vacancy Rate",
-                }
-            ],
-            "adhoc_filters": [period_filter()],
-            "order_desc": True,
-            "row_limit": 10,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": False,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Market",
-            "y_axis_label": "Vacancy Rate (%)",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": market_bar_params("AVG(vacancy_rate_pct) / 100.0", "Vacancy rate", ".1%", [period_filter()]),
     },
     "rent-by-market": {
         "slice_name": "2-Bedroom Apartment Rent by Market (Oct-25)",
-        "description": "Windsor vs. the 4 real comparator CMAs -- warehouse.v_story4_rent_comparison.",
+        "description": (
+            "Average monthly rent for a 2-bedroom apartment, Oct-25, Windsor (blue) and four similar "
+            "Ontario cities (grey). warehouse.v_story4_rent_comparison."
+        ),
         "dataset_id": DATASET_RENT,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["market"],
-            "metrics": [
-                {
-                    "expressionType": "SIMPLE",
-                    "column": {"column_name": "average_rent_2br"},
-                    "aggregate": "AVG",
-                    "label": "Average Rent",
-                }
-            ],
-            "adhoc_filters": [period_filter()],
-            "order_desc": True,
-            "row_limit": 10,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": False,
-            "rich_tooltip": True,
-            "y_axis_format": "$,.0f",
-            "x_axis_label": "Market",
-            "y_axis_label": "Average Rent ($)",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": market_bar_params("AVG(average_rent_2br)", "Average 2-bedroom rent", "$,.0f", [period_filter()]),
     },
     "rent-growth-by-market": {
         "slice_name": "Rent Growth by Market (Oct-24 to Oct-25)",
         "description": (
-            "Real rent-growth component of the affordability-gap index -- "
-            "warehouse.v_story4_affordability_gap. The index itself (rent growth minus renter "
-            "income growth) can't be shown -- income growth isn't available, see the markdown "
-            "note below."
+            "How much 2-bedroom apartment rent rose from Oct-24 to Oct-25 in the same buildings, "
+            "Windsor (blue) and four similar Ontario cities (grey). This is the rent side of the "
+            "affordability-gap index; the income side is not available (see the note below). "
+            "warehouse.v_story4_affordability_gap."
         ),
         "dataset_id": DATASET_AFFORDABILITY_GAP,
-        "viz_type": "dist_bar",
-        "params": {
-            "groupby": ["market"],
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "sqlExpression": "AVG(rent_growth_pct) / 100.0",
-                    "label": "Rent Growth",
-                }
-            ],
-            "adhoc_filters": [],
-            "order_desc": True,
-            "row_limit": 10,
-            "color_scheme": COLOR_SCHEME,
-            "show_legend": False,
-            "rich_tooltip": True,
-            "y_axis_format": ".1%",
-            "x_axis_label": "Market",
-            "y_axis_label": "Rent Growth, Oct-24 to Oct-25 (%)",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": market_bar_params("AVG(rent_growth_pct) / 100.0", "Rent growth", ".1%", []),
     },
 }
 
-AFFORDABILITY_GAP_MARKDOWN = """**Why no single affordability-gap number is shown.** The
-Affordability-Gap Index (AGI) is defined as rent growth minus renter income
-growth over the same period. The rent-growth side above is real, CMHC
-matched-sample data. The renter-income-growth side is `NULL` for every
-market -- no source this project has extracted contains a renter/household
-income time series to compute it from (confirmed directly, not assumed).
-A fabricated number here would look like real data with no way for a
-viewer to tell the difference. Full method note, what would close the
-gap, and the directional read if income growth turns out to be roughly
-uniform across these Ontario CMAs: `docs/affordability_gap_index.md`.
+AFFORDABILITY_GAP_MARKDOWN = """**How to read this dashboard.** Windsor is the blue bar in every chart; the grey bars
+are four Ontario cities of similar size (London, Kitchener-Cambridge-Waterloo, Hamilton,
+St. Catharines-Niagara). All figures are for **apartments only**, October 2025, because CMHC
+publishes the city comparison for apartments only. That is why Windsor's vacancy and rent here
+can differ slightly from Story 2's figures, which also count row houses.
+
+**Why there is no single affordability-gap number.** The gap is rent growth minus the growth of
+renters' incomes. Rent growth is shown above. None of the data sources used in this project
+reports renters' income year by year, so the income side cannot be measured yet, and the
+project does not estimate it.
 """
 
 
@@ -305,7 +294,7 @@ def build_position_json(chart_ids: dict) -> dict:
         },
     }
 
-    position["HEADER-kpis"] = header_node("HEADER-kpis", "Windsor at a Glance")
+    position["HEADER-kpis"] = header_node("HEADER-kpis", "Windsor at a Glance: Apartments, October 2025")
     position["ROW-kpi"] = row_node(
         "ROW-kpi", ["CHART-kpi-vacancy", "CHART-kpi-rent", "CHART-kpi-rent-growth"]
     )
@@ -315,40 +304,77 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-kpi-rent-growth", "ROW-kpi", chart_ids["kpi-rent-growth"], 4
     )
 
-    position["HEADER-vacancy"] = header_node("HEADER-vacancy", "Vacancy Rate Comparison")
+    position["HEADER-vacancy"] = header_node("HEADER-vacancy", "Vacancy: How Easy Is It to Find an Apartment?")
     position["ROW-vacancy"] = row_node("ROW-vacancy", ["CHART-vacancy-by-market"])
     position["CHART-vacancy-by-market"] = chart_node(
-        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 55
+        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 40
     )
 
-    position["HEADER-rent"] = header_node("HEADER-rent", "Rent Comparison")
+    position["HEADER-rent"] = header_node("HEADER-rent", "Rent: What a 2-Bedroom Apartment Costs")
     position["ROW-rent"] = row_node("ROW-rent", ["CHART-rent-by-market"])
     position["CHART-rent-by-market"] = chart_node(
-        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 55
+        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 40
     )
 
-    position["HEADER-rent-growth"] = header_node("HEADER-rent-growth", "Affordability-Gap Index")
+    position["HEADER-rent-growth"] = header_node("HEADER-rent-growth", "Rent Growth: How Fast Rents Rose (Oct-24 to Oct-25)")
     position["ROW-rent-growth"] = row_node("ROW-rent-growth", ["CHART-rent-growth-by-market"])
     position["CHART-rent-growth-by-market"] = chart_node(
-        "CHART-rent-growth-by-market", "ROW-rent-growth", chart_ids["rent-growth-by-market"], 12, 55
+        "CHART-rent-growth-by-market", "ROW-rent-growth", chart_ids["rent-growth-by-market"], 12, 40
     )
 
     position["ROW-note"] = row_node("ROW-note", ["MARKDOWN-affordability-gap"])
     position["MARKDOWN-affordability-gap"] = markdown_node(
-        "MARKDOWN-affordability-gap", "ROW-note", AFFORDABILITY_GAP_MARKDOWN
+        "MARKDOWN-affordability-gap", "ROW-note", AFFORDABILITY_GAP_MARKDOWN, height=26
     )
 
     return position
 
 
-def ensure_dashboard(session, headers, position_json: dict) -> int:
+INTERACTIVE_KEYS = ["vacancy-by-market", "rent-by-market", "rent-growth-by-market"]
+
+
+def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> int:
+    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
+    # Merge into the stored metadata (Superset's frontend keeps its own keys
+    # there). The three ECharts charts can emit cross-filters; here a click
+    # filters nothing -- every chart shows one city's figure against the
+    # others, and the KPI cards are fixed to Windsor -- and the
+    # configuration is written explicitly in the shape the frontend
+    # computes, so it never tries to re-save it (an anonymous viewer's save
+    # fails with 401 and Superset then shows the login page).
+    metadata = {}
+    if existing:
+        current = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers)
+        current.raise_for_status()
+        metadata = json.loads(current.json()["result"]["json_metadata"] or "{}")
+    all_ids = sorted(chart_ids.values())
+    metadata.update(
+        {
+            "color_scheme": COLOR_SCHEME,
+            "label_colors": MARKET_COLORS,
+            "chart_configuration": {
+                str(chart_ids[key]): {
+                    "id": chart_ids[key],
+                    "crossFilters": {"scope": {"rootPath": ["ROOT_ID"], "excluded": all_ids}, "chartsInScope": []},
+                }
+                for key in INTERACTIVE_KEYS
+            },
+            "global_chart_configuration": {
+                "scope": {"rootPath": ["ROOT_ID"], "excluded": all_ids},
+                "chartsInScope": [],
+            },
+            "cross_filters_enabled": True,
+        }
+    )
+    for key, default in (("shared_label_colors", {}), ("timed_refresh_immune_slices", []),
+                         ("expanded_slices", {}), ("refresh_frequency", 0)):
+        metadata.setdefault(key, default)
     body = {
         "dashboard_title": DASHBOARD_TITLE,
         "published": True,
         "position_json": json.dumps(position_json),
-        "json_metadata": json.dumps({"color_scheme": COLOR_SCHEME}),
+        "json_metadata": json.dumps(metadata),
     }
-    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers, json=body)
         resp.raise_for_status()
@@ -369,7 +395,7 @@ if __name__ == "__main__":
         print(f"Chart ready: {spec['slice_name']} (id={chart_id})")
 
     position_json = build_position_json(chart_ids)
-    dashboard_id = ensure_dashboard(session, headers, position_json)
+    dashboard_id = ensure_dashboard(session, headers, position_json, chart_ids)
     print(f"Dashboard ready: id={dashboard_id}")
 
     for key, chart_id in chart_ids.items():
