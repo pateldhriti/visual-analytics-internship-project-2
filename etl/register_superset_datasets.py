@@ -269,6 +269,43 @@ VIEWS = {
             "description": "Windsor's value minus the 4-comparator median, averaged across whatever rows are in scope.",
         },
     ],
+    # Story 5: combined views, each joining two stories (sql/story5_views.sql).
+    "v_story5_rent_affordability": [
+        {
+            "metric_name": "pct_cannot_afford",
+            "expression": "MAX(pct_renters_who_cannot_afford)",
+            "verbose_name": "Renters Who Cannot Afford It (%)",
+            "metric_type": "max",
+            "description": "Share of Windsor renter households (2020 incomes) earning less than 12 x rent / 0.30 for the unit size in scope. One row per unit size, so MAX returns that row's value.",
+        },
+    ],
+    "v_story5_peer_affordability": [
+        {
+            "metric_name": "rent_pct_of_income",
+            "expression": "MAX(rent_pct_of_median_renter_income)",
+            "verbose_name": "2-Bed Rent as % of Median Renter Income",
+            "metric_type": "max",
+            "description": "A year of the city's average 2-bedroom rent as a share of its median renter household income. One row per city.",
+        },
+    ],
+    "v_story5_supply_vs_rental_market": [
+        {
+            "metric_name": "sum_completions",
+            "expression": "SUM(completions)",
+            "verbose_name": "Homes Completed",
+            "metric_type": "sum",
+            "description": "Windsor CMA homes completed in the years in scope.",
+        },
+    ],
+    "v_story5_peer_construction": [
+        {
+            "metric_name": "starts_per_1000",
+            "expression": "ROUND(1000.0 * SUM(starts) / MAX(private_households), 1)",
+            "verbose_name": "Starts per 1,000 Households",
+            "metric_type": "custom",
+            "description": "Homes started per 1,000 households (2021 Census count). Sums starts across the years in scope; group by city.",
+        },
+    ],
 }
 
 

@@ -71,6 +71,7 @@ EMBEDDABLE_DASHBOARDS = {
     "story2": 4,  # Story 2: What is happening in Windsor's rental market?
     "story3": 7,  # Story 3: Is Windsor building enough housing?
     "story4": 6,  # Story 4: How does Windsor compare to similar markets?
+    "story5": 8,  # Story 5: How do affordability, rental conditions, and supply fit together?
 }
 
 # The site's own origins (same variable superset_config.py reads).

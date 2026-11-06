@@ -34,6 +34,9 @@ jobs:
       - name: Run pytest (schema guard and scheduled refresh)
         working-directory: etl
         run: python -m pytest test_scheduled_refresh.py -v
+      - name: Run pytest (Story 5 peer-city extract)
+        working-directory: etl
+        run: python -m pytest test_peer_cma_context.py -v
       - name: Run pytest (guest-token API)
         working-directory: api
         run: python -m pytest test_guest_token_server.py -v

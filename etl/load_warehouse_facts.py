@@ -32,6 +32,9 @@ source, per this project's schema rule (sql/warehouse_schema.sql):
       data/staging/windsor_starts_completions_monthly.csv (1,935 rows,
       Jan-2016 to Sep-2026), from etl/extract_windsor_starts_completions.py
       -- StatCan 34-10-0154-01, Windsor CMA monthly.
+  - fact_peer_cma_context <- data/staging/peer_cma_context.csv, from
+      etl/extract_peer_cma_context.py -- Windsor and the four comparison
+      CMAs' incomes, households and yearly construction (Story 5).
 
 Every dimension key is resolved by joining on real values already verified
 to match the seeded dimension tables exactly (geography DGUID, period
@@ -57,6 +60,7 @@ SHELTER_COST_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_shelter_cos
 CENSUS_PROFILE_LONG_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_census_profile_long.csv"
 RENTAL_MARKET_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv"
 RENTAL_MARKET_HISTORICAL_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market_historical.csv"
+PEER_CMA_CONTEXT_CSV = PROJECT_ROOT / "data" / "staging" / "peer_cma_context.csv"
 RMS_CANADA_COMPARISON_CSV = PROJECT_ROOT / "data" / "staging" / "rms_canada_comparison.csv"
 STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "ontario_canada_starts_completions.csv"
 WINDSOR_STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_starts_completions_monthly.csv"
@@ -369,6 +373,18 @@ def load_windsor_starts_completions_facts(engine) -> dict:
     return {"source_rows": len(source), "loaded_rows": rows}
 
 
+def load_peer_cma_context_facts(engine) -> dict:
+    """Windsor and the four comparison CMAs' incomes, households and
+    construction (staging file from etl/extract_peer_cma_context.py)."""
+    source = pd.read_csv(PEER_CMA_CONTEXT_CSV, dtype={"cma_code": str})
+    out = source[
+        ["cma_code", "cma_name", "source_table", "indicator", "tenure", "category", "period_year", "value"]
+    ].copy()
+    out["period_year"] = out["period_year"].astype(int)
+    rows = copy_dataframe(engine, out, "fact_peer_cma_context")
+    return {"source_rows": len(source), "loaded_rows": rows}
+
+
 if __name__ == "__main__":
     engine = get_engine()
 
@@ -376,7 +392,8 @@ if __name__ == "__main__":
         conn.execute(text(
             "TRUNCATE warehouse.fact_shelter_cost, warehouse.fact_census_profile, "
             "warehouse.fact_rental_market, warehouse.fact_rental_market_comparison, "
-            "warehouse.fact_starts_completions, warehouse.fact_windsor_starts_completions"
+            "warehouse.fact_starts_completions, warehouse.fact_windsor_starts_completions, "
+            "warehouse.fact_peer_cma_context"
         ))
 
     print("Loading fact_shelter_cost...")
@@ -414,11 +431,16 @@ if __name__ == "__main__":
     for key, value in windsor_starts_stats.items():
         print(f"  {key}: {value}")
 
+    print("Loading fact_peer_cma_context...")
+    peer_stats = load_peer_cma_context_facts(engine)
+    for key, value in peer_stats.items():
+        print(f"  {key}: {value}")
+
     print()
     with engine.connect() as conn:
         for table in ("fact_shelter_cost", "fact_census_profile", "fact_rental_market",
                       "fact_rental_market_comparison", "fact_starts_completions",
-                      "fact_windsor_starts_completions"):
+                      "fact_windsor_starts_completions", "fact_peer_cma_context"):
             count = conn.execute(text(f'SELECT COUNT(*) FROM warehouse."{table}"')).scalar()
             print(f"warehouse.{table}: {count} rows")
 

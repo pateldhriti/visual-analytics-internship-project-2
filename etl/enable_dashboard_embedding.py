@@ -1,5 +1,5 @@
 """
-Enable Embedded SDK access for the four story dashboards, so the
+Enable Embedded SDK access for the five story dashboards, so the
 guest-token API (api/guest_token_server.py) can issue tokens for them and
 the React story pages can embed them with embedDashboard().
 
@@ -28,6 +28,7 @@ DASHBOARDS = {
     4: "Story 2: What is happening in Windsor's rental market?",
     7: "Story 3: Is Windsor building enough housing?",
     6: "Story 4: How does Windsor compare to similar markets?",
+    8: "Story 5: How do affordability, rental conditions, and supply fit together?",
 }
 DEFAULT_ORIGINS = "http://localhost:5173"
 

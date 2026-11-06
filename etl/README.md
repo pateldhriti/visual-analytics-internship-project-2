@@ -47,6 +47,7 @@ Each source has its own extract script, writing to `data/staging/`:
 | `extract_rms_canada_comparison.py` | `rms_canada_comparison.csv` (comparator CMAs -- see [docs/comparator_cmas_justification.md](../docs/comparator_cmas_justification.md)) |
 | `extract_cmhc_starts_completions.py` | `ontario_canada_starts_completions.csv` |
 | `extract_windsor_starts_completions.py` | `windsor_starts_completions_monthly.csv` (Windsor CMA, monthly from Jan-2016, StatCan 34-10-0154-01 -- downloads the table zip to `data/raw/statcan/` on first run; `--refresh` re-downloads) |
+| `extract_peer_cma_context.py` | `peer_cma_context.csv` (Windsor and the 4 comparison CMAs: renter incomes by band, Census households and tenant burden, yearly starts and completions -- from the same three StatCan files, for Story 5) |
 
 Optionally, `load_raw_files_to_postgres.py` loads every file under
 `data/raw/` as-is into Postgres's `raw` schema first, for reference --
@@ -94,7 +95,8 @@ reload:
 ### 3. Views and Superset
 
 Apply the SQL view files (`sql/story1_views.sql`, `story2_views.sql`,
-`story3_views.sql`, `story4_views.sql`, `dashboard1_views.sql`) against the
+`story3_views.sql`, `story4_views.sql`, `dashboard1_views.sql`,
+`story5_views.sql`) against the
 warehouse schema:
 ```
 .venv\Scripts\python.exe etl\apply_sql_views.py
@@ -126,14 +128,14 @@ households and a 2016-2025 trend, with a Year filter):
 ```
 
 Build Story 5's dashboard ("How do affordability, rental conditions, and
-supply fit together?" -- one headline conclusion from each of Stories 1-4,
-as pie charts for the three share-of-a-whole conclusions and a bar chart for
-Story 4's ranking, each with its key insight), then render the PNG snapshots
-the React Story 5 page shows (`web/public/story5/`) -- re-run both after a
-data refresh:
+supply fit together?"), the combined dashboard: every chart reads a view in
+`sql/story5_views.sql` that joins two stories (renter incomes x rents,
+incomes x comparison cities, completions x vacancy, construction x
+comparison cities), with a Years filter. Needs `extract_peer_cma_context.py`
+and the load step run first; method and findings in
+[docs/story5_combined_analysis.md](../docs/story5_combined_analysis.md):
 ```
 .venv\Scripts\python.exe etl\build_story5_dashboard.py
-.venv\Scripts\python.exe etl\render_story5_snapshots.py
 ```
 
 Build Story 4's dashboard ("How does Windsor compare to similar
