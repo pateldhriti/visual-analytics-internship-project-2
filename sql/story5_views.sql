@@ -259,3 +259,59 @@ SELECT
     ROUND(100.0 * y.apartment_starts / NULLIF(y.starts, 0), 1) AS apartment_share_of_starts
 FROM yearly y
 JOIN households h ON h.cma_name = y.cma_name;
+
+
+-- ---------------------------------------------------------------------------
+-- v_story5_supply_vs_demand (Story 3 x Census population, all 5 cities)
+-- Did building keep up with population growth between the 2016 and 2021
+-- Censuses? Homes needed = population growth / average household size
+-- (people in private households / private households, 2021). Homes built =
+-- completions in calendar 2016-2020, the five full years closest to the
+-- Census interval (May 2016 to May 2021). A ratio below 1 means fewer homes
+-- were finished than the added population would occupy at 2021 household
+-- sizes.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story5_supply_vs_demand AS
+WITH census AS (
+    SELECT
+        cma_name,
+        MAX(value) FILTER (WHERE indicator = 'population_2016') AS population_2016,
+        MAX(value) FILTER (WHERE indicator = 'population_2021') AS population_2021,
+        MAX(value) FILTER (WHERE indicator = 'private_households') AS private_households,
+        MAX(value) FILTER (WHERE indicator = 'persons_in_private_households') AS persons_in_private_households
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = '98-401-X2021002'
+    GROUP BY cma_name
+),
+built AS (
+    SELECT
+        cma_name,
+        SUM(value) FILTER (WHERE indicator = 'completions') AS homes_completed_2016_2020,
+        SUM(value) FILTER (WHERE indicator = 'starts') AS homes_started_2016_2020,
+        COUNT(DISTINCT period_year) AS years
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = '34-10-0154-01'
+      AND category = 'Total'
+      AND period_year BETWEEN 2016 AND 2020
+    GROUP BY cma_name
+)
+SELECT
+    c.cma_name AS city,
+    (c.cma_name = 'Windsor CMA') AS is_windsor,
+    c.population_2016,
+    c.population_2021,
+    c.population_2021 - c.population_2016 AS population_growth,
+    ROUND(100.0 * (c.population_2021 / c.population_2016 - 1), 1) AS population_growth_pct,
+    ROUND(c.persons_in_private_households / c.private_households, 2) AS persons_per_household,
+    ROUND((c.population_2021 - c.population_2016) * c.private_households / c.persons_in_private_households)
+        AS homes_needed,
+    b.homes_completed_2016_2020,
+    b.homes_started_2016_2020,
+    ROUND(b.homes_completed_2016_2020
+          / ((c.population_2021 - c.population_2016) * c.private_households / c.persons_in_private_households), 2)
+        AS homes_built_per_home_needed,
+    ROUND(100.0 * b.homes_completed_2016_2020 / (c.population_2021 - c.population_2016), 1)
+        AS homes_built_per_100_new_residents
+FROM census c
+JOIN built b ON b.cma_name = c.cma_name
+WHERE b.years = 5;

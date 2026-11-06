@@ -324,7 +324,8 @@ CREATE TABLE warehouse.fact_windsor_starts_completions (
 -- Story 4 rent comparison ("London CMA"), so the two join on name.
 --   98-10-0252-01   households, households_30pct_plus (category = income band),
 --                   median_household_income, average_household_income
---   98-401-X2021002 private_households, renter_households,
+--   98-401-X2021002 population_2016, population_2021, private_households,
+--                   persons_in_private_households, renter_households,
 --                   median_household_income, pct_spending_30pct_plus,
 --                   median_monthly_shelter_cost
 --   34-10-0154-01   starts, completions (category = 'Total' or

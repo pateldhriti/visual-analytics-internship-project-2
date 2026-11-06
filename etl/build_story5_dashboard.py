@@ -12,6 +12,8 @@ so each answers a question no single story can:
        v_story5_supply_vs_rental_market
     4. Is Windsor building as much as its peers? Story 3 starts x Story 4 peer cities
        v_story5_peer_construction
+    5. Did building keep up with population?     Story 3 completions x Census population growth
+       v_story5_supply_vs_demand                 (all 5 cities, 2016-2021)
 
 Layout: one KPI card per question, then a section per question with its
 charts and a note that states the finding in words. Windsor is the blue bar
@@ -45,6 +47,7 @@ DATASET_RENT_AFFORDABILITY = 25  # v_story5_rent_affordability
 DATASET_PEER_AFFORDABILITY = 26  # v_story5_peer_affordability
 DATASET_SUPPLY_MARKET = 27  # v_story5_supply_vs_rental_market
 DATASET_PEER_CONSTRUCTION = 28  # v_story5_peer_construction
+DATASET_SUPPLY_DEMAND = 29  # v_story5_supply_vs_demand
 
 COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
 DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"
@@ -68,6 +71,8 @@ LABEL_COLORS = {
     "Other homes": OTHER_HOMES,
     "Vacancy rate (October)": ACCENT,
     "Rent increase from the previous October": "#d0703c",
+    "Homes needed for population growth": "#d0703c",
+    "Homes completed": OTHER_HOMES,
 }
 
 
@@ -431,6 +436,54 @@ CHARTS = {
             ],
         ),
     },
+    # --- 5. Story 3 x Census population (demand) -------------------------------
+    "demand-ratio": {
+        "slice_name": "Story 5: Homes Completed per Home Needed for Population Growth, by City",
+        "description": (
+            "Homes completed 2016-2020 divided by the homes the 2016-2021 population growth needed at "
+            "2021 household sizes. 1.0 means building kept pace; below 1.0 it fell short. "
+            "warehouse.v_story5_supply_vs_demand."
+        ),
+        "dataset_id": DATASET_SUPPLY_DEMAND,
+        "viz_type": "echarts_timeseries_bar",
+        "params": city_bar_params(
+            "MAX(homes_built_per_home_needed)", "Homes completed per home needed", ",.2f", upper=1.2
+        ),
+    },
+    "demand-needed-built": {
+        "slice_name": "Story 5: Homes Needed vs Homes Completed, 2016 to 2021, by City",
+        "description": (
+            "Homes needed for each city's population growth between the 2016 and 2021 Censuses "
+            "(growth / people per household) next to homes completed in 2016-2020 "
+            "(StatCan 34-10-0154-01). warehouse.v_story5_supply_vs_demand."
+        ),
+        "dataset_id": DATASET_SUPPLY_DEMAND,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": "city",
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(homes_needed)", "label": "Homes needed for population growth"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(homes_completed_2016_2020)", "label": "Homes completed"},
+            ],
+            "groupby": [],
+            "orientation": "horizontal",
+            "adhoc_filters": [],
+            "row_limit": 20,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": True,
+            "legendType": "scroll",
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ",d",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "x_axis_sort": "Homes needed for population growth",
+            "x_axis_sort_asc": True,
+            "truncateYAxis": False,
+            "y_axis_bounds": [0, None],
+        },
+    },
 }
 
 INTRO_MARKDOWN = """**Every chart on this page joins two of the four stories.** Each story answers its own
@@ -474,7 +527,20 @@ In every year except 2024 Windsor built less than even the lowest of the four; i
 (13.0) only matched the comparison cities' average that year (13.2), and 2025 fell back to 7.6.
 
 **Why it matters.** Story 3 shows Windsor's building in isolation; against its peers it is
-consistently the slowest builder, so new supply is unlikely to push rents down on its own.
+consistently the slowest builder. Section 5 checks whether that is simply because Windsor grew
+more slowly.
+""",
+    "demand": """**What it shows.** Between the 2016 and 2021 Censuses Windsor gained **23,912 people (6.0%)**.
+At 2.51 people per household that is about **9,500 homes needed**, but only **5,666** were
+completed in 2016-2020: **0.59 homes for every home needed**, the lowest of the five cities
+(London 0.72, Hamilton 0.84, St. Catharines-Niagara 0.85, Kitchener-Cambridge-Waterloo 0.91).
+
+**Why it matters.** Windsor grew about as fast as Hamilton (5.0%) and St. Catharines-Niagara
+(6.8%) yet built the least for its growth, a shortfall of roughly 3,900 homes. That is
+consistent with the tight 2022 rental market in section 3: supply did not keep up with demand.
+
+*Completions are not net of demolitions, and 2021 household sizes are applied to the whole
+period, so the ratios are estimates; the ranking between cities is the robust part.*
 """,
 }
 
@@ -494,6 +560,9 @@ LAYOUT = [
     ("header", "HEADER-build", "4. Is Windsor building as much as its peers? (Story 3 + Story 4)"),
     ("chart-row", "ROW-build", [("peer-build-rate", 6, 50), ("peer-build-trend", 6, 50)]),
     ("markdown-row", "ROW-build-note", [("MARKDOWN-build", NOTES["build"], 12, 19)]),
+    ("header", "HEADER-demand", "5. Did building keep up with population growth? (Story 3 + Census population)"),
+    ("chart-row", "ROW-demand", [("demand-ratio", 6, 50), ("demand-needed-built", 6, 50)]),
+    ("markdown-row", "ROW-demand-note", [("MARKDOWN-demand", NOTES["demand"], 12, 24)]),
 ]
 
 # Charts the Years filter reaches (the two time-based sections).

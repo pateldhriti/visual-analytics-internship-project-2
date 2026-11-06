@@ -224,6 +224,7 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story5_peer_affordability](id:26)",
     "[Windsor Housing Data].[v_story5_supply_vs_rental_market](id:27)",
     "[Windsor Housing Data].[v_story5_peer_construction](id:28)",
+    "[Windsor Housing Data].[v_story5_supply_vs_demand](id:29)",
 ]
 
 

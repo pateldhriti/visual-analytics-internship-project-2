@@ -306,6 +306,15 @@ VIEWS = {
             "description": "Homes started per 1,000 households (2021 Census count). Sums starts across the years in scope; group by city.",
         },
     ],
+    "v_story5_supply_vs_demand": [
+        {
+            "metric_name": "homes_built_per_home_needed",
+            "expression": "MAX(homes_built_per_home_needed)",
+            "verbose_name": "Homes Built per Home Needed",
+            "metric_type": "max",
+            "description": "Homes completed 2016-2020 divided by homes needed for 2016-2021 population growth at 2021 household sizes. One row per city.",
+        },
+    ],
 }
 
 

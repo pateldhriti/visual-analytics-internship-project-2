@@ -9,13 +9,14 @@ import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 const INTRO =
   "Each of the first four stories answers its own question from one dataset. This story " +
   "combines them. The datasets share the city, the year and the renter, so they can be joined " +
-  "to answer four questions none of them can answer alone.";
+  "to answer five questions none of them can answer alone.";
 
 const QUESTIONS = [
   "Can Windsor renters afford the rent? (Story 1 incomes + Story 2 rents)",
   "Is Windsor affordable, or only cheap? (Story 1 incomes + Story 4 comparison cities)",
   "Did new homes ease the rental market? (Story 3 completions + Story 2 vacancy)",
   "Is Windsor building as much as its peers? (Story 3 construction + Story 4 comparison cities)",
+  "Did building keep up with population growth? (Story 3 completions + Census population, 5 cities)",
 ];
 
 const KPIS = [
@@ -49,9 +50,13 @@ const NARRATIVE = [
     "Story 3's completion surge.",
   "Is Windsor building enough? Since 2016 Windsor has started 8.4 homes a year for every 1,000 " +
     "households, the fewest of the five cities; Kitchener-Cambridge-Waterloo started 19.7. Only " +
-    "in 2024 did Windsor reach the comparison cities' average, and 2025 fell back. Together: " +
-    "Windsor's low rents reflect low incomes, recent completions have loosened the market a " +
-    "little, and building is too slow to keep doing so.",
+    "in 2024 did Windsor reach the comparison cities' average, and 2025 fell back.",
+  "Did building keep up with population? Between the 2016 and 2021 Censuses Windsor gained " +
+    "23,912 people, about 9,500 homes' worth at its household size, but completed only 5,666 " +
+    "homes: 0.59 for every home needed, the lowest of the five cities (0.72 to 0.91 elsewhere). " +
+    "Windsor grew about as fast as Hamilton and St. Catharines-Niagara, so slow building is not " +
+    "explained by slow growth. Together: Windsor's low rents reflect low incomes, building has " +
+    "fallen short of population growth, and the recent completions only partly caught up.",
 ];
 
 // How the datasets are joined, shown as the definitions grid.
@@ -72,6 +77,10 @@ const DEFINITIONS = [
     term: "Story 3 + Story 4: by city and year",
     text: "Homes started in each of the five cities, divided by that city's households (2021 Census), 2016 to 2025.",
   },
+  {
+    term: "Story 3 + Census population: by city",
+    text: "Homes completed 2016 to 2020 against the homes each city's 2016-2021 population growth needed (growth divided by people per household).",
+  },
 ];
 
 const LIMITATIONS = [
@@ -79,11 +88,12 @@ const LIMITATIONS = [
   "Incomes are published in $10,000 bands; within the band containing the income needed, households are assumed to be spread evenly.",
   "Completions count all new homes, including condos and houses for sale, while vacancy covers purpose-built rentals, so section 3 shows timing, not cause.",
   "Rents for the city comparison are for apartments only (CMHC publishes no other comparison); Windsor's own figures include row houses.",
+  "Homes needed assumes 2021 household sizes for the whole 2016-2021 period, and completions are not net of demolitions, so those ratios are estimates; the ranking between cities is the reliable part.",
 ];
 
 const FILTERS = [
   { label: "Geography", value: "Windsor CMA and 4 comparison cities" },
-  { label: "Joins", value: "Stories 1+2, 1+4, 3+2, 3+4" },
+  { label: "Joins", value: "Stories 1+2, 1+4, 3+2, 3+4, 3+Census" },
   { label: "Years", value: "2016 to 2025 (adjustable in the dashboard)" },
 ];
 

@@ -25,12 +25,12 @@ Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the 
 | File | What is kept |
 |---|---|
 | 98-10-0252-01 (shelter cost by income and tenure, 2021 Census) | renter households by $10,000 income band, median renter household income, renters spending 30%+ |
-| 98-401-X2021002 (Census Profile 2021) | private households, renter households, % of tenants spending 30%+, median household income, median rent paid |
+| 98-401-X2021002 (Census Profile 2021) | population in 2016 and 2021, private households and the people in them, renter households, % of tenants spending 30%+, median household income, median rent paid |
 | 34-10-0154-01 (monthly starts and completions) | yearly starts and completions, all homes and apartments, full years 2016 to 2025 |
 
-Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), because each file spells city names differently. The rows load into `warehouse.fact_peer_cma_context` (485 rows), which has one row per city, source, indicator and breakdown. Windsor's rows match Stories 1 and 3 exactly; for example, 34.8% of tenants spending 30%+, and 1,262 starts and 1,671 completions in 2025.
+Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), because each file spells city names differently. The rows load into `warehouse.fact_peer_cma_context` (500 rows), which has one row per city, source, indicator and breakdown. Windsor's rows match Stories 1 and 3 exactly; for example, 34.8% of tenants spending 30%+, and 1,262 starts and 1,671 completions in 2025.
 
-## The four combined views (`sql/story5_views.sql`)
+## The five combined views (`sql/story5_views.sql`)
 
 | View | Joins | Key |
 |---|---|---|
@@ -38,6 +38,7 @@ Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), bec
 | `v_story5_peer_affordability` | Story 1 incomes and burden (all 5 cities) x Story 4 2-bedroom rents | City |
 | `v_story5_supply_vs_rental_market` | Story 3 completions x Story 2 vacancy and rent | Year (2020-2025) |
 | `v_story5_peer_construction` | Story 3 construction (all 5 cities) x Census households | City and year |
+| `v_story5_supply_vs_demand` | Story 3 completions (all 5 cities) x Census population growth 2016-2021 | City |
 
 **Can-afford rule.** A rent is affordable to a household whose income is at least rent x 12 / 0.30, the standard 30% rule.
 
@@ -100,11 +101,25 @@ Average homes started a year per 1,000 households, 2016 to 2025:
 - In 2024 it reached 13.0, matching their average that year (13.2).
 - In 2025 it fell back to 7.6.
 
+### 5. Did building keep up with population growth? (Story 3 + Census population)
+
+Homes needed = population growth between the 2016 and 2021 Censuses / people per private household (2021). Homes built = completions in calendar 2016-2020, the five full years closest to the Census interval (May 2016 to May 2021).
+
+| City | Population growth | People per household | Homes needed | Homes completed 2016-2020 | Built per home needed |
+|---|---|---|---|---|---|
+| Windsor | 23,912 (6.0%) | 2.51 | 9,534 | 5,666 | **0.59** |
+| London | 49,482 (10.0%) | 2.41 | 20,525 | 14,753 | 0.72 |
+| Hamilton | 37,639 (5.0%) | 2.52 | 14,958 | 12,599 | 0.84 |
+| St. Catharines-Niagara | 27,530 (6.8%) | 2.37 | 11,596 | 9,846 | 0.85 |
+| Kitchener-Cambridge-Waterloo | 51,953 (9.9%) | 2.59 | 20,034 | 18,255 | 0.91 |
+
+Every city built fewer homes than its population growth needed, but **Windsor fell furthest short: 0.59 homes per home needed, a gap of about 3,900 homes**. Windsor grew about as fast as Hamilton and St. Catharines-Niagara, so its slow building (section 4) is not explained by slow growth. The shortfall is consistent with vacancy falling to 1.8% in 2022 (section 3).
+
 ### Together
 
 - **Renters:** Windsor's low rents reflect low renter incomes, so most renters still cannot afford an average 2-bedroom.
 - **Recent completions:** the 2023–2025 surge coincided with a looser market.
-- **Building:** Windsor builds more slowly than any comparison city, so new supply is unlikely to keep easing rents without more construction.
+- **Building:** Windsor builds more slowly than any comparison city and, from 2016 to 2021, finished only 0.59 homes for every home its population growth needed. New supply is unlikely to keep easing rents without more construction.
 
 ## Dashboard
 
@@ -115,6 +130,7 @@ Average homes started a year per 1,000 households, 2016 to 2025:
 | Section 2 | Two city bar charts (rent share of income; tenants spending 30%+), plus a comparison table |
 | Section 3 | Completions by year (apartments and other homes), with vacancy and rent increase by year |
 | Section 4 | Starts per 1,000 households by city, plus Windsor against the comparison-city average by year |
+| Section 5 | Homes completed per home needed by city, plus homes needed against homes completed |
 | Interaction | A **Years** range filter narrows sections 3 and 4; the KPI cards stay fixed |
 
 Windsor is blue and the comparison cities grey throughout. Each section ends with a note stating the finding in words.
@@ -126,6 +142,7 @@ Windsor is blue and the comparison cities grey throughout. Each section ends wit
 - **What each count covers:** completions include condos and homes for sale, while vacancy covers purpose-built rentals only. Section 3 therefore shows timing, not cause.
 - **Rent type:** the city comparison uses apartment rents only, the only comparison CMHC publishes. Windsor's own figures include row houses ($1,451 against $1,454 for a 2-bedroom).
 - **Household counts:** "per 1,000 households" uses the 2021 household count for every year.
+- **Homes needed:** section 5 applies 2021 household sizes to the whole 2016-2021 growth. Completions are not net of demolitions, and calendar 2016-2020 only approximates the May-to-May Census interval. The ratios are estimates; the ranking between cities is the reliable part.
 
 ## Reproducing
 
