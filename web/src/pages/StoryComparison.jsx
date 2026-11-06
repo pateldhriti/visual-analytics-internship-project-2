@@ -1,5 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
-import SupersetEmbed from "../components/SupersetEmbed.jsx";
+import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Text condensed from docs/story4_narrative_final.md. Every figure comes
 // from the warehouse.v_story4_* views and v_dashboard1_cma_benchmark behind
@@ -85,8 +85,9 @@ export default function StoryComparison() {
       theme="neighbourhood"
       ranking={RANKING}
       dashboard={
-        <SupersetEmbed
-          dashboardId={6}
+        <SupersetGuestEmbed
+          dashboard="story4"
+          fallbackDashboardId={6}
           title="Story 4: How does Windsor compare to similar markets? (Superset dashboard)"
           height={1500}
         />

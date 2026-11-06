@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { embedDashboard } from "@superset-ui/embedded-sdk";
 import SupersetEmbed from "./SupersetEmbed.jsx";
+import useNarrowScreen from "../lib/useNarrowScreen.js";
+import { EmbedError, EmbedLoading, NarrowHint } from "./EmbedStatus.jsx";
+import { LOAD_TIMEOUT_MS, dashboardUrl } from "../lib/embedConfig.js";
 
-// Embeds a Superset dashboard with the Embedded SDK and a guest token from
-// our own backend (api/guest_token_server.py, proxied at /api by
-// vite.config.js) -- Option B from docs/superset_embedding_research.md, the
-// route docs/embedding_spike.md proved works but had no backend for.
+// Embeds a Superset dashboard with the Embedded SDK and a short-lived guest
+// token from our own backend (api/guest_token_server.py, proxied at /api by
+// vite.config.js and by docker/Caddyfile in production).
 //
-// `dashboard` is the backend's short name ("story1"), not a Superset id:
-// the backend only issues tokens for dashboards on its own allowlist and
-// returns the embedded UUID with the token, so nothing here hardcodes it.
+// `dashboard` is the backend's short name ("story1" ... "story4"), not a
+// Superset id: the backend only issues tokens for its allow-list, checks the
+// request comes from this site, and returns the embedded UUID with the token.
 //
-// If the backend isn't reachable (it isn't part of the static build, so a
-// deploy without it is a real case), this falls back to the public-role
-// iframe (SupersetEmbed) for the same dashboard rather than showing an
-// empty box.
+// States:
+//   loading  -- token requested / dashboard drawing (spinner over the frame)
+//   ready    -- the SDK reports the dashboard's size, so it has rendered
+//   fallback -- the token API is unreachable or refused: the public-role
+//               iframe (SupersetEmbed) is shown instead, if a dashboard id
+//               is given, with its own loading and error states
+//   error    -- nothing to fall back to, or the dashboard never rendered
+//               within LOAD_TIMEOUT_MS: a message with "Try again"
 async function requestGuestToken(dashboard) {
   const resp = await fetch("/api/guest-token", {
     method: "POST",
@@ -30,7 +36,7 @@ async function requestGuestToken(dashboard) {
 // After the dashboard renders, grow the frame to the dashboard's own
 // height so the page scrolls once instead of a scroll area inside a
 // scroll area. Checked a few times because charts load asynchronously.
-const RESIZE_CHECKS = 10;
+const RESIZE_CHECKS = 12;
 const RESIZE_INTERVAL_MS = 1500;
 
 export default function SupersetGuestEmbed({
@@ -39,14 +45,21 @@ export default function SupersetGuestEmbed({
   title,
   height = 1400,
 }) {
+  const narrow = useNarrowScreen();
   const mountRef = useRef(null);
-  const [failed, setFailed] = useState(false);
+  const [status, setStatus] = useState("loading");
+  const [attempt, setAttempt] = useState(0);
   const [frameHeight, setFrameHeight] = useState(height);
+  const openUrl = fallbackDashboardId ? dashboardUrl(fallbackDashboardId) : null;
 
   useEffect(() => {
     let cancelled = false;
     let embedded = null;
     let resizeTimer = null;
+    setStatus("loading");
+    const timeout = setTimeout(() => {
+      if (!cancelled) setStatus((s) => (s === "loading" ? "error" : s));
+    }, LOAD_TIMEOUT_MS);
 
     requestGuestToken(dashboard)
       .then(({ token, dashboardUuid, supersetDomain }) => {
@@ -66,7 +79,8 @@ export default function SupersetGuestEmbed({
             }
             return (await requestGuestToken(dashboard)).token;
           },
-          dashboardUiConfig: { hideTitle: true },
+          // Phones: start with Superset's filter bar collapsed.
+          dashboardUiConfig: { hideTitle: true, filters: { expanded: !narrow } },
         });
       })
       .then((result) => {
@@ -84,6 +98,8 @@ export default function SupersetGuestEmbed({
           try {
             const size = await embedded.getScrollSize();
             if (!cancelled && size?.height) {
+              setStatus("ready");
+              clearTimeout(timeout);
               setFrameHeight((current) => Math.max(current, Math.ceil(size.height)));
             }
           } catch {
@@ -93,18 +109,21 @@ export default function SupersetGuestEmbed({
         }, RESIZE_INTERVAL_MS);
       })
       .catch((err) => {
-        console.warn(`Guest-token embed unavailable, using public embed instead: ${err.message}`);
-        if (!cancelled) setFailed(true);
+        console.warn(`Guest-token embed unavailable: ${err.message}`);
+        if (cancelled) return;
+        clearTimeout(timeout);
+        setStatus(fallbackDashboardId ? "fallback" : "error");
       });
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
       clearInterval(resizeTimer);
       embedded?.unmount();
     };
-  }, [dashboard, title]);
+  }, [dashboard, title, narrow, attempt, fallbackDashboardId]);
 
-  if (failed) {
+  if (status === "fallback") {
     return <SupersetEmbed dashboardId={fallbackDashboardId} title={title} height={height} />;
   }
 
@@ -112,13 +131,28 @@ export default function SupersetGuestEmbed({
     <div className="superset-embed card">
       <div className="superset-embed-header">
         <span className="superset-embed-badge">Live dashboard</span>
+        {openUrl && (
+          <a href={openUrl} target="_blank" rel="noreferrer" className="superset-embed-link">
+            Open full dashboard ↗
+          </a>
+        )}
       </div>
-      <div
-        ref={mountRef}
-        className="superset-embed-sdk"
-        style={{ height: frameHeight }}
-        aria-label={title}
-      />
+      {narrow && <NarrowHint openUrl={openUrl} />}
+      <div className="superset-embed-body" aria-busy={status === "loading"}>
+        <div className="superset-embed-scroll">
+          <div
+            key={attempt}
+            ref={mountRef}
+            className="superset-embed-sdk"
+            style={{ height: frameHeight }}
+            aria-label={title}
+          />
+        </div>
+        {status === "loading" && <EmbedLoading />}
+        {status === "error" && (
+          <EmbedError onRetry={() => setAttempt((a) => a + 1)} openUrl={openUrl} />
+        )}
+      </div>
     </div>
   );
 }

@@ -14,10 +14,15 @@ import EmbedSpike from "./pages/EmbedSpike.jsx";
 export default function App() {
   return (
     <div className="app-shell">
+      {/* First focusable element: lets keyboard and screen-reader users jump
+          past the sidebar's nine links straight to the page content. */}
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <Sidebar />
 
       <div className="app-content">
-        <main>
+        <main id="main-content" tabIndex={-1}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/stories/affordability" element={<StoryAffordability />} />
