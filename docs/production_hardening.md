@@ -117,5 +117,5 @@ To reach Postgres or Superset's port 8088 for maintenance, use an SSH tunnel (`s
 4. Build the website: `cd web && npm ci && npm run build`.
 5. Start everything:
    `docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d`
-6. Load data with `etl/refresh_all.py`, then re-run `etl/enable_story1_embedding.py` so Superset allows the production origin.
+6. Load data with `etl/refresh_all.py`, then re-run `etl/enable_dashboard_embedding.py` so Superset allows the production origin for all four dashboards.
 7. Check: `https://<SITE_DOMAIN>` loads with a valid certificate, `http://` redirects to `https://`, the Story 1 embed works, `docker logs windsor_housing_db_backup` shows a backup, and `nc -zv <server> 5434` from another machine is refused.
