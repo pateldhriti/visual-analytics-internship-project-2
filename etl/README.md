@@ -149,6 +149,13 @@ Apply `docs/filter_standards.md`'s naming rule to Story 1's dashboard
 .venv\Scripts\python.exe etl\apply_filter_standards_story1.py
 ```
 
+Apply (or remove) the dashboard theme on all 6 dashboards -- custom
+CSS only, see the script's docstring; dashboard rebuilds keep it:
+```
+.venv\Scripts\python.exe etl\apply_dashboard_theme.py
+.venv\Scripts\python.exe etl\apply_dashboard_theme.py --remove
+```
+
 ## Weekly scheduled refresh and schema guard
 
 `etl/scheduled_refresh.py` is the job to schedule. Each run:

@@ -170,6 +170,17 @@ VIEWS = {
             "description": "Vacancy rate by Windsor zone and period, Oct-20 to Oct-25. Zone 7 starts at Oct-23 and Zone 5 has 2 suppressed (NULL) periods -- AVG() excludes those rather than treating them as 0.",
         },
     ],
+    # Feeds the Story 2 explanation panel (Handlebars chart): one row per
+    # zone with its figures, Windsor's figures and computed sentences.
+    "v_story2_zone_explanation": [
+        {
+            "metric_name": "zones_selected",
+            "expression": "COUNT(*)",
+            "verbose_name": "Zones Selected",
+            "metric_type": "count",
+            "description": "Number of zones in the current selection (7 when nothing is selected).",
+        },
+    ],
     "v_story3_starts_completions_by_dwelling_type": [
         {
             "metric_name": "total_units",
