@@ -23,7 +23,7 @@ Row counts are from the local warehouse on 5 November 2026, after `etl/refresh_a
 | `fact_census_profile` | warehouse | 360 | `docs/data_dictionary_census_comparison.md`, section 1 |
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
-| `v_*` views (21) | warehouse | — | [Section 4](#4-views) |
+| `v_*` views (23) | warehouse | — | [Section 4](#4-views) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
 
 ## How the tables connect
@@ -185,6 +185,8 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story2_rent_by_zone_bedroom` | zone × bedroom type × survey year: average rent | Story 2 |
 | `v_story2_zone_snapshot` | zone: Oct-25 rent, vacancy, units, turnover, share of stock | Story 2, Story 5 |
 | `v_story2_vacancy_by_zone_trend` | zone × period: vacancy rate | Story 2 |
+| `v_story2_zone_explanation` | zone: Oct-25 figures, Windsor CMA figures, rank, and plain-language comparison sentences computed from them | Story 2 explanation panel |
+| `v_story2_zone_bedroom_explanation` | zone × unit size (Studio, 1, 2, 3+ bedroom, Total): the same panel figures and sentences, compared with Windsor's figure for the same unit size; suppressed cells say "not published" | Story 2 panel, through the virtual dataset `story2_panel_by_unit_size` (keeps the Bedroom Type filter's unit size, else Total) |
 | `v_story3_starts_completions_by_dwelling_type` | province × period × activity × dwelling type (CMHC quarterly) | Dashboard 1 |
 | `v_story3_supply_per_1000_households` | province × period: starts total; the per-1,000 rate is deliberately NULL because the source has no Windsor figure | Story 3 (earlier version) |
 | `v_story3_windsor_supply_annual` | year × activity × dwelling type: Windsor units (flags partial years) | Story 3, Story 5 |
