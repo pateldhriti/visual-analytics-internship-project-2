@@ -71,7 +71,7 @@ LABEL_COLORS = {
     "Other homes": OTHER_HOMES,
     "Vacancy rate (October)": ACCENT,
     "Rent increase from the previous October": "#d0703c",
-    "Homes needed for population growth": "#d0703c",
+    "Homes needed": "#d0703c",
     "Homes completed": OTHER_HOMES,
 }
 
@@ -157,13 +157,22 @@ def kpi(slice_name, description, dataset_id, sql, label, number_format, subheade
     }
 
 
+# Shorter axis labels so the bars keep their width in the narrower website
+# embed; the series (and so colours and tooltips) keep the full names.
+SHORT_CITY_SQL = (
+    "CASE city WHEN 'Kitchener-Cambridge-Waterloo CMA' THEN 'Kitchener-Waterloo' "
+    "WHEN 'St. Catharines-Niagara CMA' THEN 'St. Catharines' "
+    "ELSE REPLACE(city, ' CMA', '') END"
+)
+
+
 def city_bar_params(sql: str, label: str, number_format: str, upper=None) -> dict:
     """Horizontal bar, one bar per city. Each city is its own series
     (stacked, so bars keep full width) so Windsor can be blue and the peers
     grey; the x-axis is the same column under another label because
     Superset rejects identical x-axis and series labels."""
     return {
-        "x_axis": {"expressionType": "SQL", "sqlExpression": "city", "label": "City"},
+        "x_axis": {"expressionType": "SQL", "sqlExpression": SHORT_CITY_SQL, "label": "City"},
         "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label}],
         "groupby": ["city"],
         "stack": True,
@@ -340,7 +349,7 @@ CHARTS = {
         "dataset_id": DATASET_PEER_AFFORDABILITY,
         "viz_type": "echarts_timeseries_bar",
         "params": city_bar_params(
-            "MAX(pct_renters_spending_30pct_plus) / 100.0", "Renters spending 30%+ on shelter", ".1%", upper=0.5
+            "MAX(pct_renters_spending_30pct_plus) / 100.0", "Renters spending 30%+ on shelter", ".0%", upper=0.5
         ),
     },
     "peer-table": {
@@ -413,6 +422,7 @@ CHARTS = {
             "ROUND(1000.0 * SUM(starts) / MAX(private_households) / COUNT(DISTINCT period_year), 1)",
             "Starts a year per 1,000 households",
             ",.1f",
+            upper=30,  # above any city's single-year rate (max 25.6), so every Years range fits
         ),
     },
     "peer-build-trend": {
@@ -441,13 +451,13 @@ CHARTS = {
         "slice_name": "Story 5: Homes Completed per Home Needed for Population Growth, by City",
         "description": (
             "Homes completed 2016-2020 divided by the homes the 2016-2021 population growth needed at "
-            "2021 household sizes. 1.0 means building kept pace; below 1.0 it fell short. "
+            "2021 household sizes. 100% means building kept pace; below 100% it fell short. "
             "warehouse.v_story5_supply_vs_demand."
         ),
         "dataset_id": DATASET_SUPPLY_DEMAND,
         "viz_type": "echarts_timeseries_bar",
         "params": city_bar_params(
-            "MAX(homes_built_per_home_needed)", "Homes completed per home needed", ",.2f", upper=1.2
+            "MAX(homes_built_per_home_needed)", "Share of needed homes completed", ".0%", upper=1.2
         ),
     },
     "demand-needed-built": {
@@ -460,9 +470,9 @@ CHARTS = {
         "dataset_id": DATASET_SUPPLY_DEMAND,
         "viz_type": "echarts_timeseries_bar",
         "params": {
-            "x_axis": "city",
+            "x_axis": {"expressionType": "SQL", "sqlExpression": SHORT_CITY_SQL, "label": "City"},
             "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "MAX(homes_needed)", "label": "Homes needed for population growth"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(homes_needed)", "label": "Homes needed"},
                 {"expressionType": "SQL", "sqlExpression": "MAX(homes_completed_2016_2020)", "label": "Homes completed"},
             ],
             "groupby": [],
@@ -478,7 +488,7 @@ CHARTS = {
             "y_axis_format": ",d",
             "x_axis_title": "",
             "y_axis_title": "",
-            "x_axis_sort": "Homes needed for population growth",
+            "x_axis_sort": "Homes needed",
             "x_axis_sort_asc": True,
             "truncateYAxis": False,
             "y_axis_bounds": [0, None],
@@ -530,17 +540,16 @@ In every year except 2024 Windsor built less than even the lowest of the four; i
 consistently the slowest builder. Section 5 checks whether that is simply because Windsor grew
 more slowly.
 """,
-    "demand": """**What it shows.** Between the 2016 and 2021 Censuses Windsor gained **23,912 people (6.0%)**.
-At 2.51 people per household that is about **9,500 homes needed**, but only **5,666** were
-completed in 2016-2020: **0.59 homes for every home needed**, the lowest of the five cities
-(London 0.72, Hamilton 0.84, St. Catharines-Niagara 0.85, Kitchener-Cambridge-Waterloo 0.91).
+    "demand": """**What it shows.** From 2016 to 2021 Windsor gained **23,912 people**, about
+**9,500 homes' worth**, but completed only **5,666**: **59%** of the homes needed, the lowest
+of the five cities.
 
-**Why it matters.** Windsor grew about as fast as Hamilton (5.0%) and St. Catharines-Niagara
-(6.8%) yet built the least for its growth, a shortfall of roughly 3,900 homes. That is
-consistent with the tight 2022 rental market in section 3: supply did not keep up with demand.
+**Why it matters.** Windsor grew about as fast as Hamilton and St. Catharines-Niagara, yet
+built least for its growth, a shortfall of about 3,900 homes, consistent with the tight
+2022 rental market (section 3).
 
-*Completions are not net of demolitions, and 2021 household sizes are applied to the whole
-period, so the ratios are estimates; the ranking between cities is the robust part.*
+*Estimates: 2021 household sizes, completions not net of demolitions. The ranking between
+cities is the reliable part.*
 """,
 }
 
@@ -561,9 +570,19 @@ LAYOUT = [
     ("chart-row", "ROW-build", [("peer-build-rate", 6, 50), ("peer-build-trend", 6, 50)]),
     ("markdown-row", "ROW-build-note", [("MARKDOWN-build", NOTES["build"], 12, 19)]),
     ("header", "HEADER-demand", "5. Did building keep up with population growth? (Story 3 + Census population)"),
-    ("chart-row", "ROW-demand", [("demand-ratio", 6, 50), ("demand-needed-built", 6, 50)]),
-    ("markdown-row", "ROW-demand-note", [("MARKDOWN-demand", NOTES["demand"], 12, 24)]),
+    ("chart-row", "ROW-demand", [("demand-ratio", 7, 50)], ("MARKDOWN-demand", NOTES["demand"], 5, 50)),
+    ("chart-row", "ROW-demand-built", [("demand-needed-built", 12, 42)]),
 ]
+
+# Card titles shown on this dashboard: the chart names keep their "Story 5:"
+# prefix (unique across Superset), which the narrow KPI cards cut off.
+TITLE_OVERRIDES = {
+    "kpi-afford": "Can't afford a 2-bed",
+    "kpi-rent-income": "2-bed rent / renter income",
+    "kpi-completions": "Completed 2023-2025",
+    "kpi-build-rate": "Yearly build rate",
+    "demand-ratio": "Share of needed homes completed, 2016-2021",
+}
 
 # Charts the Years filter reaches (the two time-based sections).
 YEAR_FILTER_KEYS = ["supply-completions", "supply-vacancy", "peer-build-rate", "peer-build-trend"]
@@ -649,6 +668,11 @@ def build_position_json(chart_ids: dict) -> dict:
                         "width": width,
                         "height": height,
                         "uuid": str(uuid.uuid4()),
+                        **(
+                            {"sliceNameOverride": TITLE_OVERRIDES[chart_key]}
+                            if chart_key in TITLE_OVERRIDES
+                            else {}
+                        ),
                     },
                 }
             for md_id, code, width, height in extra:
