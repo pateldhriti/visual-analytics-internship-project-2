@@ -1,5 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
-import SupersetEmbed from "../components/SupersetEmbed.jsx";
+import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Text condensed from docs/story2_narrative_final.md. Every figure comes
 // from the warehouse.v_story2_* views behind the Story 2 dashboard (id 4);
@@ -87,8 +87,9 @@ export default function StoryRentalMarket() {
       variant="ticker"
       theme="neighbourhood"
       dashboard={
-        <SupersetEmbed
-          dashboardId={4}
+        <SupersetGuestEmbed
+          dashboard="story2"
+          fallbackDashboardId={4}
           title="Story 2: What is happening in Windsor's rental market? (Superset dashboard)"
           height={1600}
         />

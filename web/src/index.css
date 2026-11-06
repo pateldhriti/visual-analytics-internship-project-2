@@ -2280,7 +2280,9 @@ html {
 }
 
 .story-page[data-theme="neighbourhood"] .hero-cta-primary {
-  background: var(--accent);
+  /* A shade darker than the theme's --accent (#c65335): white text on
+     #c65335 is 4.48:1, just under WCAG AA's 4.5:1; #b84c30 is 5.1:1. */
+  background: #b84c30;
   color: #fff;
   border-radius: 8px;
 }
@@ -3203,4 +3205,155 @@ body,
 
 .story-page[data-theme="neighbourhood"] .conclusion-card:nth-child(4n + 4) {
   --tile: var(--violet);
+}
+
+/* ============================================================
+   Accessibility: skip link
+   ============================================================ */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 1000;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+  outline: 3px solid #2a78d6;
+  outline-offset: 2px;
+}
+
+main:focus {
+  outline: none;
+}
+
+/* ============================================================
+   Dashboard embeds: loading and error states, phone layout
+   (SupersetGuestEmbed / SupersetEmbed / EmbedStatus)
+   ============================================================ */
+.superset-embed-body {
+  position: relative;
+  min-height: 320px;
+}
+
+.superset-embed-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.embed-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 72px 24px 24px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  font-weight: 600;
+  text-align: center;
+}
+
+.embed-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid #d7e3f4;
+  border-top-color: #2a78d6;
+  animation: embed-spin 0.9s linear infinite;
+}
+
+@keyframes embed-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.embed-overlay--error {
+  background: #fffaf2;
+}
+
+.embed-error-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.embed-error-text {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.embed-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.embed-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 2px solid #1f5fae;
+  border-radius: 8px;
+  background: #1f5fae;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.embed-button--ghost {
+  background: #ffffff;
+  color: #1f5fae;
+}
+
+.embed-button:focus-visible {
+  outline: 3px solid #2a78d6;
+  outline-offset: 2px;
+}
+
+.embed-narrow-hint {
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Phones: Superset 3.1's grid does not reflow for phone screens, so the
+   dashboard is laid out at tablet width inside a frame that scrolls
+   sideways (see .embed-narrow-hint). */
+@media (max-width: 760px) {
+  .superset-embed-scroll > iframe,
+  .superset-embed-scroll > .superset-embed-sdk {
+    min-width: 760px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .embed-spinner {
+    animation: none;
+  }
+}
+
+/* Story 4's rungs slide in from 28px to the right as they scroll into
+   view; clip that offset so it never widens the page on a phone. */
+.ranking-ladder {
+  overflow-x: clip;
+  overflow-clip-margin: 12px;
 }

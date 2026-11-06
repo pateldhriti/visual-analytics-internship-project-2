@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 // Small inline icon set -- one glyph per nav item, no icon-library
@@ -88,6 +88,20 @@ const NAV_SECTIONS = [
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef(null);
+
+  // Escape closes the phone menu and returns focus to its button.
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <>
@@ -99,6 +113,7 @@ export default function Sidebar() {
           Windsor Housing Analytics
         </NavLink>
         <button
+          ref={toggleRef}
           type="button"
           className="menu-toggle"
           aria-expanded={open}

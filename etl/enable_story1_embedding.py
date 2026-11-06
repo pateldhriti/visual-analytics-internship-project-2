@@ -1,54 +1,21 @@
 """
-Enable Embedded SDK access for Story 1's dashboard (id 3), so the
-guest-token API (api/guest_token_server.py) can issue tokens for it and
-the React Story 1 page can embed it with embedDashboard().
+Enable Embedded SDK access for Story 1's dashboard (id 3) only.
 
-POST /api/v1/dashboard/<id>/embedded creates the dashboard's embedded
-configuration, or updates it if one already exists, keeping the same
-UUID -- so this is safe to re-run, e.g. after adding an origin to
-FRONTEND_ORIGINS in .env. allowed_domains is the list of sites Superset lets frame
-the embedded dashboard; it must match the frontend's origin exactly
-(scheme, host and port), the same origin docker/superset_config.py's
-FRONTEND_ORIGINS adds to the CSP frame-ancestors.
-
-Requires Superset running and .env with SUPERSET_ADMIN_USER /
-SUPERSET_ADMIN_PASSWORD (see .env.example).
+Kept for existing instructions that name this script; the general version
+is etl/enable_dashboard_embedding.py, which enables all four story
+dashboards with the same settings.
 
 Run from the project virtual environment:
     .venv\\Scripts\\python.exe etl\\enable_story1_embedding.py
 """
 
-import os
-
-from setup_superset_dashboard import SUPERSET_URL, get_session
+from enable_dashboard_embedding import main as enable_dashboards
 
 DASHBOARD_ID = 3  # Story 1: Who faces the greatest affordability pressure?
-DEFAULT_ORIGINS = "http://localhost:5173"
-
-
-def allowed_domains() -> list[str]:
-    """The same FRONTEND_ORIGINS variable superset_config.py reads (comma-
-    separated), so production only needs the .env value changed and this
-    script re-run. Read after get_session(), which loads .env."""
-    return [
-        origin.strip()
-        for origin in os.environ.get("FRONTEND_ORIGINS", DEFAULT_ORIGINS).split(",")
-        if origin.strip()
-    ]
 
 
 def main() -> str:
-    session, headers = get_session()
-    resp = session.post(
-        f"{SUPERSET_URL}/api/v1/dashboard/{DASHBOARD_ID}/embedded",
-        headers=headers,
-        json={"allowed_domains": allowed_domains()},
-    )
-    resp.raise_for_status()
-    result = resp.json()["result"]
-    print(f"Embedding enabled for dashboard {DASHBOARD_ID}: uuid={result['uuid']}")
-    print(f"  allowed domains: {', '.join(result['allowed_domains'])}")
-    return result["uuid"]
+    return enable_dashboards([DASHBOARD_ID])[DASHBOARD_ID]
 
 
 if __name__ == "__main__":

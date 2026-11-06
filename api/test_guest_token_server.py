@@ -17,6 +17,8 @@ import requests
 
 import guest_token_server as server
 
+SITE = "http://localhost:5173"  # the default FRONTEND_ORIGINS
+
 
 class FakeClient:
     def __init__(self, fail_with=None):
@@ -33,21 +35,22 @@ class FakeClient:
         return f"token-for-{embedded_uuid}"
 
 
-def test_known_dashboard_returns_token_and_uuid():
+@pytest.mark.parametrize("name, dashboard_id", [("story1", 3), ("story2", 4), ("story3", 7), ("story4", 6)])
+def test_each_story_dashboard_returns_token_and_uuid(name, dashboard_id):
     client = FakeClient()
-    status, body = server.issue_token(client, "story1")
+    status, body = server.issue_token(client, name)
     assert status == 200
-    assert body["dashboardUuid"] == "uuid-3"
-    assert body["token"] == "token-for-uuid-3"
-    assert client.requested_ids == [3]
+    assert body["dashboardUuid"] == f"uuid-{dashboard_id}"
+    assert body["token"] == f"token-for-uuid-{dashboard_id}"
+    assert client.requested_ids == [dashboard_id]
 
 
-@pytest.mark.parametrize("name", ["story4", "", None, "3", 3])
+@pytest.mark.parametrize("name", ["story5", "", None, "3", 3])
 def test_unknown_dashboard_is_rejected_without_calling_superset(name):
     client = FakeClient()
     status, body = server.issue_token(client, name)
     assert status == 404
-    assert body["allowed"] == ["story1"]
+    assert body["allowed"] == ["story1", "story2", "story3", "story4"]
     assert client.requested_ids == []
 
 
@@ -60,9 +63,37 @@ def test_superset_failure_maps_to_502(error):
     assert "token" not in body
 
 
+@pytest.mark.parametrize(
+    "headers, allowed",
+    [
+        ({"Origin": SITE}, True),
+        ({"Origin": SITE + "/"}, True),
+        ({"Origin": "https://evil.example"}, False),
+        ({"Origin": "http://localhost:5173.evil.example"}, False),
+        ({"Referer": SITE + "/stories/rental-market"}, True),
+        ({"Referer": "http://localhost:5173.evil.example/x"}, False),
+        ({}, False),
+    ],
+)
+def test_origin_check(headers, allowed):
+    assert server.origin_allowed(headers, {SITE}) is allowed
+
+
+def test_rate_limiter_blocks_then_recovers():
+    now = [0.0]
+    limiter = server.RateLimiter(limit=3, window=60, clock=lambda: now[0])
+    assert [limiter.check("a") for _ in range(3)] == [0.0, 0.0, 0.0]
+    assert limiter.check("a") == 60  # 4th request inside the window
+    assert limiter.check("b") == 0.0  # other clients are unaffected
+    now[0] = 61
+    assert limiter.check("a") == 0.0  # window has passed
+
+
 @pytest.fixture
-def running_server():
+def running_server(monkeypatch):
     server.GuestTokenHandler.client = FakeClient()
+    monkeypatch.setattr(server, "ALLOWED_ORIGINS", {SITE})
+    monkeypatch.setattr(server.GuestTokenHandler, "limiter", server.RateLimiter(5, 60))
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.GuestTokenHandler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
@@ -71,8 +102,10 @@ def running_server():
     httpd.server_close()
 
 
-def post(url, data: bytes):
-    req = urllib.request.Request(url, data=data, method="POST", headers={"Content-Type": "application/json"})
+def post(url, data: bytes, headers=None):
+    base = {"Content-Type": "application/json", "Origin": SITE}
+    base.update(headers or {})
+    req = urllib.request.Request(url, data=data, method="POST", headers={k: v for k, v in base.items() if v is not None})
     try:
         with urllib.request.urlopen(req) as resp:
             return resp.status, resp.headers, json.loads(resp.read())
@@ -84,6 +117,7 @@ def test_http_token_response_is_not_cacheable(running_server):
     status, headers, body = post(f"{running_server}/api/guest-token", b'{"dashboard": "story1"}')
     assert status == 200
     assert headers["Cache-Control"] == "no-store"
+    assert headers["X-Content-Type-Options"] == "nosniff"
     assert body["dashboardUuid"] == "uuid-3"
 
 
@@ -92,6 +126,40 @@ def test_http_rejects_malformed_body(running_server, payload):
     status, _, body = post(f"{running_server}/api/guest-token", payload)
     assert status == 400
     assert "error" in body
+
+
+def test_http_rejects_other_origins(running_server):
+    status, _, body = post(f"{running_server}/api/guest-token", b'{"dashboard": "story1"}', {"Origin": "https://evil.example"})
+    assert status == 403
+    assert "token" not in body
+
+
+def test_http_rejects_missing_origin(running_server):
+    status, _, _ = post(f"{running_server}/api/guest-token", b'{"dashboard": "story1"}', {"Origin": None})
+    assert status == 403
+
+
+def test_http_rejects_form_posts(running_server):
+    status, _, _ = post(
+        f"{running_server}/api/guest-token",
+        b"dashboard=story1",
+        {"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert status == 415
+
+
+def test_http_rejects_large_bodies(running_server):
+    big = json.dumps({"dashboard": "story1", "pad": "x" * 2000}).encode()
+    status, _, _ = post(f"{running_server}/api/guest-token", big)
+    assert status == 413
+
+
+def test_http_rate_limit(running_server):
+    statuses = [post(f"{running_server}/api/guest-token", b'{"dashboard": "story2"}')[0] for _ in range(6)]
+    assert statuses[:5] == [200] * 5
+    status, headers, _ = post(f"{running_server}/api/guest-token", b'{"dashboard": "story2"}')
+    assert status == 429
+    assert int(headers["Retry-After"]) >= 1
 
 
 def test_http_unknown_path_is_404(running_server):
