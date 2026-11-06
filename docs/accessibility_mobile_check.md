@@ -57,6 +57,17 @@ the most usable option without changing Superset itself (decision D31).
 | Collapsed filter bar and sideways-scrolling frame on phones | `web/src/lib/useNarrowScreen.js`, the two embed components, `web/src/index.css` |
 | Story 4 slide-in offset clipped | `web/src/index.css` |
 
+## Follow-up check (2026-11-06)
+
+The first check ran axe on each page as it loaded. Several sections only fade in when they are scrolled into view, so the follow-up scrolled through every page first, at 1,440 px and at 375 px. That found four more problems, all now fixed. Every page now has 0 axe violations at both widths.
+
+| Problem | Where | Fix |
+|---|---|---|
+| Text in the theme's accent colour (#c65335) at 4.23–4.47:1 | Home: the selected metric button and the "full methodology page" link | Accent darkened to #b84c30 (5.1:1 on white, 4.8:1 on the page background), so every use is fixed |
+| White numbers on coloured tiles, 3.6–4.2:1 | Story 3's definition cards ("01" to "04") | White badge with dark text; the tile colour is now its border |
+| Sideways-scrolling dashboard frame not reachable by keyboard | Every embedded dashboard, on phones | On phones the frame can be focused (labelled "…, scrolls sideways") and scrolled with the arrow keys |
+| New "How this connects" link at 4.47:1 | Stories 1–4 | Link text in dark ink, with the accent as a thick underline |
+
 ## Not covered
 
 - **Inside the dashboards.** Charts are drawn by Superset, so their colours, keyboard support and
