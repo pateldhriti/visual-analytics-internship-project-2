@@ -33,7 +33,7 @@ embedded Superset dashboards.
 | Phone menu | Opened with Enter; Escape did nothing | Escape closes it and returns focus to the menu button |
 | Embedded dashboards | Iframes reachable by keyboard | Same; each iframe has a descriptive `title` ("Story 3: Is Windsor building enough housing? (Superset dashboard)") |
 | Loading and error messages | None (blank box while loading) | Spinner announced as `role="status"`; failure message as `role="alert"` with a **Try again** button and a link to open the dashboard |
-| Images without alt text | None: the Home banner and the Story 5 photos have descriptive `alt` text | Same; sidebar icons are inline SVG with `aria-hidden="true"` |
+| Images without alt text | None: the Home banner and the Story 5 chart images had descriptive `alt` text (the images were later replaced by the embedded dashboard) | Same; sidebar icons are inline SVG with `aria-hidden="true"` |
 | Reduced motion | The KPI ticker, smooth scrolling and Home's animations respected `prefers-reduced-motion` | The new loading spinner stops too |
 
 ### Phone width

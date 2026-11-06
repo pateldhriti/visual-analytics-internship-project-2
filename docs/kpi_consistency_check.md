@@ -10,7 +10,7 @@
 A KPI with the same name must show the same number. Where two figures legitimately differ because they measure different things, the label must say which is which:
 
 - **Windsor's own figures** (Story 2, Dashboard 1, Home): purpose-built **apartments and row houses**, all unit sizes, Windsor CMA.
-- **Comparison with other cities** (Story 4, Story 5's Story 4 panel): **apartments only**, because CMHC publishes the city comparison for apartments only; rent is for **2-bedroom** units, the size CMHC compares cities on.
+- **Comparison with other cities** (Story 4, and Story 5's city comparison): **apartments only**, because CMHC publishes the city comparison for apartments only; rent is for **2-bedroom** units, the size CMHC compares cities on.
 
 ## Findings and fixes
 
