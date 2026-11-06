@@ -72,6 +72,19 @@ const KPIS = [
   { label: "Rental units", value: "19,883", accent: "teal", trend: "flat" },
 ];
 
+// Story 5 findings that combine this story's data with another story's
+// (docs/story5_combined_analysis.md; re-check after a data refresh).
+const CONNECTIONS = [
+  {
+    with: "With Story 1's renter incomes",
+    text: "About 61% of Windsor renter households earn less than the roughly $58,000 an average 2-bedroom needs under the 30% rule, and about half could not afford an average 1-bedroom.",
+  },
+  {
+    with: "With Story 3's completions",
+    text: "Vacancy fell to 1.8% in 2022, when few new homes were being finished. After completions jumped to 1,967 in 2023 it rose back to 3.6% by 2025, and rent growth slowed from 8.1% to 5.9%.",
+  },
+];
+
 export default function StoryRentalMarket() {
   return (
     <StoryPage
@@ -97,6 +110,7 @@ export default function StoryRentalMarket() {
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
+      connections={CONNECTIONS}
       source="CMHC Rental Market Survey, Windsor CMA, October 2020 to October 2025"
     />
   );

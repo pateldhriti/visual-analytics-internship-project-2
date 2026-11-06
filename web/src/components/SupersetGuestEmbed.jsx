@@ -139,7 +139,14 @@ export default function SupersetGuestEmbed({
       </div>
       {narrow && <NarrowHint openUrl={openUrl} />}
       <div className="superset-embed-body" aria-busy={status === "loading"}>
-        <div className="superset-embed-scroll">
+        {/* On phones this frame scrolls sideways; focusable so keyboard users
+            can scroll it with the arrow keys. */}
+        <div
+          className="superset-embed-scroll"
+          {...(narrow
+            ? { tabIndex: 0, role: "region", "aria-label": `${title}, scrolls sideways` }
+            : {})}
+        >
           <div
             key={attempt}
             ref={mountRef}

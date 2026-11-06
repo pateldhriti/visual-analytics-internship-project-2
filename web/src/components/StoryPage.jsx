@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import PageContainer from "./PageContainer.jsx";
 import FilterBar from "./FilterBar.jsx";
 import KpiRow from "./KpiRow.jsx";
@@ -33,6 +34,7 @@ export default function StoryPage({
   definitions,
   limitations,
   source,
+  connections, // optional: [{ with, text }] -- combined findings from Story 5 that involve this story
   variant = "classic",
   highlightStat, // spotlight variant: { value, label, detail }
   ranking, // ladder variant: [{ label, value, highlight, detail }]
@@ -158,6 +160,29 @@ export default function StoryPage({
               ? "The write-up for this story is still in progress -- it'll bring the other 4 stories together once their combined view is built."
               : "Full narrative write-up goes here — not yet drafted."}
           </motion.p>
+        )}
+
+        {connections?.length > 0 && (
+          <motion.section
+            {...reveal(fadeUp)}
+            className="story-connections"
+            aria-labelledby="story-connections-title"
+          >
+            <h2 id="story-connections-title" className="story-connections-title">
+              How this connects to the other stories
+            </h2>
+            <ul className="story-connections-list">
+              {connections.map((c) => (
+                <li key={c.with}>
+                  <span className="story-connections-with">{c.with}</span>
+                  {c.text}
+                </li>
+              ))}
+            </ul>
+            <Link to="/stories/integrated-analysis" className="story-connections-link">
+              See the combined analysis in Story 5 →
+            </Link>
+          </motion.section>
         )}
 
         {definitions?.length > 0 &&

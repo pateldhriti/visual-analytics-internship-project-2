@@ -64,6 +64,23 @@ const KPIS = [
   { label: "Apartment share of 2025 starts", value: "60%", accent: "rose", trend: "up" },
 ];
 
+// Story 5 findings that combine this story's data with another story's
+// (docs/story5_combined_analysis.md; re-check after a data refresh).
+const CONNECTIONS = [
+  {
+    with: "With Story 2's vacancy",
+    text: "The 2023 completion surge lines up with the rental market loosening: vacancy rose from 1.8% in 2022 to 3.6% in 2025.",
+  },
+  {
+    with: "With Story 4's comparison cities",
+    text: "Since 2016 Windsor has started 8.4 homes a year per 1,000 households, the fewest of the five cities; Kitchener-Cambridge-Waterloo started 19.7.",
+  },
+  {
+    with: "With Census population growth",
+    text: "Windsor gained 23,912 people from 2016 to 2021, about 9,500 homes' worth, but completed 5,666 homes: 59% of what was needed, the lowest of the five cities.",
+  },
+];
+
 export default function StoryHousingSupply() {
   return (
     <StoryPage
@@ -88,6 +105,7 @@ export default function StoryHousingSupply() {
         />
       }
       limitations={LIMITATIONS}
+      connections={CONNECTIONS}
       source="CMHC Starts and Completions Survey, Windsor CMA, Statistics Canada Table 34-10-0154-01, January 2016 to September 2026"
     />
   );

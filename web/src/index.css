@@ -2200,7 +2200,9 @@ html {
   --surface: #ffffff;
   --surface-2: #f4ece0;
   --border: #e6dccb;
-  --accent: #c65335;
+  /* #b84c30, not #c65335: text in the accent colour needs 4.5:1 (5.1:1 on
+     white, 4.8:1 on --bg); #c65335 was 4.47:1 and 4.23:1. */
+  --accent: #b84c30;
   --rose: #d9623f;
   --blue: #3f7fbf;
   --teal: #2e8b8f;
@@ -2798,8 +2800,12 @@ html {
   background: var(--surface);
 }
 
+/* White badge with ink text, the tile colour as its border: white text on
+   the tile colours was 3.6-4.2:1, below the 4.5:1 minimum. */
 .story-page[data-theme="neighbourhood"] .blueprint-card-index {
-  background: var(--tile);
+  background: #ffffff;
+  color: var(--ink);
+  border: 2px solid var(--tile);
 }
 
 /* Story 4 ladder: houses along a road, ranked. */
@@ -3280,4 +3286,63 @@ main:focus {
 .ranking-ladder {
   overflow-x: clip;
   overflow-clip-margin: 12px;
+}
+
+/* ============================================================
+   "How this connects" block on Stories 1-4: the Story 5 findings
+   that combine this story's data with another's, and a link there.
+   ============================================================ */
+.story-connections {
+  margin-top: 28px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--story-accent, #2a78d6);
+  border-radius: var(--radius-sm);
+}
+
+.story-connections-title {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.story-connections-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.story-connections-list li + li {
+  margin-top: 8px;
+}
+
+.story-connections-with {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* Ink-coloured text with the accent as the underline: the theme accents
+   (e.g. #c65335, 4.47:1 on white) are too light for text. */
+.story-connections-link {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration-color: var(--story-accent, #2a78d6);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.story-connections-link:focus-visible {
+  outline: 3px solid #2a78d6;
+  outline-offset: 2px;
+}
+
+.superset-embed-scroll:focus-visible {
+  outline: 3px solid #2a78d6;
+  outline-offset: 2px;
 }
