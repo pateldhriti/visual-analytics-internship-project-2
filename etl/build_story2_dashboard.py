@@ -642,6 +642,8 @@ COMMON_LABELS = {
 DATA_NOTES_MARKDOWN = """**About the data**
 
 - **Source:** CMHC Rental Market Survey, Windsor CMA, every October from 2020 to 2025.
+  CMHC's zone tables cannot be downloaded for earlier years; for **ten years (2015-2025)**
+  of Windsor-wide rent and vacancy, see Story 4's **Ten Years** tab.
 - **Coverage:** purpose-built rental buildings with 3 or more units. Rented condos,
   basements and houses are not included.
 - **"Combined"** means apartments and row houses together. Most charts use it because
