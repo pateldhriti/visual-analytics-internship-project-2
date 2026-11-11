@@ -1,6 +1,6 @@
 """
-Extract Windsor's and its four comparison cities' rows from three StatCan
-files the project already downloads, for the combined Story 5 views.
+Extract Windsor's and its four comparison cities' rows from four StatCan
+files, for the combined Story 5 views.
 
     98-10-0252-01  shelter cost by income and tenure (2021 Census, incomes for 2020)
                    -> renter households by income band, median renter income,
@@ -12,6 +12,12 @@ files the project already downloads, for the combined Story 5 views.
     34-10-0154-01  monthly housing starts and completions
                    -> yearly starts and completions (total and apartments),
                       full calendar years from 2016
+    98-10-0241-01  housing indicators by age of primary household maintainer
+                   and tenure (2021 Census)
+                   -> households, households spending 30%+ of income on
+                      shelter, and households in core housing need, by age
+                      group (category), for all households and renters;
+                      downloaded on first run (62 MB zip)
 
 The Story 1-4 extracts keep only Windsor; Story 4's rents already cover the
 four comparison cities (CMHC Rental Market Survey). This script adds the
@@ -24,13 +30,14 @@ each file spells the names differently.
 
 Output: data/staging/peer_cma_context.csv, long format
 (cma_code, cma_name, source_table, indicator, tenure, category,
-period_year, value). Loaded by etl/load_peer_cma_context.py.
+period_year, value). Loaded by etl/load_warehouse_facts.py.
 
 Licence: Statistics Canada Open Licence
 (https://www.statcan.gc.ca/en/reference/licence).
 
-Run from the project virtual environment (the 1.3 GB shelter-cost file is
-streamed in chunks; it takes a few minutes):
+Run from the project virtual environment (the 1.3 GB shelter-cost file and
+the 1.5 GB housing-indicators file are streamed in chunks; it takes a few
+minutes):
     .venv\\Scripts\\python.exe etl\\extract_peer_cma_context.py
 """
 
@@ -39,12 +46,15 @@ import zipfile
 from pathlib import Path
 
 import pandas as pd
+import requests
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW = PROJECT_ROOT / "data" / "raw"
 SHELTER_CSV = RAW / "shelter_cost" / "98100252.csv"
 PROFILE_CSV = RAW / "statcan" / "98-401-X2021002_English_CSV_data.csv"
 STARTS_ZIP = RAW / "statcan" / "34100154-eng.zip"
+INDICATORS_ZIP = RAW / "statcan" / "98100241-eng.zip"
+INDICATORS_URL = "https://www150.statcan.gc.ca/n1/tbl/csv/98100241-eng.zip"
 OUTPUT_CSV = PROJECT_ROOT / "data" / "staging" / "peer_cma_context.csv"
 
 # CMA code -> the name used by Story 4 (warehouse.v_story4_rent_comparison).
@@ -90,6 +100,25 @@ PROFILE_ITEMS = {
 # --- 34-10-0154-01 -----------------------------------------------------------
 ACTIVITIES = {"Housing starts": "starts", "Housing completions": "completions"}
 UNIT_TYPES = {"Total units": "Total", "Apartment and other unit types": "Apartment and Other"}
+
+# --- 98-10-0241-01 -----------------------------------------------------------
+AGE_COL = "Age of primary household maintainer (9)"
+INDICATOR_COL = "Housing indicators (6)"
+INDICATOR_TOTALS = {
+    "Household type including census family structure (16)": "Total - Household type including census family structure",
+    "Period of construction (13)": "Total - Period of construction",
+    "Statistics (3C)": "Number of private households",
+}
+HOUSING_INDICATORS = {
+    "Total - Housing indicators": "households",
+    "Affordability: 30% or more of household income is spent on shelter costs": "households_30pct_plus",
+    "In core need": "households_core_need",
+}
+INDICATOR_TENURE_COLS = {
+    "Tenure including presence of mortgage payments and subsidized housing (7):"
+    "Total - Tenure including presence of mortgage payments and subsidized housing[1]": "Total",
+    "Tenure including presence of mortgage payments and subsidized housing (7):Renter[5]": "Renter",
+}
 
 
 def cma_code(dguid: str) -> str | None:
@@ -188,6 +217,36 @@ def extract_starts(path: Path = STARTS_ZIP) -> list[dict]:
     return rows
 
 
+def download_indicators(path: Path = INDICATORS_ZIP) -> Path:
+    """The table is not part of the other Story 1-4 downloads; fetch it once."""
+    if path.exists():
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    resp = requests.get(INDICATORS_URL, timeout=300)
+    resp.raise_for_status()
+    path.write_bytes(resp.content)
+    return path
+
+
+def extract_housing_indicators_by_age(path: Path = INDICATORS_ZIP) -> list[dict]:
+    rows = []
+    with zipfile.ZipFile(path) as zf, zf.open("98100241.csv") as fh:
+        for chunk in pd.read_csv(fh, dtype=str, encoding="utf-8-sig", chunksize=CHUNK_SIZE, low_memory=False):
+            codes = chunk["DGUID"].map(cma_code)
+            keep = codes.notna() & chunk[INDICATOR_COL].isin(HOUSING_INDICATORS)
+            for col, val in INDICATOR_TOTALS.items():
+                keep &= chunk[col] == val
+            for _, r in chunk[keep].assign(code=codes[keep]).iterrows():
+                for col, tenure in INDICATOR_TENURE_COLS.items():
+                    value = number(r[col])
+                    if value is not None:
+                        rows.append(
+                            _row(r["code"], "98-10-0241-01", HOUSING_INDICATORS[r[INDICATOR_COL]], tenure,
+                                 r[AGE_COL], 2021, value)
+                        )
+    return rows
+
+
 def _row(code, source, indicator, tenure, category, year, value) -> dict:
     return {
         "cma_code": code,
@@ -201,16 +260,24 @@ def _row(code, source, indicator, tenure, category, year, value) -> dict:
     }
 
 
+SOURCES = ("98-10-0252-01", "98-401-X2021002", "34-10-0154-01", "98-10-0241-01")
+
+
 def check(rows: list[dict]) -> None:
     """Every city must have every source, or a view would silently drop it."""
     have = {(r["cma_code"], r["source_table"]) for r in rows}
-    missing = [(CMAS[c], s) for c in CMAS for s in ("98-10-0252-01", "98-401-X2021002", "34-10-0154-01") if (c, s) not in have]
+    missing = [(CMAS[c], s) for c in CMAS for s in SOURCES if (c, s) not in have]
     if missing:
         raise ValueError(f"No rows extracted for: {missing}")
 
 
 def main() -> pd.DataFrame:
-    rows = extract_census_profile() + extract_starts() + extract_shelter_cost()
+    rows = (
+        extract_census_profile()
+        + extract_starts()
+        + extract_shelter_cost()
+        + extract_housing_indicators_by_age(download_indicators())
+    )
     check(rows)
     out = pd.DataFrame(rows, columns=COLUMNS)
     OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)

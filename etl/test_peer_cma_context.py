@@ -3,7 +3,6 @@
 Run: .venv\\Scripts\\python.exe -m pytest etl\\test_peer_cma_context.py
 """
 
-import io
 import zipfile
 
 import pytest
@@ -23,7 +22,8 @@ def test_cma_code_ignores_other_places(dguid):
 
 
 def test_check_names_every_missing_city_and_source():
-    rows = [ex._row(code, src, "x", None, None, 2021, 1.0) for code in ex.CMAS for src in ("98-10-0252-01", "98-401-X2021002")]
+    present = [src for src in ex.SOURCES if src != "34-10-0154-01"]
+    rows = [ex._row(code, src, "x", None, None, 2021, 1.0) for code in ex.CMAS for src in present]
     with pytest.raises(ValueError, match="34-10-0154-01"):
         ex.check(rows)
     rows += [ex._row(code, "34-10-0154-01", "starts", None, "Total", 2020, 1.0) for code in ex.CMAS]
@@ -100,3 +100,36 @@ def test_shelter_cost_keeps_renter_bands_median_and_burden(tmp_path):
         ("households_30pct_plus", "$40,000 to $49,999"): 2000,
         ("median_household_income", None): 48400,
     }
+
+
+def test_housing_indicators_keep_renters_by_age_and_skip_other_breakdowns(tmp_path):
+    tenure_total, tenure_renter = ex.INDICATOR_TENURE_COLS
+    cols = ["REF_DATE", "GEO", "DGUID", ex.AGE_COL, *ex.INDICATOR_TOTALS, ex.INDICATOR_COL, "Coordinate",
+            tenure_total, "Symbol", tenure_renter, "Symbol"]
+    totals = list(ex.INDICATOR_TOTALS.values())
+    affordability = "Affordability: 30% or more of household income is spent on shelter costs"
+
+    def line(dguid, age, indicator, total, renter, household=totals[0]):
+        values = ["2021", "g", dguid, age, household, *totals[1:], indicator, "1", total, "", renter, ""]
+        return ",".join(f'"{v}"' for v in values)
+
+    body = "\n".join([
+        line("2021S0503559", "15 to 24 years", "Total - Housing indicators", 3000, 2680),
+        line("2021S0503559", "15 to 24 years", affordability, 1300, 1246),
+        line("2021S0503559", "15 to 24 years", "In core need", 400, 335),
+        line("2021S0503559", "15 to 24 years", "Suitability: not suitable", 99, 99),  # not kept
+        line("2021S0503559", "15 to 24 years", affordability, 7, 7, household="Census-family households"),
+        line("2021S0503535", "15 to 24 years", affordability, 9999, 9999),  # Toronto
+    ])
+    path = tmp_path / "98100241-eng.zip"
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr("98100241.csv", ",".join(f'"{c}"' for c in cols) + "\n" + body + "\n")
+    rows = ex.extract_housing_indicators_by_age(path)
+    got = {(r["indicator"], r["tenure"]): r["value"] for r in rows}
+    assert got == {
+        ("households", "Total"): 3000, ("households", "Renter"): 2680,
+        ("households_30pct_plus", "Total"): 1300, ("households_30pct_plus", "Renter"): 1246,
+        ("households_core_need", "Total"): 400, ("households_core_need", "Renter"): 335,
+    }
+    assert {r["category"] for r in rows} == {"15 to 24 years"}
+    assert {r["cma_name"] for r in rows} == {"Windsor CMA"}
