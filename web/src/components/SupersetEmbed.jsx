@@ -14,7 +14,7 @@ import { LOAD_TIMEOUT_MS, SUPERSET_DOMAIN, dashboardUrl } from "../lib/embedConf
 //
 // States: loading (until the iframe's load event), loaded, and an error
 // state with "Try again" if nothing loads within LOAD_TIMEOUT_MS.
-export default function SupersetEmbed({ dashboardId, title, height = 1400 }) {
+export default function SupersetEmbed({ dashboardId, title, height = 1100 }) {
   const narrow = useNarrowScreen();
   const [status, setStatus] = useState("loading");
   const [attempt, setAttempt] = useState(0);

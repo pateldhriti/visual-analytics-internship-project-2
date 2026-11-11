@@ -118,7 +118,6 @@ export default function StoryComparison() {
           dashboard="story4"
           fallbackDashboardId={6}
           title="Story 4: How does Windsor compare to similar markets? (Superset dashboard)"
-          height={2400}
         />
       }
       narrative={NARRATIVE}

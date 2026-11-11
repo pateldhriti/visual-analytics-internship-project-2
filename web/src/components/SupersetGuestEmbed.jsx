@@ -33,17 +33,18 @@ async function requestGuestToken(dashboard) {
   return resp.json();
 }
 
-// After the dashboard renders, grow the frame to the dashboard's own
-// height so the page scrolls once instead of a scroll area inside a
-// scroll area. Checked a few times because charts load asynchronously.
-const RESIZE_CHECKS = 12;
+// Keep the frame the height of the dashboard tab being shown, so the page
+// scrolls once instead of a scroll area inside a scroll area. Checked
+// repeatedly because charts load asynchronously and each tab has its own
+// height; `height` is the minimum, so switching tabs does not make the
+// page jump by more than the difference between tabs.
 const RESIZE_INTERVAL_MS = 1500;
 
 export default function SupersetGuestEmbed({
   dashboard,
   fallbackDashboardId,
   title,
-  height = 1400,
+  height = 1100,
 }) {
   const narrow = useNarrowScreen();
   const mountRef = useRef(null);
@@ -92,20 +93,17 @@ export default function SupersetGuestEmbed({
         }
         // The SDK creates the iframe without a title; screen readers need one.
         mountRef.current?.querySelector("iframe")?.setAttribute("title", title);
-        let checks = 0;
         resizeTimer = setInterval(async () => {
-          checks += 1;
           try {
             const size = await embedded.getScrollSize();
             if (!cancelled && size?.height) {
               setStatus("ready");
               clearTimeout(timeout);
-              setFrameHeight((current) => Math.max(current, Math.ceil(size.height)));
+              setFrameHeight(Math.max(height, Math.ceil(size.height)));
             }
           } catch {
             // Size isn't available until the dashboard has loaded; try again.
           }
-          if (checks >= RESIZE_CHECKS) clearInterval(resizeTimer);
         }, RESIZE_INTERVAL_MS);
       })
       .catch((err) => {
@@ -121,7 +119,7 @@ export default function SupersetGuestEmbed({
       clearInterval(resizeTimer);
       embedded?.unmount();
     };
-  }, [dashboard, title, narrow, attempt, fallbackDashboardId]);
+  }, [dashboard, title, narrow, attempt, fallbackDashboardId, height]);
 
   if (status === "fallback") {
     return <SupersetEmbed dashboardId={fallbackDashboardId} title={title} height={height} />;
