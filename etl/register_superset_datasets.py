@@ -342,6 +342,15 @@ VIEWS = {
             "description": "Oct-25 average 2-bedroom apartment rent. One row per city; the view holds every Story 5 measure for the five cities.",
         },
     ],
+    "v_story3_period_comparison": [
+        {
+            "metric_name": "avg_units_per_year",
+            "expression": "SUM(avg_units_per_year)",
+            "verbose_name": "Average Units a Year",
+            "metric_type": "sum",
+            "description": "Windsor starts or completions a year, averaged over 2016-2020 or 2021-2025, by dwelling type. Filter to one activity.",
+        },
+    ],
     "v_story4_rent_history": [
         {
             "metric_name": "avg_rent_2br_history",

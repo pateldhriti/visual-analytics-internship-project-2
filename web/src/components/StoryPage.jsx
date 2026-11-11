@@ -35,6 +35,7 @@ export default function StoryPage({
   limitations,
   source,
   connections, // optional: [{ with, text }] -- combined findings from Story 5 that involve this story
+  highlights, // optional: the site's own charts for this story's key findings (StoryHighlights)
   variant = "classic",
   highlightStat, // spotlight variant: { value, label, detail }
   ranking, // ladder variant: [{ label, value, highlight, detail }]
@@ -133,7 +134,9 @@ export default function StoryPage({
           the ~68ch narrative text, so this breaks out to its own max-width
           instead of sharing PageContainer's narrower one (same pattern as
           Home.jsx's full-bleed hero banner). */}
-      <motion.div {...reveal(fadeIn)} className="story-dashboard-band">
+      {highlights && <div className="story-highlights-band">{highlights}</div>}
+
+      <motion.div {...reveal(fadeIn)} className="story-dashboard-band" id="dashboard">
         <div className="story-dashboard-slot">
           {dashboard ?? (
             <p className={isHorizon ? "horizon-note" : "placeholder-note"}>

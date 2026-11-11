@@ -87,7 +87,8 @@ CITY_LINE_COLORS = {
 }
 BEFORE, FROM_PANDEMIC = "2015 to 2020", "2020 to 2025"
 PERIOD_COLORS = {BEFORE: PEER_GREY, FROM_PANDEMIC: ACCENT}
-LABEL_COLORS = {**MARKET_COLORS, **CITY_LINE_COLORS, **PERIOD_COLORS}
+PEER_AVERAGE = "Average of the other 4 cities"
+LABEL_COLORS = {**MARKET_COLORS, **CITY_LINE_COLORS, **PERIOD_COLORS, PEER_AVERAGE: PEER_GREY}
 
 YEAR_AXIS = {"expressionType": "SQL", "sqlExpression": "CAST(period_year AS TEXT)", "label": "Year"}
 
@@ -271,15 +272,26 @@ CHARTS = {
         "params": history_line_params("AVG(average_rent_2br)", "Average 2-bedroom rent", "$,.0f", lower=600),
     },
     "vacancy-history": {
-        "slice_name": "Vacancy Rate by Year and City (2015 to 2025)",
+        "slice_name": "Vacancy Rate by Year: Windsor vs the Other Four Cities (2015 to 2025)",
         "description": (
-            "October vacancy rate, apartments and row houses, Windsor and four similar Ontario cities, 2015 "
-            "to 2025 (StatCan 34-10-0130-01). Lower means harder to find a place. "
-            "warehouse.v_story4_rent_history."
+            "October vacancy rate, apartments and row houses, Windsor against the average of the four "
+            "comparison cities, 2015 to 2025 (StatCan 34-10-0130-01). Lower means harder to find a place. "
+            "Hover a year for the values. warehouse.v_story4_rent_history."
         ),
         "dataset_id": DATASET_HISTORY,
         "viz_type": "echarts_timeseries_line",
-        "params": history_line_params("AVG(vacancy_rate) / 100.0", "Vacancy rate", ".1%"),
+        # Five crossing vacancy lines were hard to read, so the four
+        # comparison cities are averaged into one line.
+        "params": {
+            **history_line_params("AVG(vacancy_rate) / 100.0", "Vacancy rate", ".1%"),
+            "groupby": [
+                {
+                    "expressionType": "SQL",
+                    "sqlExpression": f"CASE WHEN is_windsor THEN 'Windsor' ELSE '{PEER_AVERAGE}' END",
+                    "label": "Group",
+                }
+            ],
+        },
     },
     "period-growth": {
         "slice_name": "Average Yearly Rent Increase: 2015 to 2020 vs 2020 to 2025",

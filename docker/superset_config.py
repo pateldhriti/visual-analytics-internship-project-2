@@ -219,6 +219,7 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story4_rent_comparison](id:3)",
     "[Windsor Housing Data].[v_story4_affordability_gap](id:4)",
     "[Windsor Housing Data].[v_story4_rent_history](id:33)",
+    "[Windsor Housing Data].[v_story3_period_comparison](id:35)",
     "[Windsor Housing Data].[v_story4_period_comparison](id:34)",
     # Story 5's combined dashboard (etl/build_story5_dashboard.py): views
     # that join two stories each (sql/story5_views.sql).

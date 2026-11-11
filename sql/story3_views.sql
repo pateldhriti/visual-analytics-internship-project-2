@@ -166,3 +166,46 @@ SELECT
         || 'no annual household estimate exists in this project''s data.' AS data_note
 FROM annual a
 CROSS JOIN households h;
+
+-- ---------------------------------------------------------------------------
+-- v_story3_period_comparison
+-- Windsor's building before and from the pandemic: the yearly average of
+-- starts and completions, by dwelling type, in 2016-2020 and in 2021-2025
+-- (five full calendar years each), and each type's share of the period's
+-- total. Partial years are left out, so a period is only reported once all
+-- five of its years are complete (n_years shows how many were averaged).
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story3_period_comparison AS
+WITH yearly AS (
+    SELECT
+        CASE WHEN period_year BETWEEN 2016 AND 2020 THEN '2016 to 2020'
+             WHEN period_year BETWEEN 2021 AND 2025 THEN '2021 to 2025' END AS period,
+        period_year,
+        activity,
+        dwelling_type,
+        units
+    FROM warehouse.v_story3_windsor_supply_annual
+    WHERE activity IN ('Starts', 'Completions')
+      AND NOT is_partial_year
+      AND period_year BETWEEN 2016 AND 2025
+),
+averaged AS (
+    SELECT period, activity, dwelling_type,
+           COUNT(DISTINCT period_year) AS n_years,
+           SUM(units) AS total_units,
+           ROUND(AVG(units), 0) AS avg_units_per_year
+    FROM yearly
+    GROUP BY period, activity, dwelling_type
+)
+SELECT
+    a.period,
+    a.activity,
+    a.dwelling_type,
+    a.n_years,
+    a.total_units,
+    a.avg_units_per_year,
+    ROUND(100.0 * a.total_units / NULLIF(t.total_units, 0), 1) AS pct_of_total
+FROM averaged a
+JOIN averaged t
+  ON t.period = a.period AND t.activity = a.activity AND t.dwelling_type = 'Total'
+WHERE a.n_years = 5;

@@ -19,6 +19,7 @@ def _data():
         "cities": [{"city": c} for c in CITIES],
         "supply": [{"city": c} for c in CITIES],
         "rentHistory": {"years": [2015, 2016], "series": [{"city": c, "rent": [900, 950]} for c in CITIES]},
+        "startsMix": [{"type": t} for t in ("Total", "Singles", "Semis", "Row", "Apartment and Other")],
     }
 
 
@@ -30,6 +31,13 @@ def test_a_missing_city_fails():
     data = _data()
     data["supply"].pop()
     with pytest.raises(ValueError, match="four comparison cities"):
+        check(data)
+
+
+def test_a_missing_dwelling_type_fails():
+    data = _data()
+    data["startsMix"].pop()
+    with pytest.raises(ValueError, match="dwelling types"):
         check(data)
 
 

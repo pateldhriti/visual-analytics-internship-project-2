@@ -615,7 +615,131 @@ function HomesBuilt() {
   );
 }
 
-// --- the section -------------------------------------------------------------
+// --- 5. slope: what Windsor starts, before and from 2020 -------------------------
+
+const TYPE_LABEL = {
+  "Apartment and Other": "Apartments",
+  Singles: "Single-detached",
+  Semis: "Semi-detached",
+  Row: "Row houses",
+};
+const TYPE_SHORT = {
+  "Apartment and Other": "Apts",
+  Singles: "Singles",
+  Semis: "Semis",
+  Row: "Row",
+};
+
+function StartsMixSlope() {
+  const types = data.startsMix.filter((m) => m.type !== "Total");
+  const [ref, width] = useWidth();
+  const tooltip = useTooltip(ref);
+  const height = 320;
+  const narrow = width < 480;
+  const m = { top: 34, bottom: 20, side: narrow ? 104 : 150 };
+  const x0 = m.side;
+  const x1 = width - m.side;
+  const y = scale(0, 60, height - m.bottom, m.top);
+  // Nudge labels apart on each side so close shares (row/semis) stay legible.
+  const spread = (key) =>
+    types
+      .map((t) => ({ t, ty: y(t[key].share) }))
+      .sort((a, b) => a.ty - b.ty)
+      .reduce(
+        (acc, l) => [
+          ...acc,
+          { ...l, ty: acc.length ? Math.max(l.ty, acc[acc.length - 1].ty + 18) : l.ty },
+        ],
+        []
+      );
+  const left = Object.fromEntries(spread("before").map((l) => [l.t.type, l.ty]));
+  const right = Object.fromEntries(spread("after").map((l) => [l.t.type, l.ty]));
+
+  return (
+    <div className="hl-chart hl-chart--wide" ref={ref}>
+      {width > 0 && (
+        <svg
+          width={width}
+          height={height}
+          role="img"
+          aria-label="Share of homes started in Windsor by dwelling type, 2016 to 2020 against 2021 to 2025"
+        >
+          {[
+            [x0, "2016-2020"],
+            [x1, "2021-2025"],
+          ].map(([xx, label]) => (
+            <g key={label}>
+              <line x1={xx} x2={xx} y1={m.top} y2={height - m.bottom} className="hl-grid" />
+              <text x={xx} y={m.top - 14} textAnchor="middle" className="hl-event-label">
+                {label}
+              </text>
+            </g>
+          ))}
+          {types.map((t, i) => {
+            const isApt = t.type === "Apartment and Other";
+            const cls = isApt ? "hl-label hl-label--windsor" : "hl-label";
+            return (
+              <g
+                key={t.type}
+                className="hl-slope"
+                aria-label={`${TYPE_LABEL[t.type]}: ${pct(t.before.share)} of starts in 2016-2020, ${pct(t.after.share)} in 2021-2025`}
+                {...tooltip.markProps(
+                  <>
+                    <strong>{TYPE_LABEL[t.type]}</strong>
+                    <br />
+                    2016-2020: {fmtInt(t.before.per_year)} a year ({pct(t.before.share, 1)})
+                    <br />
+                    2021-2025: {fmtInt(t.after.per_year)} a year ({pct(t.after.share, 1)})
+                  </>
+                )}
+              >
+                <motion.line
+                  x1={x0}
+                  y1={y(t.before.share)}
+                  x2={x1}
+                  y2={y(t.after.share)}
+                  className={isApt ? "hl-line hl-line--windsor" : "hl-line"}
+                  initial={{ pathLength: 0 }}
+                  whileInView={{ pathLength: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.2 + i * 0.12, ease: "easeInOut" }}
+                />
+                <circle
+                  cx={x0}
+                  cy={y(t.before.share)}
+                  r={5}
+                  className={isApt ? "hl-fill-windsor hl-point" : "hl-fill-peer hl-point"}
+                />
+                <circle
+                  cx={x1}
+                  cy={y(t.after.share)}
+                  r={5}
+                  className={isApt ? "hl-fill-windsor hl-point" : "hl-fill-peer hl-point"}
+                />
+                <text
+                  x={x0 - 12}
+                  y={left[t.type]}
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  className={cls}
+                >
+                  {narrow ? "" : `${TYPE_LABEL[t.type]} `}
+                  {pct(t.before.share)}
+                </text>
+                <text x={x1 + 12} y={right[t.type]} dominantBaseline="middle" className={cls}>
+                  {pct(t.after.share)} {(narrow ? TYPE_SHORT : TYPE_LABEL)[t.type]}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      )}
+      {tooltip.node}
+    </div>
+  );
+}
+
+// --- the findings ------------------------------------------------------------
 
 function Finding({ number, title, children, chart, table, link, source, flip }) {
   return (
@@ -627,9 +751,15 @@ function Finding({ number, title, children, chart, table, link, source, flip }) 
         <p className="hl-number">{number}</p>
         <h3>{title}</h3>
         {children}
-        <Link className="hl-link" to={link.to}>
-          {link.label} &rarr;
-        </Link>
+        {link.to.startsWith("#") ? (
+          <a className="hl-link" href={link.to}>
+            {link.label} &darr;
+          </a>
+        ) : (
+          <Link className="hl-link" to={link.to}>
+            {link.label} &rarr;
+          </Link>
+        )}
       </div>
       <figure className="hl-figure">
         {chart}
@@ -640,7 +770,8 @@ function Finding({ number, title, children, chart, table, link, source, flip }) 
   );
 }
 
-export default function StoryHighlights() {
+// Each finding: its chart, text and the story page whose dashboard explores it.
+function buildFindings() {
   const a = data.affordability;
   const windsorCity = data.cities.find((c) => c.isWindsor);
   const peers = data.cities.filter((c) => !c.isWindsor);
@@ -658,66 +789,60 @@ export default function StoryHighlights() {
   const windsorSupply = data.supply.find((s) => s.isWindsor);
   const peerRatios = data.supply.filter((s) => !s.isWindsor).map((s) => s.ratio * 100);
 
-  return (
-    <section className="section hl-section" id="findings" aria-labelledby="findings-title">
-      <motion.div className="section-heading" {...reveal(fadeUp)}>
-        <h2 id="findings-title">The story in four charts</h2>
-        <p className="section-note">
-          Hover or tab through a chart for details; each one opens the dashboard behind it
-        </p>
-      </motion.div>
+  const mix = Object.fromEntries(data.startsMix.map((m) => [m.type, m]));
+  const apt = mix["Apartment and Other"];
+  const total = mix.Total;
 
-      <Finding
-        number="01"
-        title={`${Math.round(a.pct / 10)} in 10 Windsor renters cannot afford an average 2-bedroom`}
-        chart={<AffordWaffle />}
-        link={{
-          to: "/stories/integrated-analysis",
-          label: "Explore affordability by unit size (Story 5)",
-        }}
-        source="Each square is 1% of Windsor's renter households. Census 2021 incomes (2020) and CMHC October 2025 rents."
-        table={
-          <DataTable
-            caption="Windsor renter households and a 2-bedroom"
-            head={["Measure", "Value"]}
-            rows={[
-              ["Average 2-bedroom rent", fmtMoney(a.rent)],
-              ["Income needed (rent = 30% of income)", fmtMoney(a.incomeNeeded)],
-              ["Median renter household income", fmtMoney(a.medianIncome)],
-              ["Renter households", fmtInt(a.renters)],
-              ["Cannot afford it", `${fmtInt(a.cannot)} (${pct(a.pct, 1)})`],
-            ]}
-          />
-        }
-      >
+  return {
+    afford: {
+      story: "/stories/integrated-analysis",
+      title: `${Math.round(a.pct / 10)} in 10 Windsor renters cannot afford an average 2-bedroom`,
+      chart: <AffordWaffle />,
+      linkLabel: "Explore affordability by unit size (Story 5)",
+      source:
+        "Each square is 1% of Windsor's renter households. Census 2021 incomes (2020) and CMHC October 2025 rents.",
+      table: (
+        <DataTable
+          caption="Windsor renter households and a 2-bedroom"
+          head={["Measure", "Value"]}
+          rows={[
+            ["Average 2-bedroom rent", fmtMoney(a.rent)],
+            ["Income needed (rent = 30% of income)", fmtMoney(a.incomeNeeded)],
+            ["Median renter household income", fmtMoney(a.medianIncome)],
+            ["Renter households", fmtInt(a.renters)],
+            ["Cannot afford it", `${fmtInt(a.cannot)} (${pct(a.pct, 1)})`],
+          ]}
+        />
+      ),
+      body: (
         <p>
           A 2-bedroom averages <strong>{fmtMoney(a.rent)}</strong> a month. Keeping rent to 30% of
           income takes <strong>{fmtMoney(a.incomeNeeded)}</strong> a year, but the typical renter
           household earns <strong>{fmtMoney(a.medianIncome)}</strong>. {fmtInt(a.cannot)} of{" "}
           {fmtInt(a.renters)} renter households fall short.
         </p>
-      </Finding>
-
-      <Finding
-        flip
-        number="02"
-        title="Windsor is cheaper, not more affordable"
-        chart={<RentIncomeScatter />}
-        link={{ to: "/stories/integrated-analysis", label: "Compare the five cities (Story 5)" }}
-        source="2-bedroom apartment rent, CMHC October 2025; median renter household income, Census 2021 (2020 incomes)."
-        table={
-          <DataTable
-            caption="Rent and renter income by city"
-            head={["City", "2-bed rent", "Median renter income", "Rent as % of income"]}
-            rows={data.cities.map((c) => [
-              c.city,
-              fmtMoney(c.rent),
-              fmtMoney(c.income),
-              pct(c.rentPct, 1),
-            ])}
-          />
-        }
-      >
+      ),
+    },
+    cheap: {
+      story: "/stories/integrated-analysis",
+      title: "Windsor is cheaper, not more affordable",
+      chart: <RentIncomeScatter />,
+      linkLabel: "Compare the five cities (Story 5)",
+      source:
+        "2-bedroom apartment rent, CMHC October 2025; median renter household income, Census 2021 (2020 incomes).",
+      table: (
+        <DataTable
+          caption="Rent and renter income by city"
+          head={["City", "2-bed rent", "Median renter income", "Rent as % of income"]}
+          rows={data.cities.map((c) => [
+            c.city,
+            fmtMoney(c.rent),
+            fmtMoney(c.income),
+            pct(c.rentPct, 1),
+          ])}
+        />
+      ),
+      body: (
         <p>
           Windsor has the lowest rent of the five cities, and its renters also have among the lowest
           incomes. A year of 2-bedroom rent takes <strong>{pct(windsorCity.rentPct)}</strong> of the
@@ -725,25 +850,26 @@ export default function StoryHighlights() {
           {sameShare.length ? `, the same as ${sameShare.join(" and ")}` : ""}. Every city sits
           above the 30% line.
         </p>
-      </Finding>
-
-      <Finding
-        number="03"
-        title={`Ten years: Windsor rents up ${pct((w[last] / w[first] - 1) * 100)}`}
-        chart={<RentHistoryLine />}
-        link={{ to: "/stories/comparison", label: "See ten years of rent and vacancy (Story 4)" }}
-        source="Average 2-bedroom rent each October, apartments and row houses. CMHC Rental Market Survey via StatCan 34-10-0133-01. Event labels are context, not measured in this data."
-        table={
-          <DataTable
-            caption="2-bedroom rent each October"
-            head={["City", ...years.filter((_, i) => i % 5 === 0 || i === last).map(String)]}
-            rows={series.map((s) => [
-              s.city,
-              ...s.rent.filter((_, i) => i % 5 === 0 || i === last).map(fmtMoney),
-            ])}
-          />
-        }
-      >
+      ),
+    },
+    decade: {
+      story: "/stories/comparison",
+      title: `Ten years: Windsor rents up ${pct((w[last] / w[first] - 1) * 100)}`,
+      chart: <RentHistoryLine />,
+      linkLabel: "See ten years of rent and vacancy (Story 4)",
+      source:
+        "Average 2-bedroom rent each October, apartments and row houses. CMHC Rental Market Survey via StatCan 34-10-0133-01. Event labels are context, not measured in this data.",
+      table: (
+        <DataTable
+          caption="2-bedroom rent each October"
+          head={["City", ...years.filter((_, i) => i % 5 === 0 || i === last).map(String)]}
+          rows={series.map((s) => [
+            s.city,
+            ...s.rent.filter((_, i) => i % 5 === 0 || i === last).map(fmtMoney),
+          ])}
+        />
+      ),
+      body: (
         <p>
           From <strong>{fmtMoney(w[first])}</strong> in {years[first]} to{" "}
           <strong>{fmtMoney(w[last])}</strong> in {years[last]}. Rents rose{" "}
@@ -753,35 +879,117 @@ export default function StoryHighlights() {
           {pct((w[first] / peerAvg(first)) * 100)} to {pct((w[last] / peerAvg(last)) * 100)} of the
           other four cities&rsquo; average.
         </p>
-      </Finding>
-
-      <Finding
-        flip
-        number="04"
-        title={`Windsor built ${Math.round(windsorSupply.ratio * 10)} of every 10 homes its growth needed`}
-        chart={<HomesBuilt />}
-        link={{ to: "/stories/integrated-analysis", label: "See supply against demand (Story 5)" }}
-        source="Homes completed 2016-2020 (StatCan 34-10-0154-01) against homes needed for 2016-2021 population growth at 2021 household sizes (Census)."
-        table={
-          <DataTable
-            caption="Homes needed and completed by city"
-            head={["City", "Homes needed", "Homes completed", "Share built"]}
-            rows={data.supply.map((s) => [
-              s.city,
-              fmtInt(s.needed),
-              fmtInt(s.built),
-              pct(s.ratio * 100),
-            ])}
-          />
-        }
-      >
+      ),
+    },
+    supply: {
+      story: "/stories/integrated-analysis",
+      title: `Windsor built ${Math.round(windsorSupply.ratio * 10)} of every 10 homes its growth needed`,
+      chart: <HomesBuilt />,
+      linkLabel: "See supply against demand (Story 5)",
+      source:
+        "Homes completed 2016-2020 (StatCan 34-10-0154-01) against homes needed for 2016-2021 population growth at 2021 household sizes (Census).",
+      table: (
+        <DataTable
+          caption="Homes needed and completed by city"
+          head={["City", "Homes needed", "Homes completed", "Share built"]}
+          rows={data.supply.map((s) => [
+            s.city,
+            fmtInt(s.needed),
+            fmtInt(s.built),
+            pct(s.ratio * 100),
+          ])}
+        />
+      ),
+      body: (
         <p>
           Between the 2016 and 2021 Censuses, Windsor&rsquo;s population growth needed about{" "}
           <strong>{fmtInt(windsorSupply.needed)}</strong> homes; it completed{" "}
           <strong>{fmtInt(windsorSupply.built)}</strong>. The other four cities built{" "}
           {pct(Math.min(...peerRatios))} to {pct(Math.max(...peerRatios))} of what they needed.
         </p>
-      </Finding>
+      ),
+    },
+    mix: {
+      story: "/stories/housing-supply",
+      title: `Apartments went from ${pct(apt.before.share)} to ${pct(apt.after.share)} of what Windsor starts`,
+      chart: <StartsMixSlope />,
+      linkLabel: "Compare the two periods (Story 3)",
+      source:
+        "Share of homes started by dwelling type, five full years each. CMHC Starts and Completions Survey via StatCan 34-10-0154-01.",
+      table: (
+        <DataTable
+          caption="Homes started a year by dwelling type"
+          head={[
+            "Dwelling type",
+            "2016-2020 a year",
+            "2021-2025 a year",
+            "Share then",
+            "Share now",
+          ]}
+          rows={data.startsMix.map((m) => [
+            TYPE_LABEL[m.type] ?? "All homes",
+            fmtInt(m.before.per_year),
+            fmtInt(m.after.per_year),
+            pct(m.before.share),
+            pct(m.after.share),
+          ])}
+        />
+      ),
+      body: (
+        <p>
+          Windsor started <strong>{fmtInt(total.after.per_year)}</strong> homes a year in 2021-2025,
+          up from <strong>{fmtInt(total.before.per_year)}</strong> in 2016-2020. What it builds
+          changed more: apartments rose from <strong>{fmtInt(apt.before.per_year)}</strong> to{" "}
+          <strong>{fmtInt(apt.after.per_year)}</strong> a year, while single-detached starts fell
+          from {fmtInt(mix.Singles.before.per_year)} to {fmtInt(mix.Singles.after.per_year)}.
+        </p>
+      ),
+    },
+  };
+}
+
+// The home page shows the four headline findings, each linking to its story.
+// A story page passes `only` (the findings that belong to it) and `here`
+// (its own path): a finding explored on that same page links down to the
+// page's dashboard instead of to itself.
+const HOME_FINDINGS = ["afford", "cheap", "decade", "supply"];
+
+export default function StoryHighlights({ only = HOME_FINDINGS, here = null }) {
+  const findings = buildFindings();
+  const onStoryPage = here !== null;
+  return (
+    <section
+      className={`section hl-section${onStoryPage ? " hl-section--story" : ""}`}
+      id="findings"
+      aria-labelledby="findings-title"
+    >
+      <motion.div className="section-heading" {...reveal(fadeUp)}>
+        <h2 id="findings-title">{onStoryPage ? "Key findings" : "The story in four charts"}</h2>
+        <p className="section-note">
+          Hover or tab through a chart for details; the dashboard has the full data
+        </p>
+      </motion.div>
+      {only.map((key, i) => {
+        const f = findings[key];
+        const link =
+          f.story === here
+            ? { to: "#dashboard", label: "Explore it in the dashboard below" }
+            : { to: f.story, label: f.linkLabel };
+        return (
+          <Finding
+            key={key}
+            flip={i % 2 === 1}
+            number={String(i + 1).padStart(2, "0")}
+            title={f.title}
+            chart={f.chart}
+            link={link}
+            source={f.source}
+            table={f.table}
+          >
+            {f.body}
+          </Finding>
+        );
+      })}
     </section>
   );
 }

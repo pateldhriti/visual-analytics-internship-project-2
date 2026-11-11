@@ -1,4 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
+import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Text condensed from docs/story1_narrative_final.md. Every figure comes
@@ -95,6 +96,7 @@ export default function StoryAffordability() {
         label: "of renter households spend 30%+ of income on shelter",
         detail: "against 10.9% of owners",
       }}
+      highlights={<StoryHighlights only={["afford"]} here="/stories/affordability" />}
       dashboard={
         <SupersetGuestEmbed
           dashboard="story1"

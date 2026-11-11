@@ -248,5 +248,82 @@
       "built": 18255,
       "ratio": 0.91
     }
+  ],
+  "startsMix": [
+    {
+      "type": "Apartment and Other",
+      "before": {
+        "dwelling_type": "Apartment and Other",
+        "period": "2016 to 2020",
+        "per_year": 246,
+        "share": 19.5
+      },
+      "after": {
+        "dwelling_type": "Apartment and Other",
+        "period": "2021 to 2025",
+        "per_year": 813,
+        "share": 53.5
+      }
+    },
+    {
+      "type": "Row",
+      "before": {
+        "dwelling_type": "Row",
+        "period": "2016 to 2020",
+        "per_year": 206,
+        "share": 16.4
+      },
+      "after": {
+        "dwelling_type": "Row",
+        "period": "2021 to 2025",
+        "per_year": 143,
+        "share": 9.4
+      }
+    },
+    {
+      "type": "Semis",
+      "before": {
+        "dwelling_type": "Semis",
+        "period": "2016 to 2020",
+        "per_year": 131,
+        "share": 10.4
+      },
+      "after": {
+        "dwelling_type": "Semis",
+        "period": "2021 to 2025",
+        "per_year": 108,
+        "share": 7.1
+      }
+    },
+    {
+      "type": "Singles",
+      "before": {
+        "dwelling_type": "Singles",
+        "period": "2016 to 2020",
+        "per_year": 677,
+        "share": 53.7
+      },
+      "after": {
+        "dwelling_type": "Singles",
+        "period": "2021 to 2025",
+        "per_year": 455,
+        "share": 29.9
+      }
+    },
+    {
+      "type": "Total",
+      "before": {
+        "dwelling_type": "Total",
+        "period": "2016 to 2020",
+        "per_year": 1261,
+        "share": 100
+      },
+      "after": {
+        "dwelling_type": "Total",
+        "period": "2021 to 2025",
+        "per_year": 1520,
+        "share": 100
+      }
+    }
   ]
 }

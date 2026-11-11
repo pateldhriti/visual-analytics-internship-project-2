@@ -1,4 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
+import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Story 5 is the combined story: every figure here comes from a view that
@@ -128,6 +129,9 @@ export default function StoryIntegratedAnalysis() {
       questions={QUESTIONS}
       filters={FILTERS}
       kpis={KPIS}
+      highlights={
+        <StoryHighlights only={["afford", "cheap", "supply"]} here="/stories/integrated-analysis" />
+      }
       dashboard={
         <SupersetGuestEmbed
           dashboard="story5"
