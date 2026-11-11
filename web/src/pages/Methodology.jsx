@@ -50,6 +50,12 @@ const SOURCES = [
     url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=9810024101",
   },
   {
+    name: "CMHC average rents and vacancy rates, October each year (Tables 34-10-0133-01 and 34-10-0130-01)",
+    agency: "Statistics Canada (CMHC Rental Market Survey)",
+    use: "Story 4: 2-bedroom rent and vacancy for Windsor and the four comparison cities every year from 2015 to 2025.",
+    url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410013301",
+  },
+  {
     name: "Starts, completions and units under construction, quarterly",
     agency: "CMHC",
     use: "Ontario and Canada context on the overview dashboard.",

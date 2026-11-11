@@ -161,3 +161,50 @@ def test_rental_universe_reads_each_cma_total_row(tmp_path):
 def test_rental_universe_fails_loudly_when_a_total_row_is_missing(tmp_path):
     with pytest.raises(ValueError, match="Kitchener"):
         ex.extract_rental_universe(_rms_workbooks(tmp_path, kcw_label="Kitchener Region"))
+
+
+def _table_zip(tmp_path, pid: str, header: str, lines: list[str]):
+    path = tmp_path / f"{pid}-eng.zip"
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr(f"{pid}.csv", "﻿" + header + "".join(lines))
+    return path
+
+
+def test_rent_history_keeps_row_and_apartment_rents_from_2015(tmp_path):
+    header = '"REF_DATE","GEO","DGUID","Type of structure","Type of unit","VALUE","STATUS"\n'
+    both = "Row and apartment structures of three units and over"
+    lines = [
+        f'"2015","Windsor, Ontario","2011S0503559","{both}","Two bedroom units","823",""\n',
+        f'"2025","Windsor, Ontario","2011S0503559","{both}","Two bedroom units","1451",""\n',
+        f'"2025","Windsor, Ontario","2011S0503559","{both}","Bachelor units","",F\n',  # suppressed
+        f'"2014","Windsor, Ontario","2011S0503559","{both}","Two bedroom units","799",""\n',  # before 2015
+        '"2025","Windsor, Ontario","2011S0503559","Apartment structures of three units and over","Two bedroom units","1454",""\n',
+        f'"2025","Toronto, Ontario","2011S0503535","{both}","Two bedroom units","2000",""\n',
+    ]
+    rows = ex.extract_rent_history(_table_zip(tmp_path, "34100133", header, lines))
+    assert [(r["period_year"], r["category"], r["value"]) for r in rows] == [
+        (2015, "2 Bedroom", 823.0),
+        (2025, "2 Bedroom", 1451.0),
+    ]
+    assert {r["source_table"] for r in rows} == {"34-10-0133-01"}
+
+
+def test_vacancy_history_keeps_the_five_cities(tmp_path):
+    header = '"REF_DATE","GEO","DGUID","VALUE"\n'
+    lines = [f'"2020","x","2011S0503{code}","3.5"\n' for code in ex.CMAS]
+    lines.append('"2020","Census metropolitan areas","","3.1"\n')
+    rows = ex.extract_vacancy_history(_table_zip(tmp_path, "34100130", header, lines))
+    assert {r["cma_name"] for r in rows} == set(ex.CMAS.values())
+    assert all(r["indicator"] == "vacancy_rate" and r["value"] == 3.5 for r in rows)
+
+
+def test_refresh_table_falls_back_to_the_saved_copy(tmp_path, monkeypatch):
+    saved = _table_zip(tmp_path, "34100130", '"REF_DATE","GEO","DGUID","VALUE"\n', [])
+
+    def offline(*args, **kwargs):
+        raise ex.requests.ConnectionError("offline")
+
+    monkeypatch.setattr(ex.requests, "get", offline)
+    assert ex.refresh_table(saved) == saved
+    with pytest.raises(ex.requests.ConnectionError):
+        ex.refresh_table(tmp_path / "34100133-eng.zip")  # nothing saved yet
