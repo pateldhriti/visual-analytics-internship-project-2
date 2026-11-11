@@ -37,6 +37,7 @@ from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_ANNUAL = 21  # v_story3_windsor_supply_annual
 DATASET_PER_1000 = 22  # v_story3_windsor_supply_per_1000_households
+DATASET_PERIODS = 35  # v_story3_period_comparison
 
 COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
 DEFAULT_YEAR = "2025"
@@ -149,6 +150,59 @@ CHARTS = {
             "y_axis_label": "Units",
         },
     },
+    "period-mix": {
+        "slice_name": "What Windsor Starts: Dwelling Mix, 2016-2020 vs 2021-2025",
+        "description": (
+            "Share of homes started by dwelling type, five years before and from 2020. "
+            "warehouse.v_story3_period_comparison."
+        ),
+        "dataset_id": DATASET_PERIODS,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": "period",
+            "metrics": [{"expressionType": "SQL", "sqlExpression": "SUM(avg_units_per_year)", "label": "Homes started a year"}],
+            "groupby": ["dwelling_type"],
+            "adhoc_filters": [eq_filter("activity", "Starts"), EXCLUDE_TOTAL],
+            "stack": "Expand",
+            "orientation": "horizontal",
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": False,  # the labels showed only the 100% totals, cut off at the edge
+            "show_legend": True,
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ".0%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "x_axis_sort_asc": False,
+        },
+    },
+    "period-totals": {
+        "slice_name": "Homes a Year: 2016-2020 vs 2021-2025",
+        "description": (
+            "Average homes started and completed a year in Windsor, all dwelling types, 2016-2020 and "
+            "2021-2025. warehouse.v_story3_period_comparison."
+        ),
+        "dataset_id": DATASET_PERIODS,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": "activity",
+            "metrics": [{"expressionType": "SQL", "sqlExpression": "SUM(avg_units_per_year)", "label": "Homes a year"}],
+            "groupby": ["period"],
+            "adhoc_filters": [TOTAL_ONLY],
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": True,
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ",d",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 1800],
+        },
+    },
     "trend": {
         "slice_name": "Starts vs Completions by Year (2016-2025)",
         "description": "Windsor CMA, all dwelling types, full years only -- warehouse.v_story3_windsor_supply_annual.",
@@ -221,6 +275,22 @@ CHARTS = {
     },
 }
 
+# Same order and colours on both period charts: earlier period grey, later blue.
+PERIOD_COLORS = {"2016 to 2020": "#aab6c8", "2021 to 2025": "#2a78d6"}
+
+PERIODS_MARKDOWN = (
+    """**What changed after 2020.** Windsor started **1,520 homes a year** in 2021-2025, up from
+**1,261** in 2016-2020 (+21%), and completed **1,489 a year**, up from **1,133** (+31%).
+
+**What it builds changed more.** Apartments went from **20% of homes started to 54%**, while
+single-detached starts fell from **677 a year to 455**. Most new supply is now rental-type
+apartments rather than houses, which fits the recovery in rental vacancy from 2024 (Story 4).
+
+*Five full calendar years each; StatCan 34-10-0154-01.*
+""",
+    34,
+)
+
 SOURCE_NOTE_MARKDOWN = """**About this data.** Windsor CMA housing starts, completions and units under
 construction come from CMHC's Starts and Completions Survey as published by
 Statistics Canada (table 34-10-0154-01, monthly), summed to calendar years.
@@ -249,6 +319,9 @@ LAYOUT = [
     ("ROW-per-1000", [("per-1000", 12)]),
     ("ROW-starts-mix", [("starts-mix", 12)]),
     ("MARKDOWN-source", SOURCE_NOTE_MARKDOWN),
+    ("HEADER-periods", "Before vs From 2020: Five Years Each"),
+    ("ROW-periods", [("period-totals", 6), ("period-mix", 6)]),
+    ("MARKDOWN-periods", PERIODS_MARKDOWN),
 ]
 
 KPI_HEIGHT = 25
@@ -281,6 +354,7 @@ def ensure_chart(session, headers, spec: dict) -> int:
 TABS = [
     ("TAB-glance", "At a Glance", ["HEADER-kpi", "ROW-kpi", "HEADER-dwelling", "ROW-dwelling"]),
     ("TAB-trend", "Ten-Year Trend", ["HEADER-trend", "ROW-trend", "ROW-per-1000"]),
+    ("TAB-periods", "Before vs From 2020", ["HEADER-periods", "ROW-periods", "ROW-MARKDOWN-periods"]),
     ("TAB-mix", "Mix and Sources", ["ROW-starts-mix", "ROW-MARKDOWN-source"]),
 ]
 
@@ -316,12 +390,13 @@ def build_position_json(chart_ids: dict) -> dict:
                 "parents": ["ROOT_ID", "GRID_ID"],
                 "meta": {"background": "BACKGROUND_TRANSPARENT"},
             }
+            code, height = content if isinstance(content, tuple) else (content, MARKDOWN_HEIGHT)
             position[node_id] = {
                 "type": "MARKDOWN",
                 "id": node_id,
                 "children": [],
                 "parents": ["ROOT_ID", "GRID_ID", row_id],
-                "meta": {"width": 12, "height": MARKDOWN_HEIGHT, "code": content, "uuid": str(uuid.uuid4())},
+                "meta": {"width": 12, "height": height, "code": code, "uuid": str(uuid.uuid4())},
             }
             continue
 
@@ -421,10 +496,15 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
         {
             "native_filter_configuration": native_filters,
             "color_scheme": COLOR_SCHEME,
-            # The dist_bar charts cannot emit cross-filters, so the frontend
-            # computes an empty chart configuration; it also stores the
-            # scheme's colours (docker/superset_config.py's windsor_housing).
-            "chart_configuration": {},
+            # Only the ECharts charts can emit cross-filters (dist_bar cannot),
+            # so only they get an entry; a click filters nothing. The frontend
+            # also stores the scheme's colours (docker/superset_config.py).
+            "chart_configuration": {
+                str(chart_ids[key]): {"id": chart_ids[key], "crossFilters": no_cross_filter}
+                for key, spec in CHARTS.items()
+                if spec["viz_type"].startswith("echarts")
+            },
+            "label_colors": PERIOD_COLORS,
             "color_scheme_domain": COLOR_SCHEME_DOMAIN,
             "global_chart_configuration": no_cross_filter,
             "cross_filters_enabled": True,
