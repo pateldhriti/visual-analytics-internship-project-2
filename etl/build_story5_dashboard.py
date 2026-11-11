@@ -14,6 +14,8 @@ so each answers a question no single story can:
        v_story5_peer_construction
     5. Did building keep up with population?     Story 3 completions x Census population growth
        v_story5_supply_vs_demand                 (all 5 cities, 2016-2021)
+    6. Can young renters (students) afford it?   Census renters by age x Story 1 burden x Story 4 cities
+       v_story5_renter_burden_by_age
 
 Layout: one KPI card per question, then a section per question with its
 charts and a note that states the finding in words. Windsor is the blue bar
@@ -48,6 +50,7 @@ DATASET_PEER_AFFORDABILITY = 26  # v_story5_peer_affordability
 DATASET_SUPPLY_MARKET = 27  # v_story5_supply_vs_rental_market
 DATASET_PEER_CONSTRUCTION = 28  # v_story5_peer_construction
 DATASET_SUPPLY_DEMAND = 29  # v_story5_supply_vs_demand
+DATASET_BURDEN_BY_AGE = 30  # v_story5_renter_burden_by_age
 
 COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
 DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"
@@ -73,6 +76,9 @@ LABEL_COLORS = {
     "Rent increase from the previous October": "#d0703c",
     "Homes needed": "#d0703c",
     "Homes completed": OTHER_HOMES,
+    "Renters aged 15-24": "#d0703c",
+    "All renters": PEER_GREY,
+    "Renters spending 30%+ on shelter": ACCENT,
 }
 
 
@@ -494,9 +500,75 @@ CHARTS = {
             "y_axis_bounds": [0, None],
         },
     },
+    # --- 6. Census renters by age x Story 1 x Story 4 ------------------------
+    "young-vs-all": {
+        "slice_name": "Story 5: Young Renters vs All Renters Spending 30%+ on Shelter, by City",
+        "description": (
+            "Share of renter households spending 30% or more of income on shelter: households led by "
+            "someone aged 15-24 against all renters, 2021 Census (98-10-0241-01). "
+            "warehouse.v_story5_renter_burden_by_age."
+        ),
+        "dataset_id": DATASET_BURDEN_BY_AGE,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": {"expressionType": "SQL", "sqlExpression": SHORT_CITY_SQL, "label": "City"},
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(pct_30pct_plus) / 100.0", "label": "Renters aged 15-24"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(all_renters_pct_30pct_plus) / 100.0", "label": "All renters"},
+            ],
+            "groupby": [],
+            "orientation": "horizontal",
+            "adhoc_filters": [eq_filter("age_sort", 15)],
+            "row_limit": 20,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": True,
+            "legendType": "scroll",
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ".0%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "x_axis_sort": "Renters aged 15-24",
+            "x_axis_sort_asc": True,
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 0.7],
+        },
+    },
+    "windsor-by-age": {
+        "slice_name": "Story 5: Windsor Renters Spending 30%+ on Shelter, by Age",
+        "description": (
+            "Share of Windsor renter households spending 30% or more of income on shelter, by age of "
+            "the person who maintains the household, 2021 Census (98-10-0241-01). "
+            "warehouse.v_story5_renter_burden_by_age."
+        ),
+        "dataset_id": DATASET_BURDEN_BY_AGE,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": {"expressionType": "SQL", "sqlExpression": "REPLACE(age_group, ' years', '')", "label": "Age"},
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(pct_30pct_plus) / 100.0", "label": "Renters spending 30%+ on shelter"},
+            ],
+            "groupby": [],
+            "adhoc_filters": [eq_filter("city", "Windsor CMA")],
+            "orientation": "horizontal",  # every age label fits on the vertical axis
+            "row_limit": 20,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": False,
+            "rich_tooltip": True,
+            "y_axis_format": ".0%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "x_axis_sort": "Age",
+            "x_axis_sort_asc": True,  # with horizontal bars this puts the youngest at the top
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 0.6],
+        },
+    },
 }
 
-INTRO_MARKDOWN = """**Every chart on this page joins two of the four stories.** Each story answers its own
+INTRO_MARKDOWN = """**Every chart on this page joins data from at least two sources.** Each story answers its own
 question from one dataset; here the datasets are combined through what they share (the city,
 the year, and renters) to answer questions none of them can answer alone. Windsor is blue;
 the four comparison cities (London, Hamilton, Kitchener-Cambridge-Waterloo,
@@ -551,6 +623,19 @@ built least for its growth, a shortfall of about 3,900 homes, consistent with th
 *Estimates: 2021 household sizes, completions not net of demolitions. The ranking between
 cities is the reliable part.*
 """,
+    "young": """**What it shows.** In Windsor, **46.5%** of renter households led by someone aged 15-24
+(2,680 households) spend 30% or more of their income on shelter, against **34.8%** of all
+renters: the most burdened age group, ahead of renters aged 85 and over (44.9%). Young renters
+are worse off than other renters in every city, but Windsor's are the least burdened of the
+five (50.6%-55.3% elsewhere), in line with its lower rents.
+
+**The rents they face.** Under the 30% rule an average studio ($948 a month) needs about
+**$37,900** a year and a 1-bedroom ($1,193) about **$47,700** (section 1).
+
+*The Census counts students who head their own rented household. Students in residence, living
+with parents, or away during the May 2021 online term are not included. CMHC's core-housing-need
+measure leaves out most student households, so it is not used here.*
+""",
 }
 
 # Top-to-bottom: (kind, id, content). Widths add to 12 per row.
@@ -572,6 +657,10 @@ LAYOUT = [
     ("header", "HEADER-demand", "5. Did building keep up with population growth? (Story 3 + Census population)"),
     ("chart-row", "ROW-demand", [("demand-ratio", 7, 50)], ("MARKDOWN-demand", NOTES["demand"], 5, 50)),
     ("chart-row", "ROW-demand-built", [("demand-needed-built", 12, 42)]),
+    ("header", "HEADER-young", "6. Can young renters and students afford to rent? (Census renters by age + Story 1 + Story 4)"),
+    ("chart-row", "ROW-young", [("young-vs-all", 12, 42)]),
+    ("chart-row", "ROW-young-age", [("windsor-by-age", 12, 40)]),
+    ("markdown-row", "ROW-young-note", [("MARKDOWN-young", NOTES["young"], 12, 34)]),
 ]
 
 # Card titles shown on this dashboard: the chart names keep their "Story 5:"

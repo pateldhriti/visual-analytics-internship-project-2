@@ -315,6 +315,15 @@ VIEWS = {
             "description": "Homes completed 2016-2020 divided by homes needed for 2016-2021 population growth at 2021 household sizes. One row per city.",
         },
     ],
+    "v_story5_renter_burden_by_age": [
+        {
+            "metric_name": "pct_spending_30pct_plus",
+            "expression": "MAX(pct_30pct_plus)",
+            "verbose_name": "Renters Spending 30%+ on Shelter (%)",
+            "metric_type": "max",
+            "description": "Share of renter households in the age group spending 30% or more of income on shelter, 2021 Census. One row per city and age group.",
+        },
+    ],
 }
 
 

@@ -22,9 +22,9 @@ Row counts are from the local warehouse on 5 November 2026, after `etl/refresh_a
 | `fact_starts_completions` | warehouse | 50 | `docs/data_dictionary_supply.md` |
 | `fact_census_profile` | warehouse | 360 | `docs/data_dictionary_census_comparison.md`, section 1 |
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
-| `fact_peer_cma_context` | warehouse | 500 | [Section 2.4](#24-fact_peer_cma_context) |
+| `fact_peer_cma_context` | warehouse | 770 | [Section 2.4](#24-fact_peer_cma_context) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
-| `v_*` views (29) | warehouse | — | [Section 4](#4-views) |
+| `v_*` views (30) | warehouse | — | [Section 4](#4-views) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
 
 ## How the tables connect
@@ -153,16 +153,16 @@ Notes: In Story 1's scope, the only suppressed cells (40) are the median/average
 
 ### 2.4 `fact_peer_cma_context`
 
-**Source:** Windsor's and the four comparison CMAs' rows (London, Hamilton, St. Catharines-Niagara, Kitchener-Cambridge-Waterloo) from three StatCan files: 98-10-0252-01, Census Profile 98-401-X2021002 and 34-10-0154-01 (`etl/extract_peer_cma_context.py`). **Grain:** one row per city × source × indicator × tenure × category × year, long format. **Used by:** Story 5.
+**Source:** Windsor's and the four comparison CMAs' rows (London, Hamilton, St. Catharines-Niagara, Kitchener-Cambridge-Waterloo) from four StatCan files: 98-10-0252-01, Census Profile 98-401-X2021002, 34-10-0154-01 and 98-10-0241-01 (`etl/extract_peer_cma_context.py`). **Grain:** one row per city × source × indicator × tenure × category × year, long format. **Used by:** Story 5.
 
 | Column | Meaning | Values / unit |
 |---|---|---|
 | `cma_code` | Last 3 digits of the CMA's DGUID, used to match cities across files | `559` Windsor, `555` London, `537` Hamilton, `539` St. Catharines-Niagara, `541` Kitchener-Cambridge-Waterloo |
 | `cma_name` | City, spelled as in Story 4 | e.g. `Windsor CMA` |
-| `source_table` | StatCan table the row came from | `98-10-0252-01`, `98-401-X2021002`, `34-10-0154-01` |
-| `indicator` | What is counted | 98-10-0252-01: `households`, `households_30pct_plus`, `median_household_income`, `average_household_income`. 98-401-X2021002: `population_2016`, `population_2021`, `private_households`, `persons_in_private_households`, `renter_households`, `median_household_income`, `pct_spending_30pct_plus`, `median_monthly_shelter_cost`. 34-10-0154-01: `starts`, `completions` |
+| `source_table` | StatCan table the row came from | `98-10-0252-01`, `98-401-X2021002`, `34-10-0154-01`, `98-10-0241-01` |
+| `indicator` | What is counted | 98-10-0252-01: `households`, `households_30pct_plus`, `median_household_income`, `average_household_income`. 98-401-X2021002: `population_2016`, `population_2021`, `private_households`, `persons_in_private_households`, `renter_households`, `median_household_income`, `pct_spending_30pct_plus`, `median_monthly_shelter_cost`. 34-10-0154-01: `starts`, `completions`. 98-10-0241-01: `households`, `households_30pct_plus`, `households_core_need` |
 | `tenure` | Whose figure | `Total`, `Renter`, or empty |
-| `category` | Breakdown | income band label (98-10-0252-01), `Total` or `Apartment and Other` (34-10-0154-01), else empty |
+| `category` | Breakdown | income band label (98-10-0252-01), `Total` or `Apartment and Other` (34-10-0154-01), age of primary household maintainer (98-10-0241-01), else empty |
 | `period_year` | Year | 2021 for Census rows (incomes are for 2020); 2016 to the last full calendar year for construction |
 | `value` | The figure | households, people, dollars, % or units, by indicator |
 
@@ -220,3 +220,4 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story5_supply_vs_rental_market` | year 2020–2025: Windsor starts and completions, October vacancy, rent and rent change | Story 5 (Story 3 + 2) |
 | `v_story5_peer_construction` | city × year: starts, completions, starts per 1,000 households, apartment share | Story 5 (Story 3 + 4) |
 | `v_story5_supply_vs_demand` | city: 2016–2021 population growth, homes needed, homes completed 2016–2020, built per home needed | Story 5 (Story 3 + Census population) |
+| `v_story5_renter_burden_by_age` | city × age group: renter households, share spending 30%+ on shelter, the all-renter share and the gap | Story 5 (Census renters by age + Story 1 + Story 4) |

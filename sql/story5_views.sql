@@ -5,6 +5,8 @@
 --   v_story5_peer_affordability      Story 1 incomes/burden  x Story 4 peer rents
 --   v_story5_supply_vs_rental_market Story 3 construction    x Story 2 vacancy and rent
 --   v_story5_peer_construction       Story 3 construction    x Story 4 peer cities
+--   v_story5_supply_vs_demand        Story 3 completions     x Census population growth
+--   v_story5_renter_burden_by_age    Census renters by age   x Story 1 burden x Story 4 cities
 --
 -- "Can afford" uses the standard 30% rule: a rent is affordable to a
 -- household whose yearly income is at least rent x 12 / 0.30.
@@ -315,3 +317,49 @@ SELECT
 FROM census c
 JOIN built b ON b.cma_name = c.cma_name
 WHERE b.years = 5;
+
+
+-- ---------------------------------------------------------------------------
+-- v_story5_renter_burden_by_age (new Census table x Story 1 x Story 4)
+-- Can young renters, including most students who rent, afford their
+-- housing? For Windsor and the four comparison cities: renter households
+-- by age of the primary household maintainer (98-10-0241-01, 2021 Census),
+-- the share spending 30% or more of income on shelter, and the same share
+-- for all renters (Story 1's measure) to compare against. One row per
+-- city x age group.
+--
+-- Core housing need is in the source but not used here: CMHC's definition
+-- leaves out non-family households with a maintainer aged 15-29 attending
+-- school, so it understates need among students.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story5_renter_burden_by_age AS
+WITH renters AS (
+    SELECT
+        cma_name,
+        category AS age_group,
+        MAX(value) FILTER (WHERE indicator = 'households') AS renter_households,
+        MAX(value) FILTER (WHERE indicator = 'households_30pct_plus') AS renters_30pct_plus
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = '98-10-0241-01'
+      AND tenure = 'Renter'
+    GROUP BY cma_name, category
+),
+all_renters AS (
+    SELECT cma_name, ROUND(100.0 * renters_30pct_plus / renter_households, 1) AS all_renters_pct_30pct_plus
+    FROM renters
+    WHERE age_group = 'Total - Age of primary household maintainer'
+)
+SELECT
+    r.cma_name AS city,
+    (r.cma_name = 'Windsor CMA') AS is_windsor,
+    r.age_group,
+    LEFT(r.age_group, 2)::int AS age_sort,
+    r.renter_households,
+    r.renters_30pct_plus,
+    ROUND(100.0 * r.renters_30pct_plus / r.renter_households, 1) AS pct_30pct_plus,
+    a.all_renters_pct_30pct_plus,
+    ROUND(100.0 * r.renters_30pct_plus / r.renter_households, 1) - a.all_renters_pct_30pct_plus
+        AS pct_points_above_all_renters
+FROM renters r
+JOIN all_renters a ON a.cma_name = r.cma_name
+WHERE r.age_group <> 'Total - Age of primary household maintainer';

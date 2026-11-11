@@ -47,7 +47,7 @@ Each source has its own extract script, writing to `data/staging/`:
 | `extract_rms_canada_comparison.py` | `rms_canada_comparison.csv` (comparator CMAs -- see [docs/comparator_cmas_justification.md](../docs/comparator_cmas_justification.md)) |
 | `extract_cmhc_starts_completions.py` | `ontario_canada_starts_completions.csv` |
 | `extract_windsor_starts_completions.py` | `windsor_starts_completions_monthly.csv` (Windsor CMA, monthly from Jan-2016, StatCan 34-10-0154-01 -- downloads the table zip to `data/raw/statcan/` on first run; `--refresh` re-downloads) |
-| `extract_peer_cma_context.py` | `peer_cma_context.csv` (Windsor and the 4 comparison CMAs: renter incomes by band, Census households and tenant burden, yearly starts and completions -- from the same three StatCan files, for Story 5) |
+| `extract_peer_cma_context.py` | `peer_cma_context.csv` (Windsor and the 4 comparison CMAs: renter incomes by band, Census population, households and tenant burden, yearly starts and completions, and renter burden by age -- for Story 5; downloads StatCan 98-10-0241-01 to `data/raw/statcan/` on first run) |
 
 Optionally, `load_raw_files_to_postgres.py` loads every file under
 `data/raw/` as-is into Postgres's `raw` schema first, for reference --
@@ -131,7 +131,7 @@ Build Story 5's dashboard ("How do affordability, rental conditions, and
 supply fit together?"), the combined dashboard: every chart reads a view in
 `sql/story5_views.sql` that joins two stories (renter incomes x rents,
 incomes x comparison cities, completions x vacancy, construction x
-comparison cities, completions x population growth), with a Years filter. Needs `extract_peer_cma_context.py`
+comparison cities, completions x population growth, renters by age), with a Years filter. Needs `extract_peer_cma_context.py`
 and the load step run first; method and findings in
 [docs/story5_combined_analysis.md](../docs/story5_combined_analysis.md):
 ```

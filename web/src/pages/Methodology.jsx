@@ -38,6 +38,12 @@ const SOURCES = [
     url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=3410015401",
   },
   {
+    name: "Housing indicators by tenure and age of primary household maintainer (Table 98-10-0241-01), 2021 Census",
+    agency: "Statistics Canada",
+    use: "Story 5: how many young renter households (ages 15 to 24) spend 30% or more of income on shelter, in all five cities.",
+    url: "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=9810024101",
+  },
+  {
     name: "Starts, completions and units under construction, quarterly",
     agency: "CMHC",
     use: "Ontario and Canada context on the overview dashboard.",

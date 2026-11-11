@@ -18,7 +18,7 @@ The datasets share three keys:
 
 ## Data added
 
-Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the four comparison cities Story 4 uses (London, Hamilton, Kitchener-Cambridge-Waterloo, St. Catharines-Niagara), so no new download was needed.
+Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the four comparison cities Story 4 uses (London, Hamilton, Kitchener-Cambridge-Waterloo, St. Catharines-Niagara), so questions 1–5 needed no new download. Question 6 (young renters) adds one new Census table, 98-10-0241-01.
 
 `etl/extract_peer_cma_context.py` takes the five cities' rows from:
 
@@ -27,10 +27,11 @@ Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the 
 | 98-10-0252-01 (shelter cost by income and tenure, 2021 Census) | renter households by $10,000 income band, median renter household income, renters spending 30%+ |
 | 98-401-X2021002 (Census Profile 2021) | population in 2016 and 2021, private households and the people in them, renter households, % of tenants spending 30%+, median household income, median rent paid |
 | 34-10-0154-01 (monthly starts and completions) | yearly starts and completions, all homes and apartments, full years 2016 to 2025 |
+| 98-10-0241-01 (housing indicators by age of primary household maintainer, 2021 Census; **new**, downloaded on first run) | households and households spending 30%+ on shelter, by age group, for renters and all households |
 
-Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), because each file spells city names differently. The rows load into `warehouse.fact_peer_cma_context` (500 rows), which has one row per city, source, indicator and breakdown. Windsor's rows match Stories 1 and 3 exactly; for example, 34.8% of tenants spending 30%+, and 1,262 starts and 1,671 completions in 2025.
+Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), because each file spells city names differently. The rows load into `warehouse.fact_peer_cma_context` (770 rows), which has one row per city, source, indicator and breakdown. Windsor's rows match Stories 1 and 3 exactly; for example, 34.8% of tenants spending 30%+, and 1,262 starts and 1,671 completions in 2025.
 
-## The five combined views (`sql/story5_views.sql`)
+## The six combined views (`sql/story5_views.sql`)
 
 | View | Joins | Key |
 |---|---|---|
@@ -39,6 +40,7 @@ Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), bec
 | `v_story5_supply_vs_rental_market` | Story 3 completions x Story 2 vacancy and rent | Year (2020-2025) |
 | `v_story5_peer_construction` | Story 3 construction (all 5 cities) x Census households | City and year |
 | `v_story5_supply_vs_demand` | Story 3 completions (all 5 cities) x Census population growth 2016-2021 | City |
+| `v_story5_renter_burden_by_age` | Census renters by age (98-10-0241-01) x Story 1's burden measure x Story 4 cities | City and age group |
 
 **Can-afford rule.** A rent is affordable to a household whose income is at least rent x 12 / 0.30, the standard 30% rule.
 
@@ -115,11 +117,30 @@ Homes needed = population growth between the 2016 and 2021 Censuses / people per
 
 Every city built fewer homes than its population growth needed, but **Windsor fell furthest short: 0.59 homes per home needed, a gap of about 3,900 homes**. Windsor grew about as fast as Hamilton and St. Catharines-Niagara, so its slow building (section 4) is not explained by slow growth. The shortfall is consistent with vacancy falling to 1.8% in 2022 (section 3).
 
+### 6. Can young renters and students afford to rent? (Census renters by age + Story 1 + Story 4)
+
+Renter households by the age of the person who maintains them, and the share spending 30% or more of income on shelter (Story 1's measure), 2021 Census:
+
+| City | Renters aged 15–24 | Of them, spending 30%+ | All renters spending 30%+ | Gap (points) |
+|---|---|---|---|---|
+| Windsor | 2,680 | **46.5%** | 34.8% | +11.7 |
+| St. Catharines-Niagara | 2,835 | 50.6% | 39.5% | +11.1 |
+| Kitchener-Cambridge-Waterloo | 6,775 | 54.7% | 36.9% | +17.8 |
+| London | 6,690 | 54.8% | 38.4% | +16.4 |
+| Hamilton | 4,605 | 55.3% | 39.0% | +16.3 |
+
+In Windsor, renters aged 15–24 are the **most burdened age group**: 46.5% spend 30%+ on shelter, against 29.4% at 35–44 and 44.9% at 85 and over (a U-shape across ages). Young renters are worse off than other renters in every city, but Windsor's are the least burdened of the five, in line with its lower rents.
+
+The rents they face (section 1): an average studio ($948 a month) needs about $37,900 a year under the 30% rule, and a 1-bedroom ($1,193) about $47,700.
+
+**What this does and does not cover.** The Census counts students who head their own rented household (including shared houses). It leaves out students in residence or living with their parents, and the May 2021 Census fell in an online term, when many students were away. CMHC's core-housing-need measure is in the same table but is not used: it leaves out non-family households with a maintainer aged 15–29 attending school, so it understates need among students.
+
 ### Together
 
 - **Renters:** Windsor's low rents reflect low renter incomes, so most renters still cannot afford an average 2-bedroom.
 - **Recent completions:** the 2023–2025 surge coincided with a looser market.
 - **Building:** Windsor builds more slowly than any comparison city and, from 2016 to 2021, finished only 0.59 homes for every home its population growth needed. New supply is unlikely to keep easing rents without more construction.
+- **Young renters:** nearly half of renter households aged 15–24 spend 30% or more on shelter, the highest of any age group, although less than in the comparison cities.
 
 ## Dashboard
 
@@ -131,6 +152,7 @@ Every city built fewer homes than its population growth needed, but **Windsor fe
 | Section 3 | Completions by year (apartments and other homes), with vacancy and rent increase by year |
 | Section 4 | Starts per 1,000 households by city, plus Windsor against the comparison-city average by year |
 | Section 5 | Homes completed per home needed by city, plus homes needed against homes completed |
+| Section 6 | Young renters against all renters spending 30%+, by city, plus Windsor renters by age |
 | Interaction | A **Years** range filter narrows sections 3 and 4; the KPI cards stay fixed |
 
 Windsor is blue and the comparison cities grey throughout. Each section ends with a note stating the finding in words.
@@ -142,6 +164,7 @@ Windsor is blue and the comparison cities grey throughout. Each section ends wit
 - **What each count covers:** completions include condos and homes for sale, while vacancy covers purpose-built rentals only. Section 3 therefore shows timing, not cause.
 - **Rent type:** the city comparison uses apartment rents only, the only comparison CMHC publishes. Windsor's own figures include row houses ($1,451 against $1,454 for a 2-bedroom).
 - **Household counts:** "per 1,000 households" uses the 2021 household count for every year.
+- **Young renters:** section 6 counts only students who head their own rented household; see the note in section 6.
 - **Homes needed:** section 5 applies 2021 household sizes to the whole 2016-2021 growth. Completions are not net of demolitions, and calendar 2016-2020 only approximates the May-to-May Census interval. The ratios are estimates; the ranking between cities is the reliable part.
 
 ## Reproducing
