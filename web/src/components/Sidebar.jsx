@@ -105,7 +105,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="sidebar-topbar">
+      <header className="sidebar-topbar">
         <NavLink to="/" className="brand" onClick={() => setOpen(false)}>
           <span className="brand-mark" aria-hidden="true">
             W
@@ -125,7 +125,7 @@ export default function Sidebar() {
           <span className="menu-toggle-bar" />
           <span className="menu-toggle-bar" />
         </button>
-      </div>
+      </header>
 
       <aside id="primary-sidebar" className={`app-sidebar ${open ? "app-sidebar--open" : ""}`}>
         <NavLink to="/" className="brand sidebar-brand" onClick={() => setOpen(false)}>

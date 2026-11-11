@@ -1,0 +1,252 @@
+{
+  "generated": "2026-11-11",
+  "affordability": {
+    "pct": 60.7,
+    "cannot": 27664,
+    "renters": 45605,
+    "rent": 1451,
+    "incomeNeeded": 58040,
+    "medianIncome": 48400
+  },
+  "cities": [
+    {
+      "city": "Windsor",
+      "isWindsor": true,
+      "rent": 1454,
+      "income": 48400,
+      "rentPct": 36
+    },
+    {
+      "city": "St. Catharines",
+      "isWindsor": false,
+      "rent": 1527,
+      "income": 48000,
+      "rentPct": 38.2
+    },
+    {
+      "city": "London",
+      "isWindsor": false,
+      "rent": 1651,
+      "income": 51200,
+      "rentPct": 38.7
+    },
+    {
+      "city": "Hamilton",
+      "isWindsor": false,
+      "rent": 1656,
+      "income": 55200,
+      "rentPct": 36
+    },
+    {
+      "city": "Kitchener-Waterloo",
+      "isWindsor": false,
+      "rent": 1832,
+      "income": 60000,
+      "rentPct": 36.6
+    }
+  ],
+  "rentHistory": {
+    "years": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "series": [
+      {
+        "city": "Windsor",
+        "isWindsor": true,
+        "rent": [
+          823,
+          850,
+          868,
+          915,
+          946,
+          1038,
+          1152,
+          1194,
+          1246,
+          1376,
+          1451
+        ],
+        "vacancy": [
+          3.8,
+          2.8,
+          2.4,
+          2.9,
+          2.8,
+          3.5,
+          3.4,
+          1.8,
+          2.1,
+          3.2,
+          3.6
+        ]
+      },
+      {
+        "city": "Hamilton",
+        "isWindsor": false,
+        "rent": [
+          1040,
+          1042,
+          1109,
+          1162,
+          1223,
+          1292,
+          1364,
+          1438,
+          1619,
+          1636,
+          1659
+        ],
+        "vacancy": [
+          3.4,
+          3.6,
+          2.3,
+          3.1,
+          3.8,
+          3.4,
+          2.8,
+          1.9,
+          2.1,
+          2.4,
+          3.5
+        ]
+      },
+      {
+        "city": "Kitchener-Waterloo",
+        "isWindsor": false,
+        "rent": [
+          996,
+          1046,
+          1087,
+          1202,
+          1223,
+          1287,
+          1349,
+          1454,
+          1637,
+          1747,
+          1816
+        ],
+        "vacancy": [
+          2.5,
+          2.3,
+          1.9,
+          3,
+          2,
+          2,
+          2,
+          1.2,
+          2.1,
+          3.5,
+          4
+        ]
+      },
+      {
+        "city": "London",
+        "isWindsor": false,
+        "rent": [
+          959,
+          1000,
+          1037,
+          1088,
+          1106,
+          1216,
+          1279,
+          1394,
+          1473,
+          1541,
+          1645
+        ],
+        "vacancy": [
+          2.9,
+          2.1,
+          1.8,
+          2.3,
+          1.8,
+          3.2,
+          1.8,
+          1.6,
+          1.7,
+          2.8,
+          3.8
+        ]
+      },
+      {
+        "city": "St. Catharines",
+        "isWindsor": false,
+        "rent": [
+          907,
+          957,
+          992,
+          1035,
+          1091,
+          1141,
+          1191,
+          1258,
+          1389,
+          1475,
+          1527
+        ],
+        "vacancy": [
+          2.8,
+          2.2,
+          1.4,
+          2.5,
+          2.3,
+          2.6,
+          1.8,
+          2.9,
+          2.7,
+          3.6,
+          3.8
+        ]
+      }
+    ]
+  },
+  "supply": [
+    {
+      "city": "Windsor",
+      "isWindsor": true,
+      "needed": 9534,
+      "built": 5666,
+      "ratio": 0.59
+    },
+    {
+      "city": "London",
+      "isWindsor": false,
+      "needed": 20525,
+      "built": 14753,
+      "ratio": 0.72
+    },
+    {
+      "city": "Hamilton",
+      "isWindsor": false,
+      "needed": 14958,
+      "built": 12599,
+      "ratio": 0.84
+    },
+    {
+      "city": "St. Catharines",
+      "isWindsor": false,
+      "needed": 11596,
+      "built": 9846,
+      "ratio": 0.85
+    },
+    {
+      "city": "Kitchener-Waterloo",
+      "isWindsor": false,
+      "needed": 20034,
+      "built": 18255,
+      "ratio": 0.91
+    }
+  ]
+}
