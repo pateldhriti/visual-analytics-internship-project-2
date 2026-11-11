@@ -106,6 +106,11 @@ Then, to register the views as Superset datasets:
 .venv\Scripts\python.exe etl\register_superset_datasets.py
 ```
 
+Every dashboard builder below splits its dashboard into tabs that each fit
+one screen: the builder lists its sections per tab in a `TABS` constant and
+`dashboard_tabs.add_tabs()` arranges them (tested in `test_dashboard_tabs.py`).
+To move a chart to another tab, move its row id between the lists.
+
 `dashboard1_views.sql` backs "01 - Windsor Housing Executive Overview", a
 combined dashboard across Stories 1-4 (not a story of its own). Build it
 with:
