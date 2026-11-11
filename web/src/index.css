@@ -3738,3 +3738,34 @@ rect.hl-fill-empty:hover {
     transition: none;
   }
 }
+
+/* Story pages show their own key findings (StoryHighlights) above the
+   embedded dashboard, in a band a little wider than the prose column. */
+.story-highlights-band {
+  max-width: 1240px;
+  margin: 12px auto 0;
+  padding: 0 24px;
+}
+
+.hl-section--story {
+  border-bottom: none;
+  padding-bottom: 8px;
+}
+
+.hl-slope {
+  cursor: pointer;
+}
+
+.hl-slope:hover .hl-line {
+  stroke-width: 3.5;
+}
+
+#dashboard {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 760px) {
+  .story-highlights-band {
+    padding: 0 16px;
+  }
+}

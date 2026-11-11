@@ -1,4 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
+import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Text condensed from docs/story3_narrative_final.md. Every figure comes
@@ -97,6 +98,7 @@ export default function StoryHousingSupply() {
       theme="neighbourhood"
       narrative={NARRATIVE}
       definitions={DEFINITIONS}
+      highlights={<StoryHighlights only={["mix", "supply"]} here="/stories/housing-supply" />}
       dashboard={
         <SupersetGuestEmbed
           dashboard="story3"

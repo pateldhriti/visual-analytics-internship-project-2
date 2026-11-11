@@ -7,6 +7,8 @@ show the same numbers as the Superset dashboards instead of hand-typed ones.
     2. 2-bedroom rent vs median renter income, five cities (v_story5_peer_affordability)
     3. 2-bedroom rent every October 2015-2025, five cities (v_story4_rent_history)
     4. homes built vs homes needed, 2016-2021, five cities (v_story5_supply_vs_demand)
+    5. what Windsor starts, by dwelling type, 2016-2020 vs 2021-2025 (v_story3_period_comparison;
+       shown on the Story 3 page)
 
 Run after a data refresh, then rebuild the website:
     .venv\Scripts\python.exe etl\export_site_highlights.py
@@ -59,6 +61,11 @@ def build(conn) -> dict:
                homes_completed_2016_2020 AS built, homes_built_per_home_needed AS ratio
         FROM warehouse.v_story5_supply_vs_demand ORDER BY homes_built_per_home_needed""")
 
+    mix = rows(conn, """
+        SELECT dwelling_type, period, avg_units_per_year AS per_year, pct_of_total AS share
+        FROM warehouse.v_story3_period_comparison WHERE activity = 'Starts'
+        ORDER BY dwelling_type, period""")
+
     years = sorted({r["year"] for r in history})
     series = []
     for city in dict.fromkeys(r["city"] for r in history):
@@ -88,6 +95,14 @@ def build(conn) -> dict:
              "ratio": s["ratio"]}
             for s in supply
         ],
+        "startsMix": [
+            {
+                "type": t,
+                "before": next(m for m in mix if m["dwelling_type"] == t and m["period"] == "2016 to 2020"),
+                "after": next(m for m in mix if m["dwelling_type"] == t and m["period"] == "2021 to 2025"),
+            }
+            for t in dict.fromkeys(m["dwelling_type"] for m in mix)
+        ],
     }
 
 
@@ -95,6 +110,8 @@ def check(data: dict) -> None:
     """Fail loudly rather than publish a chart with a city or year missing."""
     if len(data["cities"]) != 5 or len(data["supply"]) != 5 or len(data["rentHistory"]["series"]) != 5:
         raise ValueError("Expected Windsor and the four comparison cities in every chart")
+    if {m["type"] for m in data["startsMix"]} != {"Total", "Singles", "Semis", "Row", "Apartment and Other"}:
+        raise ValueError("Expected the total and the four dwelling types for both periods")
     for s in data["rentHistory"]["series"]:
         if any(v is None for v in s["rent"]):
             raise ValueError(f"{s['city']}: a year has no 2-bedroom rent")

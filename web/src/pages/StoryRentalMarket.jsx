@@ -1,4 +1,5 @@
 import StoryPage from "../components/StoryPage.jsx";
+import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 
 // Text condensed from docs/story2_narrative_final.md. Every figure comes
@@ -99,6 +100,7 @@ export default function StoryRentalMarket() {
       kpis={KPIS}
       variant="ticker"
       theme="neighbourhood"
+      highlights={<StoryHighlights only={["decade"]} here="/stories/rental-market" />}
       dashboard={
         <SupersetGuestEmbed
           dashboard="story2"
