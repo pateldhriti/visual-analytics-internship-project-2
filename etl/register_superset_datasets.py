@@ -342,6 +342,31 @@ VIEWS = {
             "description": "Oct-25 average 2-bedroom apartment rent. One row per city; the view holds every Story 5 measure for the five cities.",
         },
     ],
+    "v_story4_rent_history": [
+        {
+            "metric_name": "avg_rent_2br_history",
+            "expression": "AVG(average_rent_2br)",
+            "verbose_name": "Average 2-Bedroom Rent ($)",
+            "metric_type": "avg",
+            "description": "October average 2-bedroom rent, apartments and row houses (StatCan 34-10-0133-01). One row per city and year, 2015 onward.",
+        },
+        {
+            "metric_name": "vacancy_rate_history",
+            "expression": "AVG(vacancy_rate)",
+            "verbose_name": "Vacancy Rate (%)",
+            "metric_type": "avg",
+            "description": "October vacancy rate, apartments and row houses (StatCan 34-10-0130-01). One row per city and year, 2015 onward.",
+        },
+    ],
+    "v_story4_period_comparison": [
+        {
+            "metric_name": "rent_change_2015_2025",
+            "expression": "MAX(rent_change_2015_2025)",
+            "verbose_name": "Rent Change 2015 to 2025 (%)",
+            "metric_type": "max",
+            "description": "Change in October 2-bedroom rent from 2015 to 2025. One row per city.",
+        },
+    ],
 }
 
 

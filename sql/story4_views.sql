@@ -145,3 +145,96 @@ WHERE f.metric_type = 'pct_change_rent'
   AND b.bedroom_type_label = '2 Bedroom'
   AND d.dwelling_type_label = 'Apartment'
   AND p.period_label = 'Oct-25';  -- the Oct-24-to-25 change, tagged to its ending period
+
+-- ============================================================
+-- v_story4_rent_history
+-- One row per (city, year), 2015 onward: October average 2-bedroom rent
+-- and vacancy rate (apartments and row houses, buildings of 3+ units),
+-- Windsor and the four comparison cities. Source: CMHC's Rental Market
+-- Survey as republished by StatCan (34-10-0133-01 rents, 34-10-0130-01
+-- vacancy), loaded into fact_peer_cma_context by
+-- etl/extract_peer_cma_context.py. CMHC's own Windsor download only goes
+-- back to Oct-20, so these tables are what give the ten-year trend.
+--
+-- Scope differs from the Oct-25 bars above (apartments only, CMHC's
+-- city-comparison workbook): rents here include row houses, so they are a
+-- few dollars off those bars (Windsor Oct-25: $1,451 here, $1,454
+-- apartments only). They match Story 2's Windsor figures, except Oct-22
+-- ($1,194 here; Story 2 uses CMHC's later revision, $1,170).
+-- rent_index_2015 = rent as % of the city's own 2015 rent, so cities
+-- with different rent levels can be compared on growth alone.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story4_rent_history AS
+WITH rent AS (
+    SELECT cma_name, period_year, value AS average_rent_2br
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = '34-10-0133-01' AND indicator = 'average_rent' AND category = '2 Bedroom'
+),
+vacancy AS (
+    SELECT cma_name, period_year, value AS vacancy_rate
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = '34-10-0130-01' AND indicator = 'vacancy_rate'
+)
+SELECT
+    r.cma_name AS city,
+    CASE r.cma_name
+        WHEN 'Kitchener-Cambridge-Waterloo CMA' THEN 'Kitchener-Waterloo'
+        WHEN 'St. Catharines-Niagara CMA' THEN 'St. Catharines'
+        ELSE REPLACE(r.cma_name, ' CMA', '')
+    END AS city_short,
+    (r.cma_name = 'Windsor CMA') AS is_windsor,
+    r.period_year,
+    r.average_rent_2br,
+    v.vacancy_rate,
+    ROUND(100.0 * (r.average_rent_2br / LAG(r.average_rent_2br) OVER w - 1), 1) AS rent_change_pct,
+    ROUND(100.0 * r.average_rent_2br / FIRST_VALUE(r.average_rent_2br) OVER w, 1) AS rent_index_2015
+FROM rent r
+LEFT JOIN vacancy v ON v.cma_name = r.cma_name AND v.period_year = r.period_year
+WINDOW w AS (PARTITION BY r.cma_name ORDER BY r.period_year);
+
+-- ============================================================
+-- v_story4_period_comparison
+-- One row per city: the five years before the pandemic against the five
+-- years from it (2015 to 2020 vs 2020 to 2025; each period is five
+-- yearly rent increases). avg_rent_growth_* is the average yearly
+-- increase (compound), so the two periods compare directly. Vacancy is
+-- averaged over the Octobers in each period (2015-2020 and 2021-2025).
+-- windsor_pct_of_peer_rent = Windsor's rent as % of the four comparison
+-- cities' average (Windsor row only), to show whether the gap is closing.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_story4_period_comparison AS
+WITH h AS (
+    SELECT * FROM warehouse.v_story4_rent_history
+),
+by_city AS (
+    SELECT
+        city,
+        city_short,
+        is_windsor,
+        MAX(average_rent_2br) FILTER (WHERE period_year = 2015) AS rent_2015,
+        MAX(average_rent_2br) FILTER (WHERE period_year = 2020) AS rent_2020,
+        MAX(average_rent_2br) FILTER (WHERE period_year = 2025) AS rent_2025,
+        ROUND(AVG(vacancy_rate) FILTER (WHERE period_year BETWEEN 2015 AND 2020), 1) AS avg_vacancy_2015_2020,
+        ROUND(AVG(vacancy_rate) FILTER (WHERE period_year BETWEEN 2021 AND 2025), 1) AS avg_vacancy_2021_2025
+    FROM h
+    GROUP BY city, city_short, is_windsor
+),
+peer AS (
+    SELECT AVG(rent_2015) AS peer_2015, AVG(rent_2025) AS peer_2025 FROM by_city WHERE NOT is_windsor
+)
+SELECT
+    c.city,
+    c.city_short,
+    c.is_windsor,
+    c.rent_2015,
+    c.rent_2020,
+    c.rent_2025,
+    ROUND(100.0 * (POWER(c.rent_2020 / c.rent_2015, 1.0 / 5) - 1), 1) AS avg_rent_growth_2015_2020,
+    ROUND(100.0 * (POWER(c.rent_2025 / c.rent_2020, 1.0 / 5) - 1), 1) AS avg_rent_growth_2020_2025,
+    ROUND(100.0 * (c.rent_2025 / c.rent_2015 - 1), 1) AS rent_change_2015_2025,
+    c.avg_vacancy_2015_2020,
+    c.avg_vacancy_2021_2025,
+    CASE WHEN c.is_windsor THEN ROUND(100.0 * c.rent_2015 / p.peer_2015, 1) END AS windsor_pct_of_peer_rent_2015,
+    CASE WHEN c.is_windsor THEN ROUND(100.0 * c.rent_2025 / p.peer_2025, 1) END AS windsor_pct_of_peer_rent_2025
+FROM by_city c
+CROSS JOIN peer p;

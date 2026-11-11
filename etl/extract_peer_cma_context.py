@@ -1,6 +1,7 @@
 """
-Extract Windsor's and its four comparison cities' rows from four StatCan
-files and CMHC's five city rental workbooks, for the combined Story 5 views.
+Extract Windsor's and its four comparison cities' rows from six StatCan
+files and CMHC's five city rental workbooks, for the Story 4 ten-year trend
+and the combined Story 5 views.
 
     98-10-0252-01  shelter cost by income and tenure (2021 Census, incomes for 2020)
                    -> renter households by income band, median renter income,
@@ -22,6 +23,17 @@ files and CMHC's five city rental workbooks, for the combined Story 5 views.
                    -> Table 3.1.3: purpose-built rental units (apartments and
                       row houses, all unit sizes) in October 2024 and 2025;
                       downloaded on first run to data/raw/cmhc/peer_rms_2025/
+    34-10-0133-01  CMHC average rents, October each year (apartments and row
+                   houses, buildings of 3+ units)
+                   -> average rent by unit size (category), 2015 onward
+    34-10-0130-01  CMHC vacancy rates, October each year (same buildings)
+                   -> vacancy rate, 2015 onward
+                   Both are CMHC's Rental Market Survey republished by
+                   StatCan; they go back further than CMHC's own download
+                   (2021 onward, see etl/extract_windsor_rms_historical.py).
+                   Downloaded on every run (small files), so a new October
+                   survey arrives with the next refresh; the saved copy is
+                   used if the download fails.
 
 The Story 1-4 extracts keep only Windsor; Story 4's rents already cover the
 four comparison cities (CMHC Rental Market Survey). This script adds the
@@ -60,6 +72,10 @@ PROFILE_CSV = RAW / "statcan" / "98-401-X2021002_English_CSV_data.csv"
 STARTS_ZIP = RAW / "statcan" / "34100154-eng.zip"
 INDICATORS_ZIP = RAW / "statcan" / "98100241-eng.zip"
 INDICATORS_URL = "https://www150.statcan.gc.ca/n1/tbl/csv/98100241-eng.zip"
+TABLE_URL = "https://www150.statcan.gc.ca/n1/tbl/csv/{pid}-eng.zip"
+RENT_HISTORY_ZIP = RAW / "statcan" / "34100133-eng.zip"
+VACANCY_HISTORY_ZIP = RAW / "statcan" / "34100130-eng.zip"
+FIRST_HISTORY_YEAR = 2015
 RMS_DIR = RAW / "cmhc" / "peer_rms_2025"
 RMS_URL = (
     "https://assets.cmhc-schl.gc.ca/sites/cmhc/professional/housing-markets-data-and-research/"
@@ -265,6 +281,58 @@ def extract_housing_indicators_by_age(path: Path = INDICATORS_ZIP) -> list[dict]
     return rows
 
 
+# --- 34-10-0133-01 and 34-10-0130-01 ----------------------------------------
+RENT_STRUCTURE = "Row and apartment structures of three units and over"
+UNIT_SIZES = {
+    "Bachelor units": "Studio",
+    "One bedroom units": "1 Bedroom",
+    "Two bedroom units": "2 Bedroom",
+    "Three bedroom units": "3 Bedroom +",
+}
+
+
+def refresh_table(path: Path) -> Path:
+    """Download the latest copy of a small StatCan table; keep the saved one
+    if StatCan cannot be reached."""
+    try:
+        resp = requests.get(TABLE_URL.format(pid=path.name.split("-")[0]), timeout=120)
+        resp.raise_for_status()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(resp.content)
+    except requests.RequestException as exc:
+        if not path.exists():
+            raise
+        print(f"  could not download {path.name} ({exc}); using the saved copy")
+    return path
+
+
+def _read_table(path: Path) -> pd.DataFrame:
+    with zipfile.ZipFile(path) as zf, zf.open(path.name.split("-")[0] + ".csv") as fh:
+        df = pd.read_csv(fh, dtype=str, encoding="utf-8-sig")
+    df["code"] = df["DGUID"].map(cma_code)
+    df["year"] = pd.to_numeric(df["REF_DATE"], errors="coerce")
+    # blank when CMHC suppressed the figure (too few units to publish)
+    df["value"] = pd.to_numeric(df["VALUE"], errors="coerce")
+    return df[df["code"].notna() & (df["year"] >= FIRST_HISTORY_YEAR) & df["value"].notna()]
+
+
+def extract_rent_history(path: Path = RENT_HISTORY_ZIP) -> list[dict]:
+    df = _read_table(path)
+    df = df[(df["Type of structure"] == RENT_STRUCTURE) & df["Type of unit"].isin(UNIT_SIZES)]
+    return [
+        _row(r["code"], "34-10-0133-01", "average_rent", None, UNIT_SIZES[r["Type of unit"]], int(r["year"]),
+             float(r["value"]))
+        for _, r in df.iterrows()
+    ]
+
+
+def extract_vacancy_history(path: Path = VACANCY_HISTORY_ZIP) -> list[dict]:
+    return [
+        _row(r["code"], "34-10-0130-01", "vacancy_rate", None, None, int(r["year"]), float(r["value"]))
+        for _, r in _read_table(path).iterrows()
+    ]
+
+
 def download_rms(directory: Path = RMS_DIR) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     for slug in RMS_FILES.values():
@@ -315,7 +383,15 @@ def _row(code, source, indicator, tenure, category, year, value) -> dict:
     }
 
 
-SOURCES = ("98-10-0252-01", "98-401-X2021002", "34-10-0154-01", "98-10-0241-01", "CMHC RMS 3.1.3")
+SOURCES = (
+    "98-10-0252-01",
+    "98-401-X2021002",
+    "34-10-0154-01",
+    "98-10-0241-01",
+    "CMHC RMS 3.1.3",
+    "34-10-0133-01",
+    "34-10-0130-01",
+)
 
 
 def check(rows: list[dict]) -> None:
@@ -333,6 +409,8 @@ def main() -> pd.DataFrame:
         + extract_shelter_cost()
         + extract_housing_indicators_by_age(download_indicators())
         + extract_rental_universe(download_rms())
+        + extract_rent_history(refresh_table(RENT_HISTORY_ZIP))
+        + extract_vacancy_history(refresh_table(VACANCY_HISTORY_ZIP))
     )
     check(rows)
     out = pd.DataFrame(rows, columns=COLUMNS)
