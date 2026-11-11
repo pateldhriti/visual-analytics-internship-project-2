@@ -45,6 +45,7 @@ Run from the project virtual environment:
 import json
 import uuid
 
+from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
@@ -631,7 +632,7 @@ INTRO_MARKDOWN = """**Every chart on this page joins data from at least two sour
 question from one dataset; here the datasets are combined through what they share (the city,
 the year, and renters) to answer questions none of them can answer alone. Windsor is blue;
 the four comparison cities (London, Hamilton, Kitchener-Cambridge-Waterloo,
-St. Catharines-Niagara) are grey. Use **Years** in the filter bar to narrow sections 3 and 4.
+St. Catharines-Niagara) are grey. Use **Years** in the filter bar to narrow questions 3 and 4. Each tab answers one question.
 """
 
 NOTES = {
@@ -668,7 +669,7 @@ In every year except 2024 Windsor built less than even the lowest of the four; i
 (13.0) only matched the comparison cities' average that year (13.2), and 2025 fell back to 7.6.
 
 **Why it matters.** Story 3 shows Windsor's building in isolation; against its peers it is
-consistently the slowest builder. Section 5 checks whether that is simply because Windsor grew
+consistently the slowest builder. Tab 5 checks whether that is simply because Windsor grew
 more slowly.
 """,
     "demand": """**What it shows.** From 2016 to 2021 Windsor gained **23,912 people**, about
@@ -677,7 +678,7 @@ of the five cities.
 
 **Why it matters.** Windsor grew about as fast as Hamilton and St. Catharines-Niagara, yet
 built least for its growth, a shortfall of about 3,900 homes, consistent with the tight
-2022 rental market (section 3).
+2022 rental market (tab 3).
 
 *Estimates: 2021 household sizes, completions not net of demolitions. The ranking between
 cities is the reliable part.*
@@ -691,7 +692,7 @@ market.
 
 **Does a tighter market mean more pressure?** Not across these cities. Vacancy barely differs
 (3.6% to 4.1%), and Windsor's market is nearly as tight as Hamilton's yet has the lowest share
-of renters spending 30%+. The differences come from incomes, not vacancy (section 2).
+of renters spending 30%+. The differences come from incomes, not vacancy (tab 2).
 
 *Units are counted in 2025 and households in 2021, and some units are vacant, so the share
 outside purpose-built rentals is an estimate.*
@@ -703,7 +704,7 @@ are worse off than other renters in every city, but Windsor's are the least burd
 five (50.6%-55.3% elsewhere), in line with its lower rents.
 
 **The rents they face.** Under the 30% rule an average studio ($948 a month) needs about
-**$37,900** a year and a 1-bedroom ($1,193) about **$47,700** (section 1).
+**$37,900** a year and a 1-bedroom ($1,193) about **$47,700** (tab 1).
 
 *The Census counts students who head their own rented household. Students in residence, living
 with parents, or away during the May 2021 online term are not included. CMHC's core-housing-need
@@ -717,16 +718,16 @@ LAYOUT = [
     ("chart-row", "ROW-kpis", [("kpi-afford", 3, 22), ("kpi-rent-income", 3, 22), ("kpi-completions", 3, 22), ("kpi-build-rate", 3, 22)]),
     ("header", "HEADER-afford", "1. Can Windsor renters afford the rent? (Story 1 + Story 2)"),
     ("chart-row", "ROW-afford", [("afford-by-size", 5, 50), ("afford-table", 7, 50)]),
-    ("markdown-row", "ROW-afford-note", [("MARKDOWN-afford", NOTES["afford"], 12, 22)]),
+    ("markdown-row", "ROW-afford-note", [("MARKDOWN-afford", NOTES["afford"], 12, 28)]),
     ("header", "HEADER-peer", "2. Is Windsor affordable, or only cheap? (Story 1 + Story 4)"),
     ("chart-row", "ROW-peer", [("peer-rent-income", 6, 45), ("peer-burden", 6, 45)]),
     ("chart-row", "ROW-peer-table", [("peer-table", 7, 45)], ("MARKDOWN-peer", NOTES["peer"], 5, 45)),
     ("header", "HEADER-supply", "3. Did new homes ease the rental market? (Story 3 + Story 2)"),
     ("chart-row", "ROW-supply", [("supply-completions", 6, 50), ("supply-vacancy", 6, 50)]),
-    ("markdown-row", "ROW-supply-note", [("MARKDOWN-supply", NOTES["supply"], 12, 19)]),
+    ("markdown-row", "ROW-supply-note", [("MARKDOWN-supply", NOTES["supply"], 12, 28)]),
     ("header", "HEADER-build", "4. Is Windsor building as much as its peers? (Story 3 + Story 4)"),
     ("chart-row", "ROW-build", [("peer-build-rate", 6, 50), ("peer-build-trend", 6, 50)]),
-    ("markdown-row", "ROW-build-note", [("MARKDOWN-build", NOTES["build"], 12, 19)]),
+    ("markdown-row", "ROW-build-note", [("MARKDOWN-build", NOTES["build"], 12, 28)]),
     ("header", "HEADER-demand", "5. Did building keep up with population growth? (Story 3 + Census population)"),
     ("chart-row", "ROW-demand", [("demand-ratio", 7, 50)], ("MARKDOWN-demand", NOTES["demand"], 5, 50)),
     ("chart-row", "ROW-demand-built", [("demand-needed-built", 12, 42)]),
@@ -734,9 +735,9 @@ LAYOUT = [
     ("chart-row", "ROW-young", [("young-vs-all", 12, 42)]),
     ("chart-row", "ROW-young-age", [("windsor-by-age", 12, 40)]),
     ("markdown-row", "ROW-young-note", [("MARKDOWN-young", NOTES["young"], 12, 34)]),
-    ("header", "HEADER-stock", "7. How big is the rental market, and how do the cities compare overall? (all stories)"),
+    ("header", "HEADER-stock", "7. How big is the rental market? (Story 2 + Story 4 + Census renters)"),
     ("chart-row", "ROW-stock", [("rental-stock", 6, 58)], ("MARKDOWN-stock", NOTES["stock"], 6, 58)),
-    ("chart-row", "ROW-profile", [("city-profile", 12, 58)]),
+    ("chart-row", "ROW-profile", [("city-profile", 12, 44)]),
 ]
 
 # Card titles shown on this dashboard: the chart names keep their "Story 5:"
@@ -794,6 +795,20 @@ def row_node(row_id: str, children: list) -> dict:
     }
 
 
+# One screen per tab (etl/dashboard_tabs.py): an overview with the
+# all-measures table, then one tab per combined question.
+TABS = [
+    ("TAB-overview", "Overview", ["ROW-intro", "ROW-kpis", "ROW-profile"]),
+    ("TAB-afford", "1. Afford the rent?", ["HEADER-afford", "ROW-afford", "ROW-afford-note"]),
+    ("TAB-peer", "2. Cheap or affordable?", ["HEADER-peer", "ROW-peer", "ROW-peer-table"]),
+    ("TAB-supply", "3. New homes and rents", ["HEADER-supply", "ROW-supply", "ROW-supply-note"]),
+    ("TAB-build", "4. Building vs peers", ["HEADER-build", "ROW-build", "ROW-build-note"]),
+    ("TAB-demand", "5. Population growth", ["HEADER-demand", "ROW-demand", "ROW-demand-built"]),
+    ("TAB-young", "6. Young renters", ["HEADER-young", "ROW-young", "ROW-young-age", "ROW-young-note"]),
+    ("TAB-stock", "7. Rental market size", ["HEADER-stock", "ROW-stock"]),
+]
+
+
 def build_position_json(chart_ids: dict) -> dict:
     position = {
         "DASHBOARD_VERSION_KEY": "v2",
@@ -844,7 +859,7 @@ def build_position_json(chart_ids: dict) -> dict:
                 children.append(md_id)
                 position[md_id] = markdown_node(md_id, node_id, code, width, height)
             position[node_id] = row_node(node_id, children)
-    return position
+    return add_tabs(position, TABS)
 
 
 def build_native_filters(chart_ids: dict) -> list:

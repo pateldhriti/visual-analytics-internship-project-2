@@ -104,7 +104,6 @@ export default function StoryRentalMarket() {
           dashboard="story2"
           fallbackDashboardId={4}
           title="Story 2: What is happening in Windsor's rental market? (Superset dashboard)"
-          height={1600}
         />
       }
       narrative={NARRATIVE}

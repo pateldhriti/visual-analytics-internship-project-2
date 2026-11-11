@@ -62,6 +62,7 @@ import json
 import re
 import uuid
 
+from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
@@ -758,6 +759,18 @@ def ensure_chart(session, headers, key: str, spec: dict) -> int:
     return resp.json()["id"]
 
 
+# One screen per tab (etl/dashboard_tabs.py). The trend and turnover
+# headers are dropped: the tab titles say the same thing.
+TABS = [
+    ("TAB-overview", "Overview", ["HEADER-kpi", "ROW-howto", "ROW-kpi", "HEADER-notes", "ROW-notes"]),
+    ("TAB-zone", "Explore by Zone", ["HEADER-zone", "ROW-zone-table"]),
+    ("TAB-zones", "Zones Compared", ["ROW-zone-bars", "ROW-zone-trend"]),
+    ("TAB-rent", "Rent", ["ROW-rent-trend", "ROW-zone"]),
+    ("TAB-vacancy", "Vacancy", ["ROW-vacancy-trend", "ROW-dwelling"]),
+    ("TAB-turnover", "Turnover", ["ROW-turnover"]),
+]
+
+
 def build_position_json(chart_ids: dict) -> dict:
     position = {
         "DASHBOARD_VERSION_KEY": "v2",
@@ -822,7 +835,7 @@ def build_position_json(chart_ids: dict) -> dict:
                 },
             }
 
-    return position
+    return add_tabs(position, TABS)
 
 
 DWELLING_DEFAULT = ["Apartment", "Combined"]
