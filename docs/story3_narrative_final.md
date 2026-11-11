@@ -25,6 +25,19 @@ This matters for renters: purpose-built rentals are mostly apartments, so the sh
 
 A home is counted again when it is finished, usually one to three years after it starts. In **2023 and 2025 Windsor completed more homes than it started** (1,967 against 1,208, and 1,671 against 1,262), as earlier projects reached the end. The number of homes under construction peaked at about 2,000 in 2022 and again at the end of 2024, and was 1,635 at the end of 2025. With fewer starts feeding it, the pipeline is getting smaller.
 
+## Before and from 2020
+
+Comparing the five full years before the pandemic with the five from it (`warehouse.v_story3_period_comparison`):
+
+| | 2016-2020 a year | 2021-2025 a year | Change |
+|---|---|---|---|
+| Homes started | 1,261 | 1,520 | +21% |
+| Homes completed | 1,133 | 1,489 | +31% |
+| Apartments started | 246 (20% of starts) | 813 (54%) | 3.3 times |
+| Single-detached started | 677 (54%) | 455 (30%) | -33% |
+
+Windsor builds more than before, but the bigger change is what it builds: apartments went from a fifth of new homes to more than half, and single-detached houses from more than half to under a third. Most new supply is now rental-type apartments, which fits the recovery in rental vacancy from 2024 (Story 4's ten-year view).
+
 ## What this means
 
 Windsor is building more apartments than it used to, but not more homes overall: the 2024 surge was a single year, and 2025 returned to the long-run level. Story 2 found vacancy rising since 2022, and the high completions of 2023 to 2025 are consistent with that. With starts down again and fewer homes under construction, the flow of newly finished homes is likely to slow over the next few years unless starts recover.

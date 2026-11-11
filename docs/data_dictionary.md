@@ -208,6 +208,7 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story3_starts_completions_by_dwelling_type` | province × period × activity × dwelling type (CMHC quarterly) | Dashboard 1 |
 | `v_story3_supply_per_1000_households` | province × period: starts total; the per-1,000 rate is deliberately NULL because the source has no Windsor figure | Story 3 (earlier version) |
 | `v_story3_windsor_supply_annual` | year × activity × dwelling type: Windsor units (flags partial years) | Story 3 |
+| `v_story3_period_comparison` | period (2016-2020, 2021-2025) x activity (starts, completions) x dwelling type: average units a year, total units, share of the period's total; only complete five-year periods | Story 3 "Before vs From 2020" tab; home/story-page charts |
 | `v_story3_windsor_supply_per_1000_households` | year: Windsor starts and completions per 1,000 households (2021 household count) | Story 3 |
 | `v_story4_vacancy_comparison` | market × period: vacancy rate | Story 4 |
 | `v_story4_rent_comparison` | market × period: average 2-bedroom rent | Story 4; Story 5 through `v_story5_peer_affordability` |
