@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, animate, motion, MotionConfig, useMotionValue } from "framer-motion";
 import PageContainer from "../components/PageContainer.jsx";
 import KpiRow from "../components/KpiRow.jsx";
+import StoryHighlights from "../components/StoryHighlights.jsx";
 import { staggerParent, fadeUp, fadeIn } from "../lib/motion.js";
 
 const MotionLink = motion(Link);
@@ -237,8 +238,8 @@ export default function Home() {
                   <Link to="/stories/affordability" className="hero-cta hero-cta-primary">
                     Explore the Data
                   </Link>
-                  <a href="#stories" className="hero-cta hero-cta-secondary">
-                    Discover the Stories &rarr;
+                  <a href="#findings" className="hero-cta hero-cta-secondary">
+                    The Story in Four Charts &rarr;
                   </a>
                 </motion.div>
               </motion.div>
@@ -260,6 +261,8 @@ export default function Home() {
 
         <PageContainer>
           <KpiRow tiles={HOME_KPIS} />
+
+          <StoryHighlights />
 
           <motion.section
             className="section"
