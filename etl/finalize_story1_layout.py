@@ -31,6 +31,7 @@ Run from the project virtual environment:
 import json
 import uuid
 
+from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 DASHBOARD_ID = 3
@@ -295,6 +296,16 @@ def markdown_node(node_id: str, parent_id: str, code: str, width: int = 12, heig
     }
 
 
+# One screen per tab (etl/dashboard_tabs.py).
+TABS = [
+    ("TAB-tenure", "Renters vs Owners", ["HEADER-gap-kpis", "ROW-kpi", "ROW-tenure-bar"]),
+    ("TAB-income", "By Income", ["HEADER-income", "ROW-income"]),
+    ("TAB-household", "By Household Type", ["HEADER-household", "ROW-household"]),
+    ("TAB-severity", "How Far Over 30%", ["HEADER-severity", "ROW-severity", "ROW-severity-breakdown"]),
+    ("TAB-notes", "Data Notes", ["HEADER-validation", "ROW-validation"]),
+]
+
+
 def build_position_json(chart_ids: dict) -> dict:
     position = {
         "DASHBOARD_VERSION_KEY": "v2",
@@ -369,7 +380,7 @@ def build_position_json(chart_ids: dict) -> dict:
         "MARKDOWN-validation", "ROW-validation", VALIDATION_MARKDOWN, height=60
     )
 
-    return position
+    return add_tabs(position, TABS)
 
 
 def verify_native_filter_scope(

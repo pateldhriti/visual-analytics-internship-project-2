@@ -32,6 +32,7 @@ Run from the project virtual environment:
 import json
 import uuid
 
+from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
@@ -350,6 +351,15 @@ def row_node(node_id: str, children: list) -> dict:
     }
 
 
+# One screen per tab (etl/dashboard_tabs.py).
+TABS = [
+    ("TAB-afford-supply", "Affordability and Supply",
+     ["HEADER-affordability", "ROW-affordability", "HEADER-supply", "ROW-supply"]),
+    ("TAB-rental-cma", "Rental Market and Other Cities",
+     ["HEADER-rental", "ROW-rental-kpi", "ROW-rental-table", "HEADER-cma", "ROW-cma"]),
+]
+
+
 def build_position_json(chart_ids: dict) -> dict:
     position = {
         "DASHBOARD_VERSION_KEY": "v2",
@@ -423,7 +433,7 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-cma-benchmark-table", "ROW-cma", chart_ids["cma-benchmark-table"], 12, TABLE_HEIGHT
     )
 
-    return position
+    return add_tabs(position, TABS)
 
 
 def build_native_filters() -> list:

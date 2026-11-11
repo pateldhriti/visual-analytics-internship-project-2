@@ -31,6 +31,7 @@ Run from the project virtual environment:
 import json
 import uuid
 
+from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
@@ -276,6 +277,14 @@ def ensure_chart(session, headers, spec: dict) -> int:
     return resp.json()["id"]
 
 
+# One screen per tab (etl/dashboard_tabs.py).
+TABS = [
+    ("TAB-glance", "At a Glance", ["HEADER-kpi", "ROW-kpi", "HEADER-dwelling", "ROW-dwelling"]),
+    ("TAB-trend", "Ten-Year Trend", ["HEADER-trend", "ROW-trend", "ROW-per-1000"]),
+    ("TAB-mix", "Mix and Sources", ["ROW-starts-mix", "ROW-MARKDOWN-source"]),
+]
+
+
 def build_position_json(chart_ids: dict) -> dict:
     grid_children = []
     position = {
@@ -339,7 +348,7 @@ def build_position_json(chart_ids: dict) -> dict:
                 },
             }
 
-    return position
+    return add_tabs(position, TABS)
 
 
 def build_native_filters(chart_ids: dict) -> list:
@@ -391,17 +400,51 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     resp.raise_for_status()
 
 
-def ensure_dashboard(session, headers, position_json: dict, native_filters: list) -> int:
+COLOR_SCHEME_DOMAIN = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
+
+
+def ensure_dashboard(session, headers, position_json: dict, native_filters: list, chart_ids: dict) -> int:
+    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
+    # Merge into the stored metadata and write the cross-filter settings in
+    # the shape Superset's frontend computes. Replacing the metadata with
+    # only the filters and colours made an anonymous viewer's browser try to
+    # save the missing keys on load; the save fails with 401 and Superset
+    # then shows its login page instead of the dashboard.
+    metadata = {}
+    if existing:
+        current = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers)
+        current.raise_for_status()
+        metadata = json.loads(current.json()["result"]["json_metadata"] or "{}")
+    all_ids = sorted(chart_ids.values())
+    no_cross_filter = {"scope": {"rootPath": ["ROOT_ID"], "excluded": all_ids}, "chartsInScope": []}
+    metadata.update(
+        {
+            "native_filter_configuration": native_filters,
+            "color_scheme": COLOR_SCHEME,
+            # The dist_bar charts cannot emit cross-filters, so the frontend
+            # computes an empty chart configuration; it also stores the
+            # scheme's colours (docker/superset_config.py's windsor_housing).
+            "chart_configuration": {},
+            "color_scheme_domain": COLOR_SCHEME_DOMAIN,
+            "global_chart_configuration": no_cross_filter,
+            "cross_filters_enabled": True,
+        }
+    )
+    for key, default in (
+        ("shared_label_colors", {}),
+        ("label_colors", {}),
+        ("timed_refresh_immune_slices", []),
+        ("expanded_slices", {}),
+        ("refresh_frequency", 0),
+    ):
+        metadata.setdefault(key, default)
     body = {
         "dashboard_title": DASHBOARD_TITLE,
         "published": True,
         "position_json": json.dumps(position_json),
-        "json_metadata": json.dumps(
-            {"native_filter_configuration": native_filters, "color_scheme": COLOR_SCHEME}
-        ),
+        "json_metadata": json.dumps(metadata),
     }
 
-    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers, json=body)
         resp.raise_for_status()
@@ -422,7 +465,7 @@ if __name__ == "__main__":
         print(f"Chart ready: {spec['slice_name']} (id={chart_ids[key]})")
 
     dashboard_id = ensure_dashboard(
-        session, headers, build_position_json(chart_ids), build_native_filters(chart_ids)
+        session, headers, build_position_json(chart_ids), build_native_filters(chart_ids), chart_ids
     )
     print(f"Dashboard ready: id={dashboard_id}")
 

@@ -32,6 +32,7 @@ Run from the project virtual environment:
 import json
 import uuid
 
+from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 
 DATASET_VACANCY = 2  # v_story4_vacancy_comparison
@@ -331,7 +332,7 @@ its lowest (**1.8%**). From 2024, the cap on international student permits and n
 buildings let vacancy recover to **3.6%**, while rents kept rising.
 
 *CMHC Rental Market Survey (October), apartments and row houses, via StatCan 34-10-0133-01 and
-34-10-0130-01. The Oct-25 bars above are apartments only, so they differ by a few dollars.*
+34-10-0130-01. The October 2025 tab is apartments only, so its figures differ by a few dollars.*
 """
 
 AFFORDABILITY_GAP_MARKDOWN = """**How to read this dashboard.** Windsor is the blue bar in every chart; the grey bars
@@ -416,6 +417,16 @@ def markdown_node(node_id: str, parent_id: str, code: str, width: int = 12, heig
     }
 
 
+# One screen per tab (etl/dashboard_tabs.py).
+TABS = [
+    ("TAB-snapshot", "October 2025",
+     ["HEADER-kpis", "ROW-kpi", "HEADER-vacancy", "ROW-vacancy", "HEADER-rent", "ROW-rent"]),
+    ("TAB-growth", "Rent Growth", ["HEADER-rent-growth", "ROW-rent-growth", "ROW-note"]),
+    ("TAB-history", "Ten Years", ["HEADER-history", "ROW-rent-history", "ROW-vacancy-history"]),
+    ("TAB-periods", "Before vs From the Pandemic", ["ROW-periods"]),
+]
+
+
 def build_position_json(chart_ids: dict) -> dict:
     position = {
         "DASHBOARD_VERSION_KEY": "v2",
@@ -458,13 +469,13 @@ def build_position_json(chart_ids: dict) -> dict:
     position["HEADER-vacancy"] = header_node("HEADER-vacancy", "Vacancy: How Easy Is It to Find an Apartment?")
     position["ROW-vacancy"] = row_node("ROW-vacancy", ["CHART-vacancy-by-market"])
     position["CHART-vacancy-by-market"] = chart_node(
-        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 40
+        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 33
     )
 
     position["HEADER-rent"] = header_node("HEADER-rent", "Rent: What a 2-Bedroom Apartment Costs")
     position["ROW-rent"] = row_node("ROW-rent", ["CHART-rent-by-market"])
     position["CHART-rent-by-market"] = chart_node(
-        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 40
+        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 33
     )
 
     position["HEADER-rent-growth"] = header_node("HEADER-rent-growth", "Rent Growth: How Fast Rents Rose (Oct-24 to Oct-25)")
@@ -495,7 +506,7 @@ def build_position_json(chart_ids: dict) -> dict:
         "MARKDOWN-affordability-gap", "ROW-note", AFFORDABILITY_GAP_MARKDOWN, height=26
     )
 
-    return position
+    return add_tabs(position, TABS)
 
 
 INTERACTIVE_KEYS = [
