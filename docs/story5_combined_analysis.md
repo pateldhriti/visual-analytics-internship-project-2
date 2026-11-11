@@ -18,7 +18,7 @@ The datasets share three keys:
 
 ## Data added
 
-Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the four comparison cities Story 4 uses (London, Hamilton, Kitchener-Cambridge-Waterloo, St. Catharines-Niagara), so questions 1–5 needed no new download. Question 6 (young renters) adds one new Census table, 98-10-0241-01.
+Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the four comparison cities Story 4 uses (London, Hamilton, Kitchener-Cambridge-Waterloo, St. Catharines-Niagara), so questions 1–5 needed no new download. Question 6 (young renters) adds one new Census table, 98-10-0241-01, and question 7 adds CMHC's rental workbooks for the four comparison cities (Windsor's was already loaded).
 
 `etl/extract_peer_cma_context.py` takes the five cities' rows from:
 
@@ -28,10 +28,11 @@ Stories 1 and 3 used only Windsor's rows. The same StatCan files also cover the 
 | 98-401-X2021002 (Census Profile 2021) | population in 2016 and 2021, private households and the people in them, renter households, % of tenants spending 30%+, median household income, median rent paid |
 | 34-10-0154-01 (monthly starts and completions) | yearly starts and completions, all homes and apartments, full years 2016 to 2025 |
 | 98-10-0241-01 (housing indicators by age of primary household maintainer, 2021 Census; **new**, downloaded on first run) | households and households spending 30%+ on shelter, by age group, for renters and all households |
+| CMHC Rental Market Survey, October 2025, one workbook per city (**new** for the 4 comparison cities, downloaded on first run) | Table 3.1.3: purpose-built rental units (apartments and row houses, all unit sizes), October 2024 and 2025 |
 
-Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), because each file spells city names differently. The rows load into `warehouse.fact_peer_cma_context` (770 rows), which has one row per city, source, indicator and breakdown. Windsor's rows match Stories 1 and 3 exactly; for example, 34.8% of tenants spending 30%+, and 1,262 starts and 1,671 completions in 2025.
+Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), because each file spells city names differently. The rows load into `warehouse.fact_peer_cma_context` (780 rows), which has one row per city, source, indicator and breakdown. Windsor's rows match Stories 1 and 3 exactly; for example, 34.8% of tenants spending 30%+, and 1,262 starts and 1,671 completions in 2025.
 
-## The six combined views (`sql/story5_views.sql`)
+## The combined views (`sql/story5_views.sql`)
 
 | View | Joins | Key |
 |---|---|---|
@@ -41,6 +42,8 @@ Cities are matched by the CMA code at the end of each DGUID (559 = Windsor), bec
 | `v_story5_peer_construction` | Story 3 construction (all 5 cities) x Census households | City and year |
 | `v_story5_supply_vs_demand` | Story 3 completions (all 5 cities) x Census population growth 2016-2021 | City |
 | `v_story5_renter_burden_by_age` | Census renters by age (98-10-0241-01) x Story 1's burden measure x Story 4 cities | City and age group |
+| `v_story5_rental_stock` | CMHC purpose-built rental units (all 5 cities) x Census renter households | City |
+| `v_story5_city_profile` | Every measure above plus Story 4's vacancy, one row per city | City |
 
 **Can-afford rule.** A rent is affordable to a household whose income is at least rent x 12 / 0.30, the standard 30% rule.
 
@@ -135,12 +138,31 @@ The rents they face (section 1): an average studio ($948 a month) needs about $3
 
 **What this does and does not cover.** The Census counts students who head their own rented household (including shared houses). It leaves out students in residence or living with their parents, and the May 2021 Census fell in an online term, when many students were away. CMHC's core-housing-need measure is in the same table but is not used: it leaves out non-family households with a maintainer aged 15–29 attending school, so it understates need among students.
 
+### 7. How big is the rental market, and how do the cities compare overall? (CMHC rental units + Census renters, then every measure)
+
+Purpose-built rental units (apartments and row houses, October 2025) against renter households (2021 Census):
+
+| City | Rental units | Renter households | Units per 100 renters |
+|---|---|---|---|
+| St. Catharines-Niagara | 17,078 | 51,210 | 33.3 |
+| **Windsor** | **19,883** | **45,625** | **43.6** |
+| Hamilton | 47,799 | 96,600 | 49.5 |
+| Kitchener-Cambridge-Waterloo | 42,911 | 77,470 | 55.4 |
+| London | 53,617 | 83,170 | 64.5 |
+
+Windsor has about **44 purpose-built rental units for every 100 renter households**, the second-lowest of the five. So roughly **half or more of Windsor's renters** live in rented houses, condos, basements and other units that CMHC's rental survey does not cover. Story 2's rents and vacancy rates describe only that purpose-built part of the market.
+
+**Does a tighter market mean more pressure?** Not across these cities. October 2025 vacancy barely differs (3.6% to 4.1%), and Windsor's market is nearly as tight as Hamilton's (3.7% against 3.6%) yet has the lowest share of renters spending 30%+ (34.8% against 39.0%). The differences between cities come from incomes (section 2), not from vacancy. With five cities this is an observation, not a tested relationship.
+
+The dashboard ends with one table that puts every measure for the five cities side by side: rent, vacancy, rental units per 100 renters, median renter income, rent as a share of income, renters and young renters spending 30%+, starts per 1,000 households, and the share of needed homes built.
+
 ### Together
 
 - **Renters:** Windsor's low rents reflect low renter incomes, so most renters still cannot afford an average 2-bedroom.
 - **Recent completions:** the 2023–2025 surge coincided with a looser market.
 - **Building:** Windsor builds more slowly than any comparison city and, from 2016 to 2021, finished only 0.59 homes for every home its population growth needed. New supply is unlikely to keep easing rents without more construction.
 - **Young renters:** nearly half of renter households aged 15–24 spend 30% or more on shelter, the highest of any age group, although less than in the comparison cities.
+- **Rental market:** purpose-built rentals house at most about half of Windsor's renters, so the rest of the market is outside CMHC's survey.
 
 ## Dashboard
 
@@ -153,6 +175,7 @@ The rents they face (section 1): an average studio ($948 a month) needs about $3
 | Section 4 | Starts per 1,000 households by city, plus Windsor against the comparison-city average by year |
 | Section 5 | Homes completed per home needed by city, plus homes needed against homes completed |
 | Section 6 | Young renters against all renters spending 30%+, by city, plus Windsor renters by age |
+| Section 7 | Rental units per 100 renter households by city, plus one table with every measure for the five cities |
 | Interaction | A **Years** range filter narrows sections 3 and 4; the KPI cards stay fixed |
 
 Windsor is blue and the comparison cities grey throughout. Each section ends with a note stating the finding in words.
@@ -164,6 +187,7 @@ Windsor is blue and the comparison cities grey throughout. Each section ends wit
 - **What each count covers:** completions include condos and homes for sale, while vacancy covers purpose-built rentals only. Section 3 therefore shows timing, not cause.
 - **Rent type:** the city comparison uses apartment rents only, the only comparison CMHC publishes. Windsor's own figures include row houses ($1,451 against $1,454 for a 2-bedroom).
 - **Household counts:** "per 1,000 households" uses the 2021 household count for every year.
+- **Rental stock:** section 7 compares units counted in 2025 with households counted in 2021, and some units are vacant, so the share of renters outside purpose-built rentals is an estimate.
 - **Young renters:** section 6 counts only students who head their own rented household; see the note in section 6.
 - **Homes needed:** section 5 applies 2021 household sizes to the whole 2016-2021 growth. Completions are not net of demolitions, and calendar 2016-2020 only approximates the May-to-May Census interval. The ratios are estimates; the ranking between cities is the reliable part.
 

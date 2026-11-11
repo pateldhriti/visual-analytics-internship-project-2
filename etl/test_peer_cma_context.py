@@ -133,3 +133,31 @@ def test_housing_indicators_keep_renters_by_age_and_skip_other_breakdowns(tmp_pa
     }
     assert {r["category"] for r in rows} == {"15 to 24 years"}
     assert {r["cma_name"] for r in rows} == {"Windsor CMA"}
+
+
+def _rms_workbooks(tmp_path, kcw_label="Kitchener - Cambridge - Waterloo CMA"):
+    import openpyxl
+
+    for code, slug in ex.RMS_FILES.items():
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Table 3.1.3"
+        # CMHC spaces the hyphens ("St. Catharines - Niagara CMA"); the extract normalises them.
+        name = kcw_label if code == "541" else ex.CMAS[code].replace("-", " - ")
+        ws.append([f"3.1.3 Number of Private Row (Townhouse) and Apartment Units in the Universe - {ex.CMAS[code]}"])
+        ws.append(["Zone 1 - Centre", "1", "1", "2", "2", "3", "3", "4", "4", "10", "10"])
+        ws.append([name, "100", "110", "1,000", "1,100", "2,000", "2,100", "300", "310", "3,400", "3,620"])
+        wb.save(tmp_path / f"{slug}.xlsx")
+    return tmp_path
+
+
+def test_rental_universe_reads_each_cma_total_row(tmp_path):
+    rows = ex.extract_rental_universe(_rms_workbooks(tmp_path))
+    assert len(rows) == 10  # 5 cities x Oct-24 and Oct-25
+    assert {(r["period_year"], r["value"]) for r in rows} == {(2024, 3400.0), (2025, 3620.0)}
+    assert {r["cma_name"] for r in rows} == set(ex.CMAS.values())
+
+
+def test_rental_universe_fails_loudly_when_a_total_row_is_missing(tmp_path):
+    with pytest.raises(ValueError, match="Kitchener"):
+        ex.extract_rental_universe(_rms_workbooks(tmp_path, kcw_label="Kitchener Region"))

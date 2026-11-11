@@ -9,7 +9,7 @@ import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
 const INTRO =
   "Each of the first four stories answers its own question from one dataset. This story " +
   "combines them. The datasets share the city, the year and the renter, so they can be joined " +
-  "to answer six questions none of them can answer alone.";
+  "to answer seven questions none of them can answer alone.";
 
 const QUESTIONS = [
   "Can Windsor renters afford the rent? (Story 1 incomes + Story 2 rents)",
@@ -18,6 +18,7 @@ const QUESTIONS = [
   "Is Windsor building as much as its peers? (Story 3 construction + Story 4 comparison cities)",
   "Did building keep up with population growth? (Story 3 completions + Census population, 5 cities)",
   "Can young renters and students afford to rent? (Census renters by age + Story 1 + Story 4 cities)",
+  "How big is the rental market, and how do the cities compare overall? (CMHC rental units + Census renters, then every measure)",
 ];
 
 const KPIS = [
@@ -57,6 +58,11 @@ const NARRATIVE = [
     "homes: 0.59 for every home needed, the lowest of the five cities (0.72 to 0.91 elsewhere). " +
     "Windsor grew about as fast as Hamilton and St. Catharines-Niagara, so slow building is not " +
     "explained by slow growth.",
+  "How big is the rental market? Windsor has about 44 purpose-built rental units for every 100 " +
+    "renter households, the second-lowest of the five cities, so roughly half or more of its " +
+    "renters live in rented houses, condos and basements outside CMHC's survey. A tighter market " +
+    "does not explain the differences between cities: vacancy is 3.6% to 4.1% everywhere, and " +
+    "Windsor's is nearly as tight as Hamilton's with less renter pressure.",
   "Can young renters afford it? In Windsor, 46.5% of renter households led by someone aged " +
     "15 to 24 spend 30% or more of their income on shelter, against 34.8% of all renters: the most " +
     "burdened age group. Young renters are worse off in every city, but Windsor's are the least " +
@@ -91,6 +97,10 @@ const DEFINITIONS = [
     term: "Census renters by age + Story 1 + Story 4: by city",
     text: "Renter households by the age of the person who maintains them (2021 Census), with Story 1's measure of spending 30% or more on shelter, for all five cities.",
   },
+  {
+    term: "CMHC rental units + Census renters: by city",
+    text: "Purpose-built rental units counted by CMHC in October 2025, per 100 renter households counted by the 2021 Census, for all five cities.",
+  },
 ];
 
 const LIMITATIONS = [
@@ -100,11 +110,12 @@ const LIMITATIONS = [
   "Rents for the city comparison are for apartments only (CMHC publishes no other comparison); Windsor's own figures include row houses.",
   "Homes needed assumes 2021 household sizes for the whole 2016-2021 period, and completions are not net of demolitions, so those ratios are estimates; the ranking between cities is the reliable part.",
   "The young-renter figures count students who head their own rented household; students in residence, living with parents, or away during the May 2021 online term are not included.",
+  "Rental units are counted in 2025 and renter households in 2021, and some units are vacant, so the share of renters outside purpose-built rentals is an estimate.",
 ];
 
 const FILTERS = [
   { label: "Geography", value: "Windsor CMA and 4 comparison cities" },
-  { label: "Joins", value: "Stories 1+2, 1+4, 3+2, 3+4, 3+Census, Census by age" },
+  { label: "Joins", value: "Stories 1+2, 1+4, 3+2, 3+4, 3+Census, Census by age, rental stock" },
   { label: "Years", value: "2016 to 2025 (adjustable in the dashboard)" },
 ];
 
@@ -129,7 +140,7 @@ export default function StoryIntegratedAnalysis() {
       limitations={LIMITATIONS}
       variant="horizon"
       theme="neighbourhood"
-      source="StatCan 98-10-0252-01 and Census Profile 98-401-X2021002 (2021 Census); CMHC Rental Market Survey, October 2020 to 2025; StatCan 34-10-0154-01 starts and completions, 2016 to 2025; StatCan 98-10-0241-01 housing indicators by age (2021 Census)"
+      source="StatCan 98-10-0252-01 and Census Profile 98-401-X2021002 (2021 Census); CMHC Rental Market Survey, October 2020 to 2025; StatCan 34-10-0154-01 starts and completions, 2016 to 2025; StatCan 98-10-0241-01 housing indicators by age (2021 Census); CMHC Rental Market Survey city tables, October 2025"
     />
   );
 }

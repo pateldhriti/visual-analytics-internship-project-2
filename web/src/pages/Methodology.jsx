@@ -32,6 +32,12 @@ const SOURCES = [
     url: "https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/housing-data/data-tables/rental-market/rental-market-report-data-tables",
   },
   {
+    name: "Rental Market Survey data tables for London, Hamilton, Kitchener-Cambridge-Waterloo and St. Catharines-Niagara, October 2025",
+    agency: "CMHC",
+    use: "Story 5: the number of purpose-built rental units in each comparison city.",
+    url: "https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/housing-data/data-tables/rental-market/rental-market-report-data-tables",
+  },
+  {
     name: "Housing starts, under construction and completions, selected CMAs, monthly (Table 34-10-0154-01)",
     agency: "Statistics Canada (CMHC survey)",
     use: "Story 3: homes started and completed in Windsor, from 2016. Story 5: the same counts for the four comparison cities.",
