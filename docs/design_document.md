@@ -3,7 +3,7 @@
 **Course:** COMP-8977 Internship/Project-2, Fall 2026
 **Team 1:** Dhritiben Patel (Project Manager), Romit Patel (Data Engineering), Pavan Rella (Analytics), Charmiben Patel (Front-end and Deployment)
 **Supervisor:** Dr. Andreas Maniatis | **Course Instructor:** Dr. Prashanth C. Ranga
-**Status:** Version 2 (6 November 2026). The current system is a **functional prototype**. Version 1 set out the design and the plan for combining the stories; version 2 records what was built: Story 5 now answers six combined questions (section 7).
+**Status:** Version 2 (6 November 2026). The current system is a **functional prototype**. Version 1 set out the design and the plan for combining the stories; version 2 records what was built: Story 5 now answers seven combined questions (section 7).
 
 ---
 
@@ -38,7 +38,7 @@ From the proposal (section 4.3):
 | 2 | What is happening in Windsor's rental market? | CMHC Rental Market Survey, Windsor 2025 |
 | 3 | Is Windsor building enough housing? | CMHC starts and completions (StatCan 34-10-0154-01) |
 | 4 | How does Windsor compare with similar cities? | CMHC Rental Market Survey, Canada 2025 |
-| 5 | **How do affordability, rent, and supply fit together?** | **Joins the datasets above, plus the Census Profile (98-401-X2021002) and housing indicators by age (98-10-0241-01), for Windsor and the 4 comparison cities (section 7)** |
+| 5 | **How do affordability, rent, and supply fit together?** | **Joins the datasets above, plus the Census Profile (98-401-X2021002), housing indicators by age (98-10-0241-01) and each city's CMHC rental workbook, for Windsor and the 4 comparison cities (section 7)** |
 
 **Supervisor feedback (Nov 2026).** Stories 1–4 each use their own file, so the work looked like four separate pieces, and Story 5 only placed one chart from each story side by side. Story 5 has been rebuilt so that its questions **can only be answered by joining datasets**, and each of Stories 1–4 now ends with a "How this connects" box that links to it. That integration is the team's shared work.
 
@@ -51,7 +51,7 @@ From the proposal (section 4.3):
 | # | Goal | How we measure it |
 |---|---|---|
 | G1 | A visitor can follow each story from question to evidence to conclusion | In user testing, 4 of 5 testers can state each story's main finding in one sentence |
-| G2 | At least two **combined questions** use two or more datasets each | Story 5 has 2 or more charts built on SQL views that join different fact tables. **Met:** six combined views (section 7). |
+| G2 | At least two **combined questions** use two or more datasets each | Story 5 has 2 or more charts built on SQL views that join different fact tables. **Met:** eight combined views (section 7). |
 | G3 | Every number can be traced to its source | Every KPI and chart names its source table. Data-quality checks pass on each refresh. |
 | G4 | Pages are fast enough | React page loads in under 3 s. Each dashboard chart loads in under 5 s on the hosted server. |
 | G5 | Refresh is repeatable | One command (`etl/refresh_all.py`) rebuilds the warehouse from new files with no manual edits |
@@ -252,7 +252,9 @@ On mobile, KPI tiles stack in two columns and the dashboard scrolls inside its o
 | 4. Building as much as peers?     bars by city | trend       |
 | 5. Keeping up with population?    % of needed | needed vs    |
 |                                   homes built | built        |
-| 6. Can young renters afford it?   by city | Windsor by age  |
+| 6. Can young renters afford it?   by city | Windsor by age   |
+| 7. Rental market size, overall?   units per 100 renters      |
+|                                   + table of every measure   |
 |  each section ends with a note that states the finding       |
 +--------------------------------------------------------------+
 | Filter: Years (sections 3 and 4)                             |
@@ -275,7 +277,7 @@ We choose chart types **after** the data for each question is ready, using the r
 ## 7. Integrating the Stories (answer to the supervisor's main question)
 
 **The question:** can the datasets be combined to answer questions none of them can answer alone?
-**Answer:** yes, through the shared keys: the renter (tenure and income), the city (CMA) and the year. Story 5 is built on six SQL views (`sql/story5_views.sql`), each joining at least two sources.
+**Answer:** yes, through the shared keys: the renter (tenure and income), the city (CMA) and the year. Story 5 is built on eight SQL views (`sql/story5_views.sql`), each joining at least two sources.
 
 | Combined question | Datasets joined | Join key | Result |
 |---|---|---|---|
@@ -285,8 +287,9 @@ We choose chart types **after** the data for each question is ready, using the r
 | **Q4. Is Windsor building as much as its peers?** | Story 3 (starts, all 5 cities) + Story 4 (comparison cities) + Census households | CMA + year | **8.4** starts a year per 1,000 households, the fewest of the five |
 | **Q5. Did building keep up with population growth?** | Story 3 (completions, all 5 cities) + Census population 2016 and 2021 | CMA | Windsor completed **59%** of the homes its growth needed, the lowest of the five (72%–91% elsewhere) |
 | **Q6. Can young renters and students afford to rent?** | Census renters by age (98-10-0241-01, new) + Story 1 (burden measure) + Story 4 (comparison cities) | CMA + renter + age | **46.5%** of Windsor renter households aged 15–24 spend 30%+ on shelter, against 34.8% of all renters: the most burdened age group, though less than in the other cities (51%–55%) |
+| **Q7. How big is the rental market, and how do the cities compare overall?** | CMHC rental units (all 5 cities) + Census renter households; then every measure in one table | CMA | Windsor has **44** purpose-built rental units per 100 renter households, the second-lowest of the five, so about half or more of its renters live outside CMHC's survey. Vacancy (3.6%–4.1%) does not explain the differences in renter pressure; incomes do |
 
-**Only one new download.** Version 1 expected a 5th dataset for the comparison cities' incomes. The Census and StatCan files we already used for Windsor cover every CMA, so `etl/extract_peer_cma_context.py` takes the four comparison cities' rows from them. The student question (Q6) needed one new Census table, 98-10-0241-01 (housing indicators by age of the household maintainer). It counts students who head their own rented household, not those in residence or living with parents.
+**Little new data was needed.** Version 1 expected a 5th dataset for the comparison cities' incomes. The Census and StatCan files we already used for Windsor cover every CMA, so `etl/extract_peer_cma_context.py` takes the four comparison cities' rows from them. The student question (Q6) needed one new Census table, 98-10-0241-01 (housing indicators by age of the household maintainer). It counts students who head their own rented household, not those in residence or living with parents. Q7 added CMHC's rental workbooks for the four comparison cities, the same survey and table already used for Windsor.
 
 ### 7.1 Worked example for Q1
 
@@ -303,7 +306,7 @@ We choose chart types **after** the data for each question is ready, using the r
 
 ### 7.2 What was built, and what is left
 
-**Built:** the six combined views, including the student question; the Story 5 dashboard with a Years filter, embedded on the website; the Story 5 page; and the "How this connects" boxes on Stories 1–4. Method, findings and limitations are in `docs/story5_combined_analysis.md`.
+**Built:** the eight combined views, including the student question and the rental-market comparison; the Story 5 dashboard with a Years filter, embedded on the website; the Story 5 page; and the "How this connects" boxes on Stories 1–4. Method, findings and limitations are in `docs/story5_combined_analysis.md`.
 
 **Left for later:**
 1. **Neighbourhood level.** Joining Census areas to CMHC rental zones would show which zones are least affordable for local residents. It needs a Census-area-to-zone mapping.
@@ -350,9 +353,9 @@ We choose chart types **after** the data for each question is ready, using the r
 | Supervisor's question | Where it's answered |
 |---|---|
 | "Where is the design? You should design before implementing." | This document. The current build is the prototype for this design. |
-| "Four people, four files: where is the teamwork?" | Section 7: six combined questions, built in Story 5; Stories 1–4 each link to it |
+| "Four people, four files: where is the teamwork?" | Section 7: seven combined questions, built in Story 5; Stories 1–4 each link to it |
 | "Can we find a common element between the files?" | Section 4.1 (shared dimensions) and the join-key column in section 7 |
 | "Do we need a 5th dataset?" | Not for the comparison cities: the files we have cover every CMA. The student question added one Census table, 98-10-0241-01 (section 7). |
 | "Can students afford these houses?" | Q6 in section 7: young renter households (15–24) are the most burdened age group in Windsor |
 | "Don't decide pie or bar before the design" | Sections 6.2 and 8.3: charts are chosen after the data is ready |
-| "Next week: combine at least two files" | Done: six combined views (section 7) |
+| "Next week: combine at least two files" | Done: eight combined views (section 7) |
