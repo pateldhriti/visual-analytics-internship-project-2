@@ -47,7 +47,7 @@ Each source has its own extract script, writing to `data/staging/`:
 | `extract_rms_canada_comparison.py` | `rms_canada_comparison.csv` (comparator CMAs -- see [docs/comparator_cmas_justification.md](../docs/comparator_cmas_justification.md)) |
 | `extract_cmhc_starts_completions.py` | `ontario_canada_starts_completions.csv` |
 | `extract_windsor_starts_completions.py` | `windsor_starts_completions_monthly.csv` (Windsor CMA, monthly from Jan-2016, StatCan 34-10-0154-01 -- downloads the table zip to `data/raw/statcan/` on first run; `--refresh` re-downloads) |
-| `extract_peer_cma_context.py` | `peer_cma_context.csv` (Windsor and the 4 comparison CMAs: renter incomes by band, Census population, households and tenant burden, yearly starts and completions, renter burden by age, and each city's purpose-built rental units -- for Story 5; downloads StatCan 98-10-0241-01 to `data/raw/statcan/` and the four comparison cities' CMHC rental workbooks to `data/raw/cmhc/peer_rms_2025/` on first run) |
+| `extract_peer_cma_context.py` | `peer_cma_context.csv` (Windsor and the 4 comparison CMAs: renter incomes by band, Census population, households and tenant burden, yearly starts and completions, renter burden by age, and each city's purpose-built rental units for Story 5, and October rents and vacancy 2015 onward for Story 4's ten-year section; downloads StatCan 98-10-0241-01 to `data/raw/statcan/` and the four comparison cities' CMHC rental workbooks to `data/raw/cmhc/peer_rms_2025/` on first run, and re-downloads StatCan 34-10-0133-01 and 34-10-0130-01 on every run) |
 
 Optionally, `load_raw_files_to_postgres.py` loads every file under
 `data/raw/` as-is into Postgres's `raw` schema first, for reference --

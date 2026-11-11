@@ -4,7 +4,9 @@ similar markets?"): Windsor vs. the 4 real comparator CMAs (Hamilton,
 Kitchener-Cambridge-Waterloo, London, St. Catharines-Niagara -- see
 docs/comparator_cmas_justification.md) on apartment vacancy, 2-bedroom
 rent, and the real rent-growth side of the affordability-gap index
-(docs/affordability_gap_index.md).
+(docs/affordability_gap_index.md), plus a ten-year section (2015 to 2025):
+rent and vacancy each year for all five cities, and the five years before
+the pandemic against the five years from it.
 
 The affordability-gap index itself (rent growth minus renter income
 growth) is NOT shown as a single computed number -- the renter-income
@@ -16,7 +18,8 @@ index number would look like real data with no way for a viewer to
 tell the difference.
 
 Requires warehouse.v_story4_vacancy_comparison, v_story4_rent_comparison,
-and v_story4_affordability_gap already registered as Superset datasets
+v_story4_affordability_gap, v_story4_rent_history and
+v_story4_period_comparison already registered as Superset datasets
 (etl/register_superset_datasets.py) and Superset running. Also requires
 sql/story4_views.sql's Windsor-row fix (this same change) already
 applied -- without it, Windsor's own KPI tiles below would return no
@@ -34,6 +37,8 @@ from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
 DATASET_VACANCY = 2  # v_story4_vacancy_comparison
 DATASET_RENT = 3  # v_story4_rent_comparison
 DATASET_AFFORDABILITY_GAP = 4  # v_story4_affordability_gap
+DATASET_HISTORY = 33  # v_story4_rent_history
+DATASET_PERIODS = 34  # v_story4_period_comparison
 
 COLOR_SCHEME = "windsor_housing"
 DASHBOARD_TITLE = "Story 4: How does Windsor compare to similar markets?"
@@ -67,8 +72,53 @@ MARKETS = [
     "London CMA",
     "St. Catharines-Niagara CMA",
 ]
-# Windsor in the project blue, the four peers in one grey, on every chart.
+# Windsor in the project blue, the four peers in one grey, on every bar chart.
 MARKET_COLORS = {m: (ACCENT if m == "Windsor CMA" else PEER_GREY) for m in MARKETS}
+# The ten-year lines need each city told apart, so they use the short names
+# (v_story4_rent_history.city_short) in the windsor_housing scheme's slot
+# order for the five markets (docker/superset_config.py): Windsor keeps blue.
+CITY_LINE_COLORS = {
+    "Windsor": "#2a78d6",
+    "Hamilton": "#eb6834",
+    "Kitchener-Waterloo": "#1baf7a",
+    "London": "#eda100",
+    "St. Catharines": "#e87ba4",
+}
+BEFORE, FROM_PANDEMIC = "2015 to 2020", "2020 to 2025"
+PERIOD_COLORS = {BEFORE: PEER_GREY, FROM_PANDEMIC: ACCENT}
+LABEL_COLORS = {**MARKET_COLORS, **CITY_LINE_COLORS, **PERIOD_COLORS}
+
+YEAR_AXIS = {"expressionType": "SQL", "sqlExpression": "CAST(period_year AS TEXT)", "label": "Year"}
+
+
+def history_line_params(sql: str, label: str, number_format: str, lower=0) -> dict:
+    """One line per city over the years, oldest first."""
+    return {
+        "x_axis": YEAR_AXIS,
+        "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label}],
+        "groupby": ["city_short"],
+        "adhoc_filters": [],
+        "row_limit": 200,
+        "color_scheme": COLOR_SCHEME,
+        "show_legend": True,
+        "legendType": "scroll",
+        "legendOrientation": "top",
+        "rich_tooltip": True,
+        "tooltipSortByMetric": True,
+        "markerEnabled": True,
+        "markerSize": 6,
+        "seriesType": "line",
+        "connectNulls": False,
+        "y_axis_format": number_format,
+        "x_axis_title": "",
+        "y_axis_title": "",
+        "truncateYAxis": lower is not None,
+        "y_axis_bounds": [lower, None],
+    }
+
+
+def market_filter_on(column: str, market: str = "Windsor CMA"):
+    return {**market_filter(market), "subject": column}
 
 
 def market_bar_params(sql: str, label: str, number_format: str, filters: list) -> dict:
@@ -155,6 +205,25 @@ CHARTS = {
             "color_scheme": COLOR_SCHEME,
         },
     },
+    "kpi-rent-decade": {
+        "slice_name": "Windsor 2-Bedroom Rent Change, 2015 to 2025",
+        "description": "How much Windsor's October average 2-bedroom rent (apartments and row houses) rose from 2015 to 2025. warehouse.v_story4_period_comparison.",
+        "dataset_id": DATASET_PERIODS,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {
+                "expressionType": "SQL",
+                "sqlExpression": "MAX(rent_change_2015_2025) / 100.0",
+                "label": "Rent Change",
+            },
+            "adhoc_filters": [market_filter_on("city")],
+            "y_axis_format": "+.0%",
+            "header_font_size": 0.5,
+            "subheader_font_size": 0.15,
+            "subheader": "2-bedroom rent · Oct-15 to Oct-25",
+            "color_scheme": COLOR_SCHEME,
+        },
+    },
     "vacancy-by-market": {
         "slice_name": "Apartment Vacancy Rate by Market (Oct-25)",
         "description": (
@@ -188,7 +257,82 @@ CHARTS = {
         "viz_type": "echarts_timeseries_bar",
         "params": market_bar_params("AVG(rent_growth_pct) / 100.0", "Rent growth", ".1%", []),
     },
+    # --- Ten years: 2015 to 2025 ----------------------------------------------
+    "rent-history": {
+        "slice_name": "2-Bedroom Rent by Year and City (2015 to 2025)",
+        "description": (
+            "October average rent for a 2-bedroom unit, apartments and row houses, Windsor and four similar "
+            "Ontario cities, 2015 to 2025 (CMHC Rental Market Survey via StatCan 34-10-0133-01). Use the "
+            "Years filter to narrow the range. warehouse.v_story4_rent_history."
+        ),
+        "dataset_id": DATASET_HISTORY,
+        "viz_type": "echarts_timeseries_line",
+        "params": history_line_params("AVG(average_rent_2br)", "Average 2-bedroom rent", "$,.0f", lower=600),
+    },
+    "vacancy-history": {
+        "slice_name": "Vacancy Rate by Year and City (2015 to 2025)",
+        "description": (
+            "October vacancy rate, apartments and row houses, Windsor and four similar Ontario cities, 2015 "
+            "to 2025 (StatCan 34-10-0130-01). Lower means harder to find a place. "
+            "warehouse.v_story4_rent_history."
+        ),
+        "dataset_id": DATASET_HISTORY,
+        "viz_type": "echarts_timeseries_line",
+        "params": history_line_params("AVG(vacancy_rate) / 100.0", "Vacancy rate", ".1%"),
+    },
+    "period-growth": {
+        "slice_name": "Average Yearly Rent Increase: 2015 to 2020 vs 2020 to 2025",
+        "description": (
+            "Average yearly increase in October 2-bedroom rent over the five years before the pandemic "
+            "(2015 to 2020, grey) and the five years from it (2020 to 2025, blue), by city. "
+            "warehouse.v_story4_period_comparison."
+        ),
+        "dataset_id": DATASET_PERIODS,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": {"expressionType": "SQL", "sqlExpression": "city_short", "label": "City"},
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(avg_rent_growth_2015_2020) / 100.0", "label": BEFORE},
+                {"expressionType": "SQL", "sqlExpression": "MAX(avg_rent_growth_2020_2025) / 100.0", "label": FROM_PANDEMIC},
+            ],
+            "groupby": [],
+            "adhoc_filters": [],
+            "row_limit": 20,
+            "orientation": "horizontal",
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": True,
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "x_axis_sort": FROM_PANDEMIC,
+            "x_axis_sort_asc": True,
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 0.08],
+        },
+    },
 }
+
+HISTORY_MARKDOWN = """**What changed in ten years.** A 2-bedroom in Windsor went from **$823** (2015) to
+**$1,451** (2025), up **76%**. Only Kitchener-Waterloo rose faster (82%). Windsor is still the
+cheapest of the five cities, but the gap is closing: its rent was **84%** of the other four
+cities' average in 2015 and **87%** in 2025.
+
+**Before vs from the pandemic.** Windsor's rent rose **4.8% a year** from 2015 to 2020 and
+**6.9% a year** from 2020 to 2025, the biggest speed-up of the five cities. The jumps came in
+**2020 (+9.7%)**, **2021 (+11.0%)** and **2024 (+10.4%)**.
+
+**Likely reasons** (context, not measured in this data): during COVID, people moved out of
+Toronto to cheaper cities and rents in buildings that changed tenants could be reset to market
+levels. In 2022-23, reopening, record immigration and international students pushed vacancy to
+its lowest (**1.8%**). From 2024, the cap on international student permits and new rental
+buildings let vacancy recover to **3.6%**, while rents kept rising.
+
+*CMHC Rental Market Survey (October), apartments and row houses, via StatCan 34-10-0133-01 and
+34-10-0130-01. The Oct-25 bars above are apartments only, so they differ by a few dollars.*
+"""
 
 AFFORDABILITY_GAP_MARKDOWN = """**How to read this dashboard.** Windsor is the blue bar in every chart; the grey bars
 are four Ontario cities of similar size (London, Kitchener-Cambridge-Waterloo, Hamilton,
@@ -288,6 +432,10 @@ def build_position_json(chart_ids: dict) -> dict:
                 "ROW-rent",
                 "HEADER-rent-growth",
                 "ROW-rent-growth",
+                "HEADER-history",
+                "ROW-rent-history",
+                "ROW-vacancy-history",
+                "ROW-periods",
                 "ROW-note",
             ],
             "parents": ["ROOT_ID"],
@@ -296,12 +444,15 @@ def build_position_json(chart_ids: dict) -> dict:
 
     position["HEADER-kpis"] = header_node("HEADER-kpis", "Windsor at a Glance: Apartments, October 2025")
     position["ROW-kpi"] = row_node(
-        "ROW-kpi", ["CHART-kpi-vacancy", "CHART-kpi-rent", "CHART-kpi-rent-growth"]
+        "ROW-kpi", ["CHART-kpi-vacancy", "CHART-kpi-rent", "CHART-kpi-rent-growth", "CHART-kpi-rent-decade"]
     )
-    position["CHART-kpi-vacancy"] = chart_node("CHART-kpi-vacancy", "ROW-kpi", chart_ids["kpi-vacancy"], 4)
-    position["CHART-kpi-rent"] = chart_node("CHART-kpi-rent", "ROW-kpi", chart_ids["kpi-rent"], 4)
+    position["CHART-kpi-vacancy"] = chart_node("CHART-kpi-vacancy", "ROW-kpi", chart_ids["kpi-vacancy"], 3)
+    position["CHART-kpi-rent"] = chart_node("CHART-kpi-rent", "ROW-kpi", chart_ids["kpi-rent"], 3)
     position["CHART-kpi-rent-growth"] = chart_node(
-        "CHART-kpi-rent-growth", "ROW-kpi", chart_ids["kpi-rent-growth"], 4
+        "CHART-kpi-rent-growth", "ROW-kpi", chart_ids["kpi-rent-growth"], 3
+    )
+    position["CHART-kpi-rent-decade"] = chart_node(
+        "CHART-kpi-rent-decade", "ROW-kpi", chart_ids["kpi-rent-decade"], 3
     )
 
     position["HEADER-vacancy"] = header_node("HEADER-vacancy", "Vacancy: How Easy Is It to Find an Apartment?")
@@ -322,6 +473,23 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-rent-growth-by-market", "ROW-rent-growth", chart_ids["rent-growth-by-market"], 12, 40
     )
 
+    position["HEADER-history"] = header_node(
+        "HEADER-history", "Ten Years: How Rents and Vacancy Changed (2015 to 2025)"
+    )
+    position["ROW-rent-history"] = row_node("ROW-rent-history", ["CHART-rent-history"])
+    position["CHART-rent-history"] = chart_node(
+        "CHART-rent-history", "ROW-rent-history", chart_ids["rent-history"], 12, 55
+    )
+    position["ROW-vacancy-history"] = row_node("ROW-vacancy-history", ["CHART-vacancy-history"])
+    position["CHART-vacancy-history"] = chart_node(
+        "CHART-vacancy-history", "ROW-vacancy-history", chart_ids["vacancy-history"], 12, 50
+    )
+    position["ROW-periods"] = row_node("ROW-periods", ["CHART-period-growth", "MARKDOWN-history"])
+    position["CHART-period-growth"] = chart_node(
+        "CHART-period-growth", "ROW-periods", chart_ids["period-growth"], 6, 66
+    )
+    position["MARKDOWN-history"] = markdown_node("MARKDOWN-history", "ROW-periods", HISTORY_MARKDOWN, 6, 66)
+
     position["ROW-note"] = row_node("ROW-note", ["MARKDOWN-affordability-gap"])
     position["MARKDOWN-affordability-gap"] = markdown_node(
         "MARKDOWN-affordability-gap", "ROW-note", AFFORDABILITY_GAP_MARKDOWN, height=26
@@ -330,13 +498,39 @@ def build_position_json(chart_ids: dict) -> dict:
     return position
 
 
-INTERACTIVE_KEYS = ["vacancy-by-market", "rent-by-market", "rent-growth-by-market"]
+INTERACTIVE_KEYS = [
+    "vacancy-by-market", "rent-by-market", "rent-growth-by-market", "rent-history", "vacancy-history", "period-growth",
+]
+YEAR_FILTER_KEYS = ["rent-history", "vacancy-history"]
+
+
+def build_native_filters(chart_ids: dict) -> list:
+    """A Years range for the two ten-year line charts only; every other chart
+    is a fixed period (Oct-25, or the two five-year periods)."""
+    in_scope = sorted(chart_ids[key] for key in YEAR_FILTER_KEYS)
+    excluded = sorted(cid for cid in chart_ids.values() if cid not in in_scope)
+    return [
+        {
+            "id": "NATIVE_FILTER-story4-years",
+            "name": "Years",
+            "filterType": "filter_range",
+            "targets": [{"datasetId": DATASET_HISTORY, "column": {"name": "period_year"}}],
+            "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
+            "cascadeParentIds": [],
+            "scope": {"rootPath": ["ROOT_ID"], "excluded": excluded},
+            "type": "NATIVE_FILTER",
+            "description": "Narrow the ten-year rent and vacancy charts to a range of years, e.g. 2015-2020 or 2020-2025.",
+            "chartsInScope": in_scope,
+            "tabsInScope": [],
+            "controlValues": {"enableEmptyFilter": False},
+        }
+    ]
 
 
 def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> int:
     existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
     # Merge into the stored metadata (Superset's frontend keeps its own keys
-    # there). The three ECharts charts can emit cross-filters; here a click
+    # there). The ECharts charts can emit cross-filters; here a click
     # filters nothing -- every chart shows one city's figure against the
     # others, and the KPI cards are fixed to Windsor -- and the
     # configuration is written explicitly in the shape the frontend
@@ -350,8 +544,9 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
     all_ids = sorted(chart_ids.values())
     metadata.update(
         {
+            "native_filter_configuration": build_native_filters(chart_ids),
             "color_scheme": COLOR_SCHEME,
-            "label_colors": MARKET_COLORS,
+            "label_colors": LABEL_COLORS,
             "chart_configuration": {
                 str(chart_ids[key]): {
                     "id": chart_ids[key],

@@ -22,7 +22,7 @@ Row counts are from the local warehouse on 5 November 2026, after `etl/refresh_a
 | `fact_starts_completions` | warehouse | 50 | `docs/data_dictionary_supply.md` |
 | `fact_census_profile` | warehouse | 360 | `docs/data_dictionary_census_comparison.md`, section 1 |
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
-| `fact_peer_cma_context` | warehouse | 780 | [Section 2.4](#24-fact_peer_cma_context) |
+| `fact_peer_cma_context` | warehouse | 1,054 | [Section 2.4](#24-fact_peer_cma_context) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
 | `v_*` views (32) | warehouse | — | [Section 4](#4-views) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
@@ -153,17 +153,17 @@ Notes: In Story 1's scope, the only suppressed cells (40) are the median/average
 
 ### 2.4 `fact_peer_cma_context`
 
-**Source:** Windsor's and the four comparison CMAs' rows (London, Hamilton, St. Catharines-Niagara, Kitchener-Cambridge-Waterloo) from four StatCan files (98-10-0252-01, Census Profile 98-401-X2021002, 34-10-0154-01, 98-10-0241-01) and CMHC's five city Rental Market Survey workbooks (`etl/extract_peer_cma_context.py`). **Grain:** one row per city × source × indicator × tenure × category × year, long format. **Used by:** Story 5.
+**Source:** Windsor's and the four comparison CMAs' rows (London, Hamilton, St. Catharines-Niagara, Kitchener-Cambridge-Waterloo) from six StatCan files (98-10-0252-01, Census Profile 98-401-X2021002, 34-10-0154-01, 98-10-0241-01, and CMHC's October rents and vacancy rates as republished in 34-10-0133-01 and 34-10-0130-01) and CMHC's five city Rental Market Survey workbooks (`etl/extract_peer_cma_context.py`). **Grain:** one row per city × source × indicator × tenure × category × year, long format. **Used by:** Story 4 (ten-year trend) and Story 5.
 
 | Column | Meaning | Values / unit |
 |---|---|---|
 | `cma_code` | Last 3 digits of the CMA's DGUID, used to match cities across files | `559` Windsor, `555` London, `537` Hamilton, `539` St. Catharines-Niagara, `541` Kitchener-Cambridge-Waterloo |
 | `cma_name` | City, spelled as in Story 4 | e.g. `Windsor CMA` |
-| `source_table` | StatCan table the row came from | `98-10-0252-01`, `98-401-X2021002`, `34-10-0154-01`, `98-10-0241-01`, `CMHC RMS 3.1.3` |
-| `indicator` | What is counted | 98-10-0252-01: `households`, `households_30pct_plus`, `median_household_income`, `average_household_income`. 98-401-X2021002: `population_2016`, `population_2021`, `private_households`, `persons_in_private_households`, `renter_households`, `median_household_income`, `pct_spending_30pct_plus`, `median_monthly_shelter_cost`. 34-10-0154-01: `starts`, `completions`. 98-10-0241-01: `households`, `households_30pct_plus`, `households_core_need`. CMHC RMS 3.1.3: `rental_universe` |
+| `source_table` | StatCan table the row came from | `98-10-0252-01`, `98-401-X2021002`, `34-10-0154-01`, `98-10-0241-01`, `CMHC RMS 3.1.3`, `34-10-0133-01`, `34-10-0130-01` |
+| `indicator` | What is counted | 98-10-0252-01: `households`, `households_30pct_plus`, `median_household_income`, `average_household_income`. 98-401-X2021002: `population_2016`, `population_2021`, `private_households`, `persons_in_private_households`, `renter_households`, `median_household_income`, `pct_spending_30pct_plus`, `median_monthly_shelter_cost`. 34-10-0154-01: `starts`, `completions`. 98-10-0241-01: `households`, `households_30pct_plus`, `households_core_need`. CMHC RMS 3.1.3: `rental_universe`. 34-10-0133-01: `average_rent` (dollars a month). 34-10-0130-01: `vacancy_rate` (%) |
 | `tenure` | Whose figure | `Total`, `Renter`, or empty |
-| `category` | Breakdown | income band label (98-10-0252-01), `Total` or `Apartment and Other` (34-10-0154-01), age of primary household maintainer (98-10-0241-01), else empty |
-| `period_year` | Year | 2021 for Census rows (incomes are for 2020); 2016 to the last full calendar year for construction; 2024 and 2025 (October) for rental units |
+| `category` | Breakdown | income band label (98-10-0252-01), `Total` or `Apartment and Other` (34-10-0154-01), age of primary household maintainer (98-10-0241-01), unit size `Studio`, `1 Bedroom`, `2 Bedroom`, `3 Bedroom +` (34-10-0133-01), else empty |
+| `period_year` | Year | 2021 for Census rows (incomes are for 2020); 2016 to the last full calendar year for construction; 2024 and 2025 (October) for rental units; 2015 to the latest October survey for rents and vacancy |
 | `value` | The figure | households, people, dollars, % or units, by indicator |
 
 ---
@@ -211,6 +211,8 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story3_windsor_supply_per_1000_households` | year: Windsor starts and completions per 1,000 households (2021 household count) | Story 3 |
 | `v_story4_vacancy_comparison` | market × period: vacancy rate | Story 4 |
 | `v_story4_rent_comparison` | market × period: average 2-bedroom rent | Story 4; Story 5 through `v_story5_peer_affordability` |
+| `v_story4_rent_history` | city × year (2015 onward): October 2-bedroom rent and vacancy rate (apartments and row houses), yearly rent change, rent as % of 2015 | Story 4 ten-year section |
+| `v_story4_period_comparison` | city: rent in 2015, 2020, 2025; average yearly rent rise 2015-2020 and 2020-2025; average vacancy per period; Windsor's rent as % of the other four cities' average | Story 4 ten-year section |
 | `v_story4_affordability_gap` | market: rent growth %; renter income growth and the gap index stay NULL until an income-growth source exists (`docs/affordability_gap_index.md`) | Story 4 |
 | `v_dashboard1_rental_yoy` | metric × dwelling type: Windsor previous vs latest survey and the change | Dashboard 1 |
 | `v_dashboard1_cma_benchmark` | metric: Windsor vs median of the 5 CMAs, with rank | Dashboard 1 |

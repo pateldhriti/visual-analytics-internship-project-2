@@ -93,7 +93,7 @@ const STORIES = [
     to: "/stories/comparison",
     label: "Story 4",
     title: "How does Windsor compare?",
-    blurb: "Rental indicators against similar-sized Canadian CMAs.",
+    blurb: "Rent and vacancy against four similar Ontario cities, now and over ten years (2015 to 2025).",
     icon: "comparison",
     accent: "violet",
   },
