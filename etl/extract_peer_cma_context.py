@@ -1,6 +1,6 @@
 """
 Extract Windsor's and its four comparison cities' rows from four StatCan
-files, for the combined Story 5 views.
+files and CMHC's five city rental workbooks, for the combined Story 5 views.
 
     98-10-0252-01  shelter cost by income and tenure (2021 Census, incomes for 2020)
                    -> renter households by income band, median renter income,
@@ -18,6 +18,10 @@ files, for the combined Story 5 views.
                       shelter, and households in core housing need, by age
                       group (category), for all households and renters;
                       downloaded on first run (62 MB zip)
+    CMHC Rental Market Survey, October 2025, one workbook per city
+                   -> Table 3.1.3: purpose-built rental units (apartments and
+                      row houses, all unit sizes) in October 2024 and 2025;
+                      downloaded on first run to data/raw/cmhc/peer_rms_2025/
 
 The Story 1-4 extracts keep only Windsor; Story 4's rents already cover the
 four comparison cities (CMHC Rental Market Survey). This script adds the
@@ -45,6 +49,7 @@ import csv
 import zipfile
 from pathlib import Path
 
+import openpyxl
 import pandas as pd
 import requests
 
@@ -55,6 +60,19 @@ PROFILE_CSV = RAW / "statcan" / "98-401-X2021002_English_CSV_data.csv"
 STARTS_ZIP = RAW / "statcan" / "34100154-eng.zip"
 INDICATORS_ZIP = RAW / "statcan" / "98100241-eng.zip"
 INDICATORS_URL = "https://www150.statcan.gc.ca/n1/tbl/csv/98100241-eng.zip"
+RMS_DIR = RAW / "cmhc" / "peer_rms_2025"
+RMS_URL = (
+    "https://assets.cmhc-schl.gc.ca/sites/cmhc/professional/housing-markets-data-and-research/"
+    "housing-data-tables/rental-market/rental-market-report-data-tables/2025/{slug}.xlsx"
+)
+# CMA code -> CMHC's file name for the city's 2025 Rental Market Survey tables.
+RMS_FILES = {
+    "559": "rmr-windsor-2025-en",
+    "555": "rmr-london-2025-en",
+    "537": "rmr-hamilton-2025-en",
+    "539": "rmr-st-catharines-niagara-2025-en",
+    "541": "rmr-kitchener-cambridge-waterloo-2025-en",
+}
 OUTPUT_CSV = PROJECT_ROOT / "data" / "staging" / "peer_cma_context.csv"
 
 # CMA code -> the name used by Story 4 (warehouse.v_story4_rent_comparison).
@@ -247,6 +265,43 @@ def extract_housing_indicators_by_age(path: Path = INDICATORS_ZIP) -> list[dict]
     return rows
 
 
+def download_rms(directory: Path = RMS_DIR) -> Path:
+    directory.mkdir(parents=True, exist_ok=True)
+    for slug in RMS_FILES.values():
+        path = directory / f"{slug}.xlsx"
+        if not path.exists():
+            resp = requests.get(RMS_URL.format(slug=slug), timeout=120)
+            resp.raise_for_status()
+            path.write_bytes(resp.content)
+    return directory
+
+
+def _cma_label(text) -> str:
+    """'Kitchener - Cambridge - Waterloo CMA' -> 'Kitchener-Cambridge-Waterloo CMA'."""
+    return " ".join(str(text).replace(" - ", "-").split())
+
+
+def extract_rental_universe(directory: Path = RMS_DIR) -> list[dict]:
+    """Table 3.1.3's CMA total row: [label, 4 unit sizes x (Oct-24, Oct-25),
+    Total Oct-24, Total Oct-25]. The title row also names the CMA, so the
+    total row is the one whose first cell is exactly the CMA's name."""
+    rows = []
+    for code, slug in RMS_FILES.items():
+        wb = openpyxl.load_workbook(directory / f"{slug}.xlsx", read_only=True, data_only=True)
+        total = [
+            r for r in wb["Table 3.1.3"].iter_rows(values_only=True)
+            if r and r[0] and _cma_label(r[0]) == CMAS[code]
+        ]
+        if len(total) != 1:
+            raise ValueError(f"{slug}: expected one '{CMAS[code]}' row in Table 3.1.3, found {len(total)}")
+        values = [number(str(v).replace(",", "")) for v in total[0][1:] if v is not None]
+        if len(values) != 10:
+            raise ValueError(f"{slug}: Table 3.1.3 total row has {len(values)} values, expected 10")
+        for year, value in ((2024, values[-2]), (2025, values[-1])):
+            rows.append(_row(code, "CMHC RMS 3.1.3", "rental_universe", None, "Total", year, value))
+    return rows
+
+
 def _row(code, source, indicator, tenure, category, year, value) -> dict:
     return {
         "cma_code": code,
@@ -260,7 +315,7 @@ def _row(code, source, indicator, tenure, category, year, value) -> dict:
     }
 
 
-SOURCES = ("98-10-0252-01", "98-401-X2021002", "34-10-0154-01", "98-10-0241-01")
+SOURCES = ("98-10-0252-01", "98-401-X2021002", "34-10-0154-01", "98-10-0241-01", "CMHC RMS 3.1.3")
 
 
 def check(rows: list[dict]) -> None:
@@ -277,6 +332,7 @@ def main() -> pd.DataFrame:
         + extract_starts()
         + extract_shelter_cost()
         + extract_housing_indicators_by_age(download_indicators())
+        + extract_rental_universe(download_rms())
     )
     check(rows)
     out = pd.DataFrame(rows, columns=COLUMNS)

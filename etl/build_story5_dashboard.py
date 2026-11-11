@@ -16,6 +16,9 @@ so each answers a question no single story can:
        v_story5_supply_vs_demand                 (all 5 cities, 2016-2021)
     6. Can young renters (students) afford it?   Census renters by age x Story 1 burden x Story 4 cities
        v_story5_renter_burden_by_age
+    7. How big is the rental market, and how do  CMHC rental units x Census renter households,
+       the five cities compare overall?          then every measure in one table
+       v_story5_rental_stock, v_story5_city_profile
 
 Layout: one KPI card per question, then a section per question with its
 charts and a note that states the finding in words. Windsor is the blue bar
@@ -51,6 +54,8 @@ DATASET_SUPPLY_MARKET = 27  # v_story5_supply_vs_rental_market
 DATASET_PEER_CONSTRUCTION = 28  # v_story5_peer_construction
 DATASET_SUPPLY_DEMAND = 29  # v_story5_supply_vs_demand
 DATASET_BURDEN_BY_AGE = 30  # v_story5_renter_burden_by_age
+DATASET_RENTAL_STOCK = 31  # v_story5_rental_stock
+DATASET_CITY_PROFILE = 32  # v_story5_city_profile
 
 COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
 DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"
@@ -115,6 +120,18 @@ COLUMN_LABELS = {
         "median_renter_income": "Median renter income",
         "renters_who_cannot_afford": "Renters who earn less",
         "pct_renters_who_cannot_afford": "% of renters",
+    },
+    DATASET_CITY_PROFILE: {
+        "city": "City",
+        "average_rent_2br": "2-bed rent",
+        "vacancy_rate": "Vacancy %",
+        "units_per_100_renter_households": "Rental units per 100 renters",
+        "median_renter_income": "Median renter income",
+        "rent_pct_of_median_renter_income": "Rent % of income",
+        "pct_renters_spending_30pct_plus": "Renters spending 30%+ (%)",
+        "pct_young_renters_spending_30pct_plus": "Ages 15-24 spending 30%+ (%)",
+        "starts_per_1000_households": "Starts per 1,000 households",
+        "pct_needed_homes_built": "Needed homes built (%)",
     },
     DATASET_PEER_AFFORDABILITY: {
         "city": "City",
@@ -500,6 +517,48 @@ CHARTS = {
             "y_axis_bounds": [0, None],
         },
     },
+    # --- 7. Rental market size, and every measure per city --------------------
+    "rental-stock": {
+        "slice_name": "Story 5: Purpose-Built Rental Units per 100 Renter Households, by City",
+        "description": (
+            "Purpose-built rental units (apartments and row houses, CMHC Rental Market Survey Table "
+            "3.1.3, October 2025) per 100 renter households (2021 Census). The rest of the renters live "
+            "in rented houses, condos, basements and other units the survey does not cover. "
+            "warehouse.v_story5_rental_stock."
+        ),
+        "dataset_id": DATASET_RENTAL_STOCK,
+        "viz_type": "echarts_timeseries_bar",
+        "params": city_bar_params(
+            "MAX(units_per_100_renter_households)", "Rental units per 100 renter households", ",.0f", upper=80
+        ),
+    },
+    "city-profile": {
+        "slice_name": "Story 5: Windsor and Comparison Cities, All Measures",
+        "description": (
+            "Every Story 5 measure for the five cities in one table: rent and vacancy (Oct-25), rental "
+            "units per 100 renter households, renter incomes and burden (2021 Census), construction "
+            "(2016-2025) and the share of needed homes built (2016-2021). warehouse.v_story5_city_profile."
+        ),
+        "dataset_id": DATASET_CITY_PROFILE,
+        "viz_type": "table",
+        "params": table_params(
+            ["city", "average_rent_2br", "vacancy_rate", "units_per_100_renter_households", "median_renter_income",
+             "rent_pct_of_median_renter_income", "pct_renters_spending_30pct_plus",
+             "pct_young_renters_spending_30pct_plus", "starts_per_1000_households", "pct_needed_homes_built"],
+            {
+                "average_rent_2br": "$,.0f",
+                "vacancy_rate": ",.1f",
+                "units_per_100_renter_households": ",.1f",
+                "median_renter_income": "$,.0f",
+                "rent_pct_of_median_renter_income": ",.1f",
+                "pct_renters_spending_30pct_plus": ",.1f",
+                "pct_young_renters_spending_30pct_plus": ",.1f",
+                "starts_per_1000_households": ",.1f",
+                "pct_needed_homes_built": ",.0f",
+            },
+            "average_rent_2br",
+        ),
+    },
     # --- 6. Census renters by age x Story 1 x Story 4 ------------------------
     "young-vs-all": {
         "slice_name": "Story 5: Young Renters vs All Renters Spending 30%+ on Shelter, by City",
@@ -623,6 +682,20 @@ built least for its growth, a shortfall of about 3,900 homes, consistent with th
 *Estimates: 2021 household sizes, completions not net of demolitions. The ranking between
 cities is the reliable part.*
 """,
+    "stock": """**What it shows.** Windsor has **19,883** purpose-built rental units (October 2025)
+for **45,625** renter households (2021 Census): about **44 units per 100 renters**, the
+second-lowest of the five cities (St. Catharines-Niagara 33, London 65). So roughly **half or
+more of Windsor's renters** live in rented houses, condos, basements and other units that
+CMHC's rental survey does not cover: Story 2's rents and vacancy describe only part of the
+market.
+
+**Does a tighter market mean more pressure?** Not across these cities. Vacancy barely differs
+(3.6% to 4.1%), and Windsor's market is nearly as tight as Hamilton's yet has the lowest share
+of renters spending 30%+. The differences come from incomes, not vacancy (section 2).
+
+*Units are counted in 2025 and households in 2021, and some units are vacant, so the share
+outside purpose-built rentals is an estimate.*
+""",
     "young": """**What it shows.** In Windsor, **46.5%** of renter households led by someone aged 15-24
 (2,680 households) spend 30% or more of their income on shelter, against **34.8%** of all
 renters: the most burdened age group, ahead of renters aged 85 and over (44.9%). Young renters
@@ -661,6 +734,9 @@ LAYOUT = [
     ("chart-row", "ROW-young", [("young-vs-all", 12, 42)]),
     ("chart-row", "ROW-young-age", [("windsor-by-age", 12, 40)]),
     ("markdown-row", "ROW-young-note", [("MARKDOWN-young", NOTES["young"], 12, 34)]),
+    ("header", "HEADER-stock", "7. How big is the rental market, and how do the cities compare overall? (all stories)"),
+    ("chart-row", "ROW-stock", [("rental-stock", 6, 58)], ("MARKDOWN-stock", NOTES["stock"], 6, 58)),
+    ("chart-row", "ROW-profile", [("city-profile", 12, 58)]),
 ]
 
 # Card titles shown on this dashboard: the chart names keep their "Story 5:"

@@ -324,6 +324,24 @@ VIEWS = {
             "description": "Share of renter households in the age group spending 30% or more of income on shelter, 2021 Census. One row per city and age group.",
         },
     ],
+    "v_story5_rental_stock": [
+        {
+            "metric_name": "units_per_100_renters",
+            "expression": "MAX(units_per_100_renter_households)",
+            "verbose_name": "Purpose-Built Rental Units per 100 Renter Households",
+            "metric_type": "max",
+            "description": "CMHC purpose-built rental units (apartments and row houses, Oct-25) per 100 renter households (2021 Census). One row per city.",
+        },
+    ],
+    "v_story5_city_profile": [
+        {
+            "metric_name": "avg_rent_2br_profile",
+            "expression": "MAX(average_rent_2br)",
+            "verbose_name": "Average 2-Bedroom Rent ($)",
+            "metric_type": "max",
+            "description": "Oct-25 average 2-bedroom apartment rent. One row per city; the view holds every Story 5 measure for the five cities.",
+        },
+    ],
 }
 
 

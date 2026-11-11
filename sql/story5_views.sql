@@ -7,6 +7,8 @@
 --   v_story5_peer_construction       Story 3 construction    x Story 4 peer cities
 --   v_story5_supply_vs_demand        Story 3 completions     x Census population growth
 --   v_story5_renter_burden_by_age    Census renters by age   x Story 1 burden x Story 4 cities
+--   v_story5_rental_stock            CMHC rental units       x Census renter households
+--   v_story5_city_profile            every measure above, one row per city
 --
 -- "Can afford" uses the standard 30% rule: a rent is affordable to a
 -- household whose yearly income is at least rent x 12 / 0.30.
@@ -363,3 +365,77 @@ SELECT
 FROM renters r
 JOIN all_renters a ON a.cma_name = r.cma_name
 WHERE r.age_group <> 'Total - Age of primary household maintainer';
+
+
+-- ---------------------------------------------------------------------------
+-- v_story5_rental_stock (Story 2 / Story 4 rental universe x Census renters)
+-- How large is each city's purpose-built rental market compared with the
+-- number of renter households? Purpose-built rental units (apartments and
+-- row houses, CMHC Rental Market Survey Table 3.1.3, October 2025) per 100
+-- renter households (2021 Census). Every other renter lives in a rented
+-- house, condo, basement or other unit the survey does not cover, so the
+-- rent and vacancy figures of Stories 2 and 4 describe only part of the
+-- rental market.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story5_rental_stock AS
+WITH stock AS (
+    SELECT
+        cma_name,
+        MAX(value) FILTER (WHERE period_year = 2024) AS rental_units_2024,
+        MAX(value) FILTER (WHERE period_year = 2025) AS rental_units_2025
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = 'CMHC RMS 3.1.3' AND indicator = 'rental_universe'
+    GROUP BY cma_name
+),
+renters AS (
+    SELECT cma_name, value AS renter_households
+    FROM warehouse.fact_peer_cma_context
+    WHERE source_table = '98-401-X2021002' AND indicator = 'renter_households'
+)
+SELECT
+    s.cma_name AS city,
+    (s.cma_name = 'Windsor CMA') AS is_windsor,
+    s.rental_units_2024,
+    s.rental_units_2025,
+    s.rental_units_2025 - s.rental_units_2024 AS rental_units_added,
+    r.renter_households,
+    ROUND(100.0 * s.rental_units_2025 / r.renter_households, 1) AS units_per_100_renter_households,
+    ROUND(100.0 * (r.renter_households - s.rental_units_2025) / r.renter_households, 1)
+        AS pct_renters_outside_purpose_built
+FROM stock s
+JOIN renters r ON r.cma_name = s.cma_name;
+
+
+-- ---------------------------------------------------------------------------
+-- v_story5_city_profile (all stories, one row per city)
+-- Windsor and the four comparison cities side by side on rental-market
+-- conditions and renter characteristics: rent, vacancy, rental stock,
+-- renter incomes, affordability pressure (all renters and ages 15-24) and
+-- construction. Every column comes from another Story 5 view or Story 4's
+-- vacancy view, so the figures match the rest of the dashboard.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story5_city_profile AS
+WITH build AS (
+    SELECT city, ROUND(1000.0 * SUM(starts) / MAX(private_households) / COUNT(DISTINCT period_year), 1)
+               AS starts_per_1000_households
+    FROM warehouse.v_story5_peer_construction
+    GROUP BY city
+)
+SELECT
+    a.city,
+    a.is_windsor,
+    a.average_rent_2br,
+    v.vacancy_rate_pct AS vacancy_rate,
+    s.units_per_100_renter_households,
+    a.median_renter_income,
+    a.rent_pct_of_median_renter_income,
+    a.pct_renters_spending_30pct_plus,
+    y.pct_30pct_plus AS pct_young_renters_spending_30pct_plus,
+    b.starts_per_1000_households,
+    ROUND(100.0 * d.homes_built_per_home_needed, 0) AS pct_needed_homes_built
+FROM warehouse.v_story5_peer_affordability a
+JOIN warehouse.v_story4_vacancy_comparison v ON v.market = a.city AND v.period_label = 'Oct-25'
+JOIN warehouse.v_story5_rental_stock s ON s.city = a.city
+JOIN warehouse.v_story5_renter_burden_by_age y ON y.city = a.city AND y.age_sort = 15
+JOIN build b ON b.city = a.city
+JOIN warehouse.v_story5_supply_vs_demand d ON d.city = a.city;
