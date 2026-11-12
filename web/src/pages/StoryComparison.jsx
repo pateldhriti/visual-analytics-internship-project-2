@@ -118,7 +118,7 @@ export default function StoryComparison() {
       dashboard={
         <SupersetGuestEmbed
           dashboard="story4"
-          fallbackDashboardId={6}
+          fallbackDashboardId="windsor-story-4"
           title="Story 4: How does Windsor compare to similar markets? (Superset dashboard)"
         />
       }

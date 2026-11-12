@@ -22,13 +22,14 @@ import os
 
 from setup_superset_dashboard import SUPERSET_URL, get_session
 
-# Same ids as api/guest_token_server.py's EMBEDDABLE_DASHBOARDS.
+# Dashboards by slug, the fixed URL name each builder sets (ids differ on every
+# Superset). Same slugs as api/guest_token_server.py's EMBEDDABLE_DASHBOARDS.
 DASHBOARDS = {
-    3: "Story 1: Who faces the greatest affordability pressure?",
-    4: "Story 2: What is happening in Windsor's rental market?",
-    7: "Story 3: Is Windsor building enough housing?",
-    6: "Story 4: How does Windsor compare to similar markets?",
-    8: "Story 5: How do affordability, rental conditions, and supply fit together?",
+    "windsor-story-1": "Story 1: Who faces the greatest affordability pressure?",
+    "windsor-story-2": "Story 2: What is happening in Windsor's rental market?",
+    "windsor-story-3": "Story 3: Is Windsor building enough housing?",
+    "windsor-story-4": "Story 4: How does Windsor compare to similar markets?",
+    "windsor-story-5": "Story 5: How do affordability, rental conditions, and supply fit together?",
 }
 DEFAULT_ORIGINS = "http://localhost:5173"
 
@@ -43,7 +44,7 @@ def allowed_domains() -> list[str]:
     ]
 
 
-def enable(session, headers, dashboard_id: int) -> str:
+def enable(session, headers, dashboard_id: int | str) -> str:
     resp = session.post(
         f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}/embedded",
         headers=headers,

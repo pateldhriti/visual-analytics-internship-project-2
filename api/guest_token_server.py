@@ -65,13 +65,15 @@ HOST = os.environ.get("GUEST_TOKEN_API_HOST", "127.0.0.1")
 PORT = int(os.environ.get("GUEST_TOKEN_API_PORT", "8090"))
 REQUEST_TIMEOUT = 15
 
-# short name the frontend sends -> Superset dashboard id
+# short name the frontend sends -> the dashboard's slug, the fixed URL name its
+# builder sets (Superset accepts it wherever it accepts an id; ids differ on
+# every Superset, so the same API works against ours and the university's)
 EMBEDDABLE_DASHBOARDS = {
-    "story1": 3,  # Story 1: Who faces the greatest affordability pressure?
-    "story2": 4,  # Story 2: What is happening in Windsor's rental market?
-    "story3": 7,  # Story 3: Is Windsor building enough housing?
-    "story4": 6,  # Story 4: How does Windsor compare to similar markets?
-    "story5": 8,  # Story 5: How do affordability, rental conditions, and supply fit together?
+    "story1": "windsor-story-1",  # Story 1: Who faces the greatest affordability pressure?
+    "story2": "windsor-story-2",  # Story 2: What is happening in Windsor's rental market?
+    "story3": "windsor-story-3",  # Story 3: Is Windsor building enough housing?
+    "story4": "windsor-story-4",  # Story 4: How does Windsor compare to similar markets?
+    "story5": "windsor-story-5",  # Story 5: How do affordability, rental conditions, and supply fit together?
 }
 
 # The site's own origins (same variable superset_config.py reads).
@@ -180,7 +182,7 @@ class SupersetClient:
                 )
         return resp
 
-    def embedded_uuid(self, dashboard_id: int) -> str:
+    def embedded_uuid(self, dashboard_id: int | str) -> str:
         if dashboard_id not in self.embedded_uuids:
             resp = self.request("GET", f"/api/v1/dashboard/{dashboard_id}/embedded")
             if resp.status_code == 404:

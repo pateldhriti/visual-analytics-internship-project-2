@@ -102,7 +102,7 @@ export default function StoryHousingSupply() {
       dashboard={
         <SupersetGuestEmbed
           dashboard="story3"
-          fallbackDashboardId={7}
+          fallbackDashboardId="windsor-story-3"
           title="Story 3: Is Windsor building enough housing? (Superset dashboard)"
         />
       }

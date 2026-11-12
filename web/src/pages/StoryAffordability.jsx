@@ -100,7 +100,7 @@ export default function StoryAffordability() {
       dashboard={
         <SupersetGuestEmbed
           dashboard="story1"
-          fallbackDashboardId={3}
+          fallbackDashboardId="windsor-story-1"
           title="Story 1: Who faces the greatest affordability pressure? (Superset dashboard)"
         />
       }
