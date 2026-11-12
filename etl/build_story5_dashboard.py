@@ -76,7 +76,9 @@ CITIES = [
 PEER_AVERAGE = "Average of the 4 comparison cities"
 LABEL_COLORS = {
     **{c: (ACCENT if c == "Windsor CMA" else PEER_GREY) for c in CITIES},
-    PEER_AVERAGE: PEER_GREY,
+    # Darker than the peer bars' grey: as a line or a radar outline the light
+    # grey was hard to see.
+    PEER_AVERAGE: "#5f6b7d",
     "Renters who cannot afford it": ACCENT,
     "Apartments": ACCENT,
     "Other homes": OTHER_HOMES,
@@ -182,7 +184,7 @@ def kpi(slice_name, description, dataset_id, sql, label, number_format, subheade
             "metric": {"expressionType": "SQL", "sqlExpression": sql, "label": label},
             "adhoc_filters": filters,
             "y_axis_format": number_format,
-            "header_font_size": 0.5,
+            "header_font_size": 0.4,  # leaves room for a two-to-three-line sentence (13px, theme)
             "subheader_font_size": 0.15,
             "subheader": subheader,
             "color_scheme": COLOR_SCHEME,
@@ -767,7 +769,7 @@ measure leaves out most student households, so it is not used here.*
 # Top-to-bottom: (kind, id, content). Widths add to 12 per row.
 LAYOUT = [
     ("markdown-row", "ROW-intro", [("MARKDOWN-intro", INTRO_MARKDOWN, 12, 14)]),
-    ("chart-row", "ROW-kpis", [("kpi-afford", 3, 22), ("kpi-rent-income", 3, 22), ("kpi-completions", 3, 22), ("kpi-build-rate", 3, 22)]),
+    ("chart-row", "ROW-kpis", [("kpi-afford", 3, 28), ("kpi-rent-income", 3, 28), ("kpi-completions", 3, 28), ("kpi-build-rate", 3, 28)]),
     ("chart-row", "ROW-radar", [("windsor-radar", 7, 52)], ("MARKDOWN-radar", NOTES["radar"], 5, 52)),
     ("header", "HEADER-afford", "1. Can Windsor renters afford the rent? (Story 1 + Story 2)"),
     ("chart-row", "ROW-afford", [("afford-by-size", 5, 50), ("afford-table", 7, 50)]),
