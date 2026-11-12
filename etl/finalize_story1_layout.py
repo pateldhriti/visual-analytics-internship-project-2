@@ -33,7 +33,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import CHART_NAME as TENURE_BAR_NAME
-from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, upgrade_legacy_bars
 
 DASHBOARD_TITLE = named("Story 1: Who faces the greatest affordability pressure?")
@@ -343,10 +343,7 @@ def update_existing_chart(session, headers, chart_id: int, update: dict) -> None
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": [dashboard_id]}
-    )
-    resp.raise_for_status()
+    add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
 def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 25) -> dict:
@@ -438,19 +435,19 @@ def build_position_json(chart_ids: dict) -> dict:
 
     position["ROW-tenure-bar"] = row_node("ROW-tenure-bar", ["CHART-tenure-bar"])
     position["CHART-tenure-bar"] = chart_node(
-        "CHART-tenure-bar", "ROW-tenure-bar", chart_ids["tenure-bar"], 12, 55
+        "CHART-tenure-bar", "ROW-tenure-bar", chart_ids["tenure-bar"], 12, 62
     )
 
     position["HEADER-income"] = header_node("HEADER-income", "Burden by Household Income")
     position["ROW-income"] = row_node("ROW-income", ["CHART-income-band"])
     position["CHART-income-band"] = chart_node(
-        "CHART-income-band", "ROW-income", chart_ids["income-band"], 12, 55
+        "CHART-income-band", "ROW-income", chart_ids["income-band"], 12, 85
     )
 
     position["HEADER-household"] = header_node("HEADER-household", "Burden by Household Type")
     position["ROW-household"] = row_node("ROW-household", ["CHART-household-type"])
     position["CHART-household-type"] = chart_node(
-        "CHART-household-type", "ROW-household", chart_ids["household-type"], 12, 55
+        "CHART-household-type", "ROW-household", chart_ids["household-type"], 12, 85
     )
 
     position["HEADER-severity"] = header_node("HEADER-severity", "How Far Over the 30% Line?")
@@ -468,7 +465,7 @@ def build_position_json(chart_ids: dict) -> dict:
         "ROW-severity-breakdown", ["CHART-severity-breakdown"]
     )
     position["CHART-severity-breakdown"] = chart_node(
-        "CHART-severity-breakdown", "ROW-severity-breakdown", chart_ids["severity-breakdown"], 12, 55
+        "CHART-severity-breakdown", "ROW-severity-breakdown", chart_ids["severity-breakdown"], 12, 62
     )
 
     position["HEADER-validation"] = header_node("HEADER-validation", "Validation and Data Notes")

@@ -63,7 +63,7 @@ import re
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
@@ -1049,19 +1049,7 @@ def set_column_labels(session, headers, dataset_id: int, labels: dict) -> None:
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
-    """Creating a dashboard via POST /api/v1/dashboard/ does NOT populate
-    the dashboard_slices join table from position_json's chartId
-    references, even though position_json alone determines each chart's
-    on-screen position -- confirmed directly against the live metadata
-    database (a dashboard built this way had 0 dashboard_slices rows
-    despite its charts rendering fine individually and its layout
-    correctly referencing their ids). PUT /api/v1/chart/{id} with a
-    "dashboards" field is the real, documented way to create that
-    relational link; without it, the dashboard is empty."""
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": [dashboard_id]}
-    )
-    resp.raise_for_status()
+    add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
 def build_cross_filter_config(chart_ids: dict) -> tuple[dict, dict]:

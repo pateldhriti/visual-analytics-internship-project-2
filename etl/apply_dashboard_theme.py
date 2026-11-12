@@ -142,6 +142,12 @@ THEME_CSS = f"""
 
 /* Markdown cards (guides, data notes) */
 .dashboard-markdown {{ border-radius: 14px; }}
+/* Notes read as conclusions: a tinted card with an accent edge. */
+.dashboard-markdown .dashboard-component-chart-holder {{
+  background: #f4f8fe !important;
+  border-left: 4px solid {ACCENT} !important;
+}}
+.dashboard-markdown .dashboard-component-chart-holder strong {{ color: {INK}; }}
 
 @media (prefers-reduced-motion: reduce) {{
   .dashboard-component-chart-holder {{ animation: none; transition: none; }}

@@ -184,6 +184,20 @@ def dataset_id(table_name: str) -> int:
     return _DATASET_IDS[table_name]
 
 
+def add_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
+    """Link a chart to a dashboard, keeping its other dashboards. Superset's
+    chart PUT replaces the whole list, so linking with just this dashboard
+    took shared charts (Story 1's tenure bar and tiles, also on the
+    overview) off whichever dashboard was built first."""
+    resp = session.get(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers)
+    resp.raise_for_status()
+    current = [d["id"] for d in resp.json()["result"].get("dashboards", [])]
+    if dashboard_id in current:
+        return
+    session.put(
+        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": [*current, dashboard_id]}
+    ).raise_for_status()
+
 def ensure_database(session, headers) -> int:
     existing = find_existing(session, headers, "database", "database_name", DATABASE_NAME)
     if existing:
@@ -221,10 +235,20 @@ def build_chart_params(dataset_id: int) -> dict:
     # imported here because superset_compat imports this module).
     from superset_compat import from_dist_bar
 
+    # One series per tenure (owner blue, renter orange, as on every dashboard),
+    # stacked so each bar keeps its full width; the axis is the same column
+    # under another label, since Superset rejects two columns with one label.
     return {
         "datasource": f"{dataset_id}__table",
         "viz_type": "echarts_timeseries_bar",
-        **from_dist_bar(legacy_chart_params()),
+        **from_dist_bar(
+            legacy_chart_params(),
+            x_axis={"expressionType": "SQL", "sqlExpression": "tenure", "label": "Tenure"},
+            groupby=["tenure"],
+            stack="Stack",
+            show_legend=False,
+            show_value=True,
+        ),
     }
 
 
