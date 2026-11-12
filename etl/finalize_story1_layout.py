@@ -32,12 +32,12 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 DASHBOARD_ID = 3
-DATASET_SEVERITY = 15  # v_story1_burden_severity
-DATASET_SEVERITY_BREAKDOWN = 18  # v_story1_burden_severity_breakdown
+DATASET_SEVERITY = dataset_id("v_story1_burden_severity")
+DATASET_SEVERITY_BREAKDOWN = dataset_id("v_story1_burden_severity_breakdown")
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 
 # Existing chart ids on dashboard 3, from Story 1's original build.

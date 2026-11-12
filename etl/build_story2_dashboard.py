@@ -63,25 +63,25 @@ import re
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
 # ever run against a fresh environment where ids may differ.
-DATASET_RENT_YOY = 9  # v_story2_rent_yoy_change
-DATASET_VACANCY = 6  # v_story2_vacancy_trend
-DATASET_TURNOVER = 11  # v_story2_turnover_by_bedroom
-DATASET_RENT_ZONE = 14  # v_story2_rent_by_zone_bedroom
+DATASET_RENT_YOY = dataset_id("v_story2_rent_yoy_change")
+DATASET_VACANCY = dataset_id("v_story2_vacancy_trend")
+DATASET_TURNOVER = dataset_id("v_story2_turnover_by_bedroom")
+DATASET_RENT_ZONE = dataset_id("v_story2_rent_by_zone_bedroom")
 # v_dashboard1_rental_yoy -- built for Dashboard 1, reused here rather than
 # duplicated: it's the only registered view with a "universe" (rental
 # stock) row at all. No Story 2 view carries that column (confirmed
 # against sql/story2_views.sql) -- fabricating a new one just to avoid
 # reuse would mean a second view computing the same real
 # fact_rental_market rows the Dashboard 1 one already does.
-DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
-DATASET_ZONE_SNAPSHOT = 19  # v_story2_zone_snapshot
-DATASET_ZONE_VACANCY = 20  # v_story2_vacancy_by_zone_trend
+DATASET_RENTAL_YOY = dataset_id("v_dashboard1_rental_yoy")
+DATASET_ZONE_SNAPSHOT = dataset_id("v_story2_zone_snapshot")
+DATASET_ZONE_VACANCY = dataset_id("v_story2_vacancy_by_zone_trend")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 
@@ -124,7 +124,7 @@ def bedroom_filter(bedroom="Total"):
     }
 
 
-DATASET_ZONE_EXPLANATION = 23  # v_story2_zone_explanation (all unit sizes)
+DATASET_ZONE_EXPLANATION = dataset_id("v_story2_zone_explanation")  # (all unit sizes)
 
 # The explanation panel's dataset: a virtual (SQL) dataset over
 # warehouse.v_story2_zone_bedroom_explanation that keeps one unit size --

@@ -46,18 +46,18 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
-DATASET_RENT_AFFORDABILITY = 25  # v_story5_rent_affordability
-DATASET_PEER_AFFORDABILITY = 26  # v_story5_peer_affordability
-DATASET_SUPPLY_MARKET = 27  # v_story5_supply_vs_rental_market
-DATASET_PEER_CONSTRUCTION = 28  # v_story5_peer_construction
-DATASET_SUPPLY_DEMAND = 29  # v_story5_supply_vs_demand
-DATASET_BURDEN_BY_AGE = 30  # v_story5_renter_burden_by_age
-DATASET_RENTAL_STOCK = 31  # v_story5_rental_stock
-DATASET_CITY_PROFILE = 32  # v_story5_city_profile
+DATASET_RENT_AFFORDABILITY = dataset_id("v_story5_rent_affordability")
+DATASET_PEER_AFFORDABILITY = dataset_id("v_story5_peer_affordability")
+DATASET_SUPPLY_MARKET = dataset_id("v_story5_supply_vs_rental_market")
+DATASET_PEER_CONSTRUCTION = dataset_id("v_story5_peer_construction")
+DATASET_SUPPLY_DEMAND = dataset_id("v_story5_supply_vs_demand")
+DATASET_BURDEN_BY_AGE = dataset_id("v_story5_renter_burden_by_age")
+DATASET_RENTAL_STOCK = dataset_id("v_story5_rental_stock")
+DATASET_CITY_PROFILE = dataset_id("v_story5_city_profile")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"

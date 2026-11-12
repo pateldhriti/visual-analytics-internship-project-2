@@ -32,13 +32,13 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
-DATASET_ANNUAL = 21  # v_story3_windsor_supply_annual
-DATASET_PER_1000 = 22  # v_story3_windsor_supply_per_1000_households
-DATASET_PERIODS = 35  # v_story3_period_comparison
+DATASET_ANNUAL = dataset_id("v_story3_windsor_supply_annual")
+DATASET_PER_1000 = dataset_id("v_story3_windsor_supply_per_1000_households")
+DATASET_PERIODS = dataset_id("v_story3_period_comparison")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 DEFAULT_YEAR = "2025"

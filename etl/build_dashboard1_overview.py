@@ -33,12 +33,12 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
-DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
-DATASET_CMA_BENCHMARK = 17  # v_dashboard1_cma_benchmark
-DATASET_SUPPLY = 12  # v_story3_starts_completions_by_dwelling_type
+DATASET_RENTAL_YOY = dataset_id("v_dashboard1_rental_yoy")
+DATASET_CMA_BENCHMARK = dataset_id("v_dashboard1_cma_benchmark")
+DATASET_SUPPLY = dataset_id("v_story3_starts_completions_by_dwelling_type")
 
 DASHBOARD_TITLE = "01 - Windsor Housing Executive Overview"
 

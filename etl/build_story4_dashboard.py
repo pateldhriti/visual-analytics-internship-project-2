@@ -33,14 +33,14 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
-DATASET_VACANCY = 2  # v_story4_vacancy_comparison
-DATASET_RENT = 3  # v_story4_rent_comparison
-DATASET_AFFORDABILITY_GAP = 4  # v_story4_affordability_gap
-DATASET_HISTORY = 33  # v_story4_rent_history
-DATASET_PERIODS = 34  # v_story4_period_comparison
+DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
+DATASET_RENT = dataset_id("v_story4_rent_comparison")
+DATASET_AFFORDABILITY_GAP = dataset_id("v_story4_affordability_gap")
+DATASET_HISTORY = dataset_id("v_story4_rent_history")
+DATASET_PERIODS = dataset_id("v_story4_period_comparison")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 DASHBOARD_TITLE = "Story 4: How does Windsor compare to similar markets?"

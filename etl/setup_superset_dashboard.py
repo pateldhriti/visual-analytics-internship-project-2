@@ -148,6 +148,42 @@ def find_existing(session, headers, endpoint: str, name_field: str, name_value: 
         page += 1
 
 
+_DATASET_IDS: dict | None = None
+
+
+def dataset_id(table_name: str) -> int:
+    """Superset's id for one of this project's registered datasets, found by
+    its view or table name. Ids differ between Superset installations (ours,
+    the university's), so builders never hard-code them. Only datasets on
+    this project's database connection count, so another team's dataset of
+    the same name on a shared server is never picked. Logs in once and reads
+    the dataset list once per run."""
+    global _DATASET_IDS
+    if _DATASET_IDS is None:
+        session, headers = get_session()
+        _DATASET_IDS, page = {}, 0
+        while True:
+            resp = session.get(
+                f"{SUPERSET_URL}/api/v1/dataset/",
+                headers=headers,
+                params={"q": f"(page:{page},page_size:100)"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            for item in data["result"]:
+                if (item.get("database") or {}).get("database_name") == DATABASE_NAME:
+                    _DATASET_IDS[item["table_name"]] = item["id"]
+            if (page + 1) * 100 >= data["count"]:
+                break
+            page += 1
+    if table_name not in _DATASET_IDS:
+        raise LookupError(
+            f"Dataset {table_name!r} is not registered on {SUPERSET_URL} "
+            f"(database {DATABASE_NAME!r}); run etl/register_superset_datasets.py first"
+        )
+    return _DATASET_IDS[table_name]
+
+
 def ensure_database(session, headers) -> int:
     existing = find_existing(session, headers, "database", "database_name", DATABASE_NAME)
     if existing:
