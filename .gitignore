@@ -153,6 +153,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -237,3 +239,6 @@ backups/
 
 # Scheduled refresh run logs and alerts (etl/scheduled_refresh.py).
 logs/
+
+# Data packages for the university database (etl/export_for_shared_db.py)
+data/export/

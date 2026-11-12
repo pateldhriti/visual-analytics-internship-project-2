@@ -26,7 +26,7 @@ Run from the project virtual environment:
     .venv\\Scripts\\python.exe etl\\register_superset_datasets.py
 """
 
-from setup_superset_dashboard import SUPERSET_URL, ensure_database, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, ensure_database, find_our_dataset, get_session
 
 SCHEMA = "warehouse"
 
@@ -398,7 +398,7 @@ VIEWS = {
 
 
 def ensure_dataset(session, headers, database_id: int, table_name: str) -> int:
-    existing = find_existing(session, headers, "dataset", "table_name", table_name)
+    existing = find_our_dataset(session, headers, table_name)
     if existing:
         return existing
 
