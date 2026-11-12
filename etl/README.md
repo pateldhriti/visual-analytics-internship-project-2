@@ -12,6 +12,22 @@ Postgres container is up (see the top-level [README.md](../README.md)).
 
 ## How to run
 
+**On a fresh machine** (a clean clone or the university server), first put
+the raw source files in `data/raw/` (not in git): every file is downloaded
+from StatCan or CMHC except two that must be saved by hand (the 2021 Census
+Profile comprehensive file and CMHC's quarterly starts workbook); the script
+lists them with the page to get them from.
+```
+.venv\Scripts\python.exe etletch_raw_data.py
+```
+Then run the stages below. For the university's Superset, set
+`SUPERSET_URL=https://apss.cs.uwindsor.ca` and `SUPERSET_TARGET=shared` in
+`.env` before building the dashboards: every chart and dashboard name gets
+the prefix "Windsor Housing | ", so a build can never touch another team's
+work. Dashboards are addressed by slug (`windsor-overview`,
+`windsor-story-1` to `windsor-story-5`), the same on every Superset; build
+the website with `VITE_SUPERSET_URL` set to the Superset it embeds.
+
 The pipeline has three stages: extract raw sources into staging CSVs, load
 those into Postgres, then build the SQL views on top. Each stage is
 idempotent (safe to re-run) and most scripts print what they did.
@@ -169,10 +185,18 @@ and the real rent-growth side of the affordability-gap index):
 .venv\Scripts\python.exe etl\build_story4_dashboard.py
 ```
 
-Apply `docs/filter_standards.md`'s naming rule to Story 1's dashboard
-(renames its "Household type" native filter to "Household Type"):
+Build Story 1's dashboard (its tenure bar first, then the dashboard, its
+other charts and its Tenure and Household Type filters):
 ```
-.venv\Scripts\python.exe etl\apply_filter_standards_story1.py
+.venv\Scripts\python.exe etl\setup_superset_dashboard.py
+.venv\Scripts\python.exe etl\finalize_story1_layout.py
+```
+
+Turn on embedding for the five story dashboards (the website embeds them
+by slug: `windsor-story-1` to `windsor-story-5`; the overview is
+`windsor-overview`):
+```
+.venv\Scripts\python.exe etl\enable_dashboard_embedding.py
 ```
 
 Apply (or remove) the dashboard theme on all 6 dashboards -- custom
