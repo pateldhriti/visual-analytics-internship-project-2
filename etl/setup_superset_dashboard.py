@@ -39,7 +39,14 @@ load_dotenv(PROJECT_ROOT / ".env")  # SUPERSET_URL / SUPERSET_TARGET can be set 
 # and SUPERSET_TARGET=shared (etl/superset_compat.py).
 SUPERSET_URL = os.getenv("SUPERSET_URL", "http://localhost:8088").rstrip("/")
 
-DATABASE_NAME = "Windsor Housing Data"
+# The Superset database connection our datasets live on: ours locally; on
+# the university's Superset the admin created "psql_ss_whva" (set
+# SUPERSET_DATABASE_NAME in .env), which we cannot create ourselves.
+DATABASE_NAME = os.getenv("SUPERSET_DATABASE_NAME", "Windsor Housing Data")
+SHARED_TARGET = os.getenv("SUPERSET_TARGET", "local").strip().lower() == "shared"
+# Story 1's tenure-bar table: in `public` locally, moved into `warehouse` on
+# the university database (etl/export_for_shared_db.py).
+DATASET_SCHEMA = "warehouse" if SHARED_TARGET else "public"
 DATASET_TABLE = "windsor_shelter_cost_long"
 CHART_NAME = "Share of households spending 30%+ on shelter costs, by tenure"
 CHART_DESCRIPTION = (
@@ -101,17 +108,25 @@ def get_session() -> tuple[requests.Session, dict]:
 
     login_page = session.get(f"{SUPERSET_URL}/login/")
     login_page.raise_for_status()
-    form_csrf = re.search(r'name="csrf_token" type="hidden" value="([^"]+)"', login_page.text).group(1)
+    # The hidden field's attributes come in a different order (and on
+    # separate lines) in newer Superset versions; find the tag, then its value.
+    tag = re.search(r'<input[^>]*name="csrf_token"[^>]*>', login_page.text, re.S).group(0)
+    form_csrf = re.search(r'value="([^"]+)"', tag).group(1)
 
+    # On the university's Superset this is your university (LDAP) login, kept
+    # in .env.apss as SUPERSET_LOGIN_USER / SUPERSET_LOGIN_PASSWORD.
     login_resp = session.post(
         f"{SUPERSET_URL}/login/",
         data={
-            "username": os.environ["SUPERSET_ADMIN_USER"],
-            "password": os.environ["SUPERSET_ADMIN_PASSWORD"],
+            "username": os.environ.get("SUPERSET_LOGIN_USER") or os.environ["SUPERSET_ADMIN_USER"],
+            "password": os.environ.get("SUPERSET_LOGIN_PASSWORD") or os.environ["SUPERSET_ADMIN_PASSWORD"],
             "csrf_token": form_csrf,
         },
     )
     login_resp.raise_for_status()
+    # A failed login returns the login page again with status 200: check it.
+    if session.get(f"{SUPERSET_URL}/api/v1/me/").status_code != 200:
+        raise PermissionError(f"Could not log in to {SUPERSET_URL}: check the username and password")
 
     csrf_resp = session.get(f"{SUPERSET_URL}/api/v1/security/csrf_token/")
     csrf_resp.raise_for_status()
@@ -202,6 +217,11 @@ def ensure_database(session, headers) -> int:
     existing = find_existing(session, headers, "database", "database_name", DATABASE_NAME)
     if existing:
         return existing
+    if SHARED_TARGET:
+        raise LookupError(
+            f"No database connection named {DATABASE_NAME!r} on {SUPERSET_URL}; on the shared "
+            "Superset the admin creates it -- check SUPERSET_DATABASE_NAME in .env"
+        )
 
     uri = (
         f"postgresql+psycopg2://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}"
@@ -216,15 +236,32 @@ def ensure_database(session, headers) -> int:
     return resp.json()["id"]
 
 
+def find_our_dataset(session, headers, table_name: str) -> int | None:
+    """A dataset's id, only if it is on our database connection: on a shared
+    Superset another team may have a dataset of the same name."""
+    page = 0
+    while True:
+        resp = session.get(f"{SUPERSET_URL}/api/v1/dataset/", headers=headers,
+                           params={"q": f"(page:{page},page_size:100)"})
+        resp.raise_for_status()
+        data = resp.json()
+        for item in data["result"]:
+            if item["table_name"] == table_name and (item.get("database") or {}).get("database_name") == DATABASE_NAME:
+                return item["id"]
+        if (page + 1) * 100 >= data["count"]:
+            return None
+        page += 1
+
+
 def ensure_dataset(session, headers, database_id: int) -> int:
-    existing = find_existing(session, headers, "dataset", "table_name", DATASET_TABLE)
+    existing = find_our_dataset(session, headers, DATASET_TABLE)
     if existing:
         return existing
 
     resp = session.post(
         f"{SUPERSET_URL}/api/v1/dataset/",
         headers=headers,
-        json={"database": database_id, "table_name": DATASET_TABLE, "schema": "public"},
+        json={"database": database_id, "table_name": DATASET_TABLE, "schema": DATASET_SCHEMA},
     )
     resp.raise_for_status()
     return resp.json()["id"]
