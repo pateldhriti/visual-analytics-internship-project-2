@@ -106,6 +106,17 @@ Then, to register the views as Superset datasets:
 .venv\Scripts\python.exe etl\register_superset_datasets.py
 ```
 
+**Two Superset installations.** The builders run against this project's
+Superset 3.1 (default) or the university's shared Superset 6
+(`apss.cs.uwindsor.ca`): set `SUPERSET_URL` and `SUPERSET_TARGET=shared` in
+`.env`. `etl/superset_compat.py` handles the differences: bars are drawn with
+the ECharts bar chart (the legacy `dist_bar` was removed after Superset 3),
+every series gets an explicit colour (our `windsor_housing` scheme cannot be
+added on a shared server), and Story 2's explanation panel becomes a plain
+table (template processing and styled HTML are off there). Each builder ends
+with `finish_dashboard()`, which fills in colours and cross-filter settings it
+did not set itself.
+
 Every dashboard builder below splits its dashboard into tabs that each fit
 one screen: the builder lists its sections per tab in a `TABS` constant and
 `dashboard_tabs.add_tabs()` arranges them (tested in `test_dashboard_tabs.py`).

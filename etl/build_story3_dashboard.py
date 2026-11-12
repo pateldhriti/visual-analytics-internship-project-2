@@ -32,14 +32,15 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
-DATASET_ANNUAL = 21  # v_story3_windsor_supply_annual
-DATASET_PER_1000 = 22  # v_story3_windsor_supply_per_1000_households
-DATASET_PERIODS = 35  # v_story3_period_comparison
+DATASET_ANNUAL = dataset_id("v_story3_windsor_supply_annual")
+DATASET_PER_1000 = dataset_id("v_story3_windsor_supply_per_1000_households")
+DATASET_PERIODS = dataset_id("v_story3_period_comparison")
 
-COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
+# windsor_housing here, Superset's default on the shared server (superset_compat).
 DEFAULT_YEAR = "2025"
 
 
@@ -275,6 +276,9 @@ CHARTS = {
     },
 }
 
+# The legacy dist_bar charts are drawn with the ECharts bar chart (superset_compat).
+upgrade_legacy_bars(CHARTS)
+
 # Same order and colours on both period charts: earlier period grey, later blue.
 PERIOD_COLORS = {"2016 to 2020": "#aab6c8", "2021 to 2025": "#2a78d6"}
 
@@ -446,7 +450,13 @@ def build_native_filters(chart_ids: dict) -> list:
                 "ownState": {},
             },
             "cascadeParentIds": [],
-            "scope": {"rootPath": ["ROOT_ID"], "excluded": []},
+            # Every other chart is excluded explicitly: the ECharts bar charts
+            # apply any filter whose scope includes them (the old dist_bar
+            # charts ignored it), which cut the ten-year charts to one year.
+            "scope": {
+                "rootPath": ["ROOT_ID"],
+                "excluded": sorted(cid for cid in chart_ids.values() if cid not in year_scoped),
+            },
             "type": "NATIVE_FILTER",
             "description": "Year shown on the KPI tiles and the dwelling-type chart.",
             "chartsInScope": year_scoped,
@@ -475,9 +485,6 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     resp.raise_for_status()
 
 
-COLOR_SCHEME_DOMAIN = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
-
-
 def ensure_dashboard(session, headers, position_json: dict, native_filters: list, chart_ids: dict) -> int:
     existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
     # Merge into the stored metadata and write the cross-filter settings in
@@ -496,16 +503,14 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
         {
             "native_filter_configuration": native_filters,
             "color_scheme": COLOR_SCHEME,
-            # Only the ECharts charts can emit cross-filters (dist_bar cannot),
-            # so only they get an entry; a click filters nothing. The frontend
-            # also stores the scheme's colours (docker/superset_config.py).
+            # Every bar chart can emit cross-filters; a click filters nothing.
+            # finish_dashboard() sets the scheme's colours.
             "chart_configuration": {
                 str(chart_ids[key]): {"id": chart_ids[key], "crossFilters": no_cross_filter}
                 for key, spec in CHARTS.items()
                 if spec["viz_type"].startswith("echarts")
             },
             "label_colors": PERIOD_COLORS,
-            "color_scheme_domain": COLOR_SCHEME_DOMAIN,
             "global_chart_configuration": no_cross_filter,
             "cross_filters_enabled": True,
         }
@@ -553,4 +558,5 @@ if __name__ == "__main__":
         link_chart_to_dashboard(session, headers, chart_id, dashboard_id)
     print(f"Linked all {len(chart_ids)} charts to dashboard {dashboard_id}.")
 
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{dashboard_id}/")

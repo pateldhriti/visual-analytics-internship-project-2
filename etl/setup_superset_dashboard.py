@@ -34,7 +34,10 @@ import requests
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SUPERSET_URL = "http://localhost:8088"
+load_dotenv(PROJECT_ROOT / ".env")  # SUPERSET_URL / SUPERSET_TARGET can be set there
+# The university's shared Superset: set SUPERSET_URL=https://apss.cs.uwindsor.ca
+# and SUPERSET_TARGET=shared (etl/superset_compat.py).
+SUPERSET_URL = os.getenv("SUPERSET_URL", "http://localhost:8088").rstrip("/")
 
 DATABASE_NAME = "Windsor Housing Data"
 DATASET_TABLE = "windsor_shelter_cost_long"
@@ -145,6 +148,42 @@ def find_existing(session, headers, endpoint: str, name_field: str, name_value: 
         page += 1
 
 
+_DATASET_IDS: dict | None = None
+
+
+def dataset_id(table_name: str) -> int:
+    """Superset's id for one of this project's registered datasets, found by
+    its view or table name. Ids differ between Superset installations (ours,
+    the university's), so builders never hard-code them. Only datasets on
+    this project's database connection count, so another team's dataset of
+    the same name on a shared server is never picked. Logs in once and reads
+    the dataset list once per run."""
+    global _DATASET_IDS
+    if _DATASET_IDS is None:
+        session, headers = get_session()
+        _DATASET_IDS, page = {}, 0
+        while True:
+            resp = session.get(
+                f"{SUPERSET_URL}/api/v1/dataset/",
+                headers=headers,
+                params={"q": f"(page:{page},page_size:100)"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            for item in data["result"]:
+                if (item.get("database") or {}).get("database_name") == DATABASE_NAME:
+                    _DATASET_IDS[item["table_name"]] = item["id"]
+            if (page + 1) * 100 >= data["count"]:
+                break
+            page += 1
+    if table_name not in _DATASET_IDS:
+        raise LookupError(
+            f"Dataset {table_name!r} is not registered on {SUPERSET_URL} "
+            f"(database {DATABASE_NAME!r}); run etl/register_superset_datasets.py first"
+        )
+    return _DATASET_IDS[table_name]
+
+
 def ensure_database(session, headers) -> int:
     existing = find_existing(session, headers, "database", "database_name", DATABASE_NAME)
     if existing:
@@ -178,8 +217,19 @@ def ensure_dataset(session, headers, database_id: int) -> int:
 
 
 def build_chart_params(dataset_id: int) -> dict:
+    # Described as a dist_bar, drawn as an ECharts bar (superset_compat;
+    # imported here because superset_compat imports this module).
+    from superset_compat import from_dist_bar
+
     return {
         "datasource": f"{dataset_id}__table",
+        "viz_type": "echarts_timeseries_bar",
+        **from_dist_bar(legacy_chart_params()),
+    }
+
+
+def legacy_chart_params() -> dict:
+    return {
         "viz_type": "dist_bar",
         "groupby": ["tenure"],
         "metrics": [{
@@ -207,7 +257,7 @@ def ensure_chart(session, headers, dataset_id: int) -> int:
     body = {
         "slice_name": CHART_NAME,
         "description": CHART_DESCRIPTION,
-        "viz_type": "dist_bar",
+        "viz_type": "echarts_timeseries_bar",
         "datasource_id": dataset_id,
         "datasource_type": "table",
         "params": params_json,

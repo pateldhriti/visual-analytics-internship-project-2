@@ -32,12 +32,13 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 DASHBOARD_ID = 3
-DATASET_SEVERITY = 15  # v_story1_burden_severity
-DATASET_SEVERITY_BREAKDOWN = 18  # v_story1_burden_severity_breakdown
-COLOR_SCHEME = "windsor_housing"
+DATASET_SEVERITY = dataset_id("v_story1_burden_severity")
+DATASET_SEVERITY_BREAKDOWN = dataset_id("v_story1_burden_severity_breakdown")
+# windsor_housing here, Superset's default on the shared server (superset_compat).
 
 # Existing chart ids on dashboard 3, from Story 1's original build.
 EXISTING = {
@@ -141,6 +142,9 @@ NEW_CHARTS = {
     },
 }
 
+# The legacy dist_bar charts are drawn with the ECharts bar chart (superset_compat).
+upgrade_legacy_bars(NEW_CHARTS)
+
 VALIDATION_MARKDOWN = """**Validated against StatCan's own published figures.** The renter (34.8%)
 and owner (10.9%) burden rates above were reproduced from two StatCan
 products -- the shelter-cost-to-income ratio table (98-10-0252-01) this
@@ -166,6 +170,60 @@ items 1484/1492) -- and match exactly. Reconciliation: `docs/story1_validation.m
 # Review pass on the original Story 1 charts (built before this script):
 # plain metric labels and a description on every chart. Applied as a merge
 # into each chart's existing params, so nothing else about the chart changes.
+# Charts 6 and 7 were first built in the Superset UI as dist_bar charts; their
+# settings are kept here so they can be rebuilt as ECharts bars (and on
+# another Superset). Burden falls as income rises, so sorting by the rate
+# keeps the income bands in order.
+INCOME_BAND_BARS = upgrade_legacy_bars({"c": {"viz_type": "dist_bar", "params": {
+    "groupby": [
+        "income_band"
+    ],
+    "metrics": [
+        {
+            "expressionType": "SQL",
+            "label": "Share spending 30%+ on shelter",
+            "sqlExpression": "MAX(burden_rate_pct) / 100.0"
+        }
+    ],
+    "adhoc_filters": [],
+    "order_desc": True,
+    "row_limit": 15,
+    "y_axis_format": ".1%",
+    "show_legend": False,
+    "x_axis_label": "Household income (2020)",
+    "y_axis_label": "Share spending 30%+ on shelter"
+}}}, {"c": {"xAxisLabelRotation": 45, "x_axis_title": ""}})["c"]["params"]
+HOUSEHOLD_TYPE_BARS = upgrade_legacy_bars(
+    {"c": {"viz_type": "dist_bar", "params": {
+        "groupby": [
+            "household_type"
+        ],
+        "metrics": [
+            {
+                "expressionType": "SQL",
+                "label": "Share spending 30%+ on shelter",
+                "sqlExpression": "MAX(burden_rate_pct) / 100.0"
+            }
+        ],
+        "adhoc_filters": [
+            {
+                "clause": "WHERE",
+                "subject": "household_type_key",
+                "operator": "!=",
+                "comparator": "1",
+                "expressionType": "SIMPLE"
+            }
+        ],
+        "order_desc": True,
+        "row_limit": 20,
+        "y_axis_format": ".1%",
+        "show_legend": False,
+        "x_axis_label": "Household type",
+        "y_axis_label": "Share spending 30%+ on shelter"
+    }}},
+    {"c": {"orientation": "horizontal"}},
+)["c"]["params"]
+
 EXISTING_CHART_UPDATES = {
     2: {
         "description": "Share of owner and renter households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census.",
@@ -181,28 +239,13 @@ EXISTING_CHART_UPDATES = {
     },
     6: {
         "description": "Share of households in each 2020 income band spending 30% or more of income on shelter. Households with no computable ratio are excluded. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_income_band.",
-        "params": {
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "label": "Share spending 30%+ on shelter",
-                    "sqlExpression": "MAX(burden_rate_pct) / 100.0",
-                }
-            ],
-            "x_axis_label": "Household income (2020)",
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": INCOME_BAND_BARS,
     },
     7: {
         "description": "Share of households of each type spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_household_type.",
-        "params": {
-            "metrics": [
-                {
-                    "expressionType": "SQL",
-                    "label": "Share spending 30%+ on shelter",
-                    "sqlExpression": "MAX(burden_rate_pct) / 100.0",
-                }
-            ],
-        },
+        "viz_type": "echarts_timeseries_bar",
+        "params": HOUSEHOLD_TYPE_BARS,
     },
 }
 
@@ -233,12 +276,18 @@ def ensure_chart(session, headers, spec: dict) -> int:
 
 def update_existing_chart(session, headers, chart_id: int, update: dict) -> None:
     """Merge a description and selected params into an existing chart,
-    leaving the rest of its params as they are."""
+    leaving the rest of its params as they are. With a new viz_type the
+    params are replaced instead (another chart type's keys would linger)."""
     resp = session.get(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers)
     resp.raise_for_status()
     params = json.loads(resp.json()["result"]["params"] or "{}")
-    params.update(update.get("params", {}))
+    if "viz_type" in update:
+        params = {"viz_type": update["viz_type"], **update["params"], "color_scheme": COLOR_SCHEME}
+    else:
+        params.update(update.get("params", {}))
     body = {"params": json.dumps(params)}
+    if "viz_type" in update:
+        body["viz_type"] = update["viz_type"]
     if "description" in update:
         body["description"] = update["description"]
     resp = session.put(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json=body)
@@ -448,6 +497,7 @@ if __name__ == "__main__":
     )
     resp.raise_for_status()
     print(f"Dashboard {DASHBOARD_ID} layout updated: 5 sections, {len(chart_ids)} charts.")
+    print(f"Finished: {finish_dashboard(session, headers, DASHBOARD_ID)}")
 
     excluded_ids = {chart_ids["kpi-severity-renter"], chart_ids["kpi-severity-owner"]}
     verify_native_filter_scope(

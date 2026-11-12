@@ -63,26 +63,27 @@ import re
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
 # ever run against a fresh environment where ids may differ.
-DATASET_RENT_YOY = 9  # v_story2_rent_yoy_change
-DATASET_VACANCY = 6  # v_story2_vacancy_trend
-DATASET_TURNOVER = 11  # v_story2_turnover_by_bedroom
-DATASET_RENT_ZONE = 14  # v_story2_rent_by_zone_bedroom
+DATASET_RENT_YOY = dataset_id("v_story2_rent_yoy_change")
+DATASET_VACANCY = dataset_id("v_story2_vacancy_trend")
+DATASET_TURNOVER = dataset_id("v_story2_turnover_by_bedroom")
+DATASET_RENT_ZONE = dataset_id("v_story2_rent_by_zone_bedroom")
 # v_dashboard1_rental_yoy -- built for Dashboard 1, reused here rather than
 # duplicated: it's the only registered view with a "universe" (rental
 # stock) row at all. No Story 2 view carries that column (confirmed
 # against sql/story2_views.sql) -- fabricating a new one just to avoid
 # reuse would mean a second view computing the same real
 # fact_rental_market rows the Dashboard 1 one already does.
-DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
-DATASET_ZONE_SNAPSHOT = 19  # v_story2_zone_snapshot
-DATASET_ZONE_VACANCY = 20  # v_story2_vacancy_by_zone_trend
+DATASET_RENTAL_YOY = dataset_id("v_dashboard1_rental_yoy")
+DATASET_ZONE_SNAPSHOT = dataset_id("v_story2_zone_snapshot")
+DATASET_ZONE_VACANCY = dataset_id("v_story2_vacancy_by_zone_trend")
 
-COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
+# windsor_housing here, Superset's default on the shared server (superset_compat).
 
 EXCLUDE_TOTAL_BEDROOM = {
     "clause": "WHERE",
@@ -123,7 +124,7 @@ def bedroom_filter(bedroom="Total"):
     }
 
 
-DATASET_ZONE_EXPLANATION = 23  # v_story2_zone_explanation (all unit sizes)
+DATASET_ZONE_EXPLANATION = dataset_id("v_story2_zone_explanation")  # (all unit sizes)
 
 # The explanation panel's dataset: a virtual (SQL) dataset over
 # warehouse.v_story2_zone_bedroom_explanation that keeps one unit size --
@@ -611,6 +612,40 @@ DASHBOARD_TITLE = "Story 2: What is happening in Windsor's rental market?"
 # Readable column names for the zone snapshot table, set as the dataset's
 # column labels (Superset's table chart shows a column's label as its
 # header).
+# The explanation panel on the university's shared Superset, where template
+# processing (the panel's per-unit-size dataset) and styled HTML (the
+# Handlebars layout) are switched off and cannot be turned on by a user: a
+# table of the same SQL-computed sentences, one row per zone, all unit sizes.
+# It still narrows to the zone picked in the Zone filter or clicked in a
+# zone chart.
+SIMPLE_PANEL = {
+    "slice_name": "What the Zone Data Says",
+    "description": (
+        "What each zone's figures mean against Windsor CMA, all unit sizes, October 2025. Select a zone "
+        "(click a zone bar or table row, or use the Zone filter) to see only that zone. Every sentence "
+        "is computed in warehouse.v_story2_zone_explanation from CMHC's survey."
+    ),
+    "dataset_id": DATASET_ZONE_EXPLANATION,
+    "viz_type": "table",
+    "params": {
+        "query_mode": "raw",
+        "all_columns": ["zone_label", "takeaway", "rent_vs_text", "vacancy_vs_text", "reliability_note"],
+        "order_by_cols": ['["average_rent", false]'],
+        "row_limit": 10,
+        "server_pagination": False,
+        "include_search": False,
+        "show_cell_bars": False,
+        "table_timestamp_format": "smart_date",
+    },
+}
+
+PANEL_LABELS = {
+    "takeaway": "What it means",
+    "rent_vs_text": "Rent vs Windsor",
+    "vacancy_vs_text": "Vacancy vs Windsor",
+    "reliability_note": "Note",
+}
+
 ZONE_SNAPSHOT_LABELS = {
     "zone_label": "Zone",
     "period_label": "Survey",
@@ -695,6 +730,11 @@ MARKDOWN = {
 # are applied only to these; the KPI tiles and the bedroom-type and
 # dwelling-type charts have no zone column, so a zone cross-filter would
 # make their queries fail.
+# On the shared Superset the explanation panel is a plain table over the
+# all-unit-sizes view (see SIMPLE_PANEL below), which has no unit-size column,
+# so it stays out of the Bedroom Type filter and its cross-filters.
+PANEL_BY_UNIT_SIZE = [] if SHARED else ["zone-explain"]
+
 ZONE_CHART_KEYS = ["zone-table", "zone-explain", "zone-stock", "zone-vacancy", "rent-zone", "zone-vacancy-trend"]
 # Cross-filter groups. A chart's click filters on the column it groups by
 # (zone for the zone charts; unit size for the rent/vacancy/turnover by
@@ -710,7 +750,7 @@ CROSS_FILTER_GROUPS = {
     },
     "bedroom": {
         "emitters": ["rent-zone", "rent-trend", "vacancy-trend", "turnover"],
-        "receivers": ["rent-zone", "rent-trend", "vacancy-trend", "turnover", "zone-explain"],
+        "receivers": ["rent-zone", "rent-trend", "vacancy-trend", "turnover", *PANEL_BY_UNIT_SIZE],
     },
 }
 # Clickable charts whose clicks should filter nothing: the dwelling-type
@@ -862,7 +902,7 @@ def build_native_filters(chart_ids: dict) -> list:
     ]
     zone_scope, zone_in = filter_scope(chart_ids, ZONE_CHART_KEYS)
     bedroom_scope, bedroom_in = filter_scope(
-        chart_ids, ["rent-zone", "rent-trend", "vacancy-trend", "turnover", "zone-explain"]
+        chart_ids, ["rent-zone", "rent-trend", "vacancy-trend", "turnover", *PANEL_BY_UNIT_SIZE]
     )
     dwelling_scope, dwelling_in = filter_scope(chart_ids, ["vacancy-dwelling"])
     return [
@@ -1133,10 +1173,15 @@ if __name__ == "__main__":
         set_column_labels(session, headers, dataset_id, COMMON_LABELS)
     print("Dataset column labels set.")
 
-    panel_dataset_id = ensure_panel_dataset(session, headers)
-    CHARTS["zone-explain"]["dataset_id"] = panel_dataset_id
-    set_column_labels(session, headers, panel_dataset_id, COMMON_LABELS)
-    print(f"Panel dataset ready: {PANEL_DATASET_NAME} (id={panel_dataset_id})")
+    if SHARED:
+        CHARTS["zone-explain"] = SIMPLE_PANEL
+        set_column_labels(session, headers, DATASET_ZONE_EXPLANATION, {**COMMON_LABELS, **PANEL_LABELS})
+        print("Explanation panel: simple table (shared Superset).")
+    else:
+        panel_dataset_id = ensure_panel_dataset(session, headers)
+        CHARTS["zone-explain"]["dataset_id"] = panel_dataset_id
+        set_column_labels(session, headers, panel_dataset_id, COMMON_LABELS)
+        print(f"Panel dataset ready: {PANEL_DATASET_NAME} (id={panel_dataset_id})")
 
     chart_ids = {}
     for key, spec in CHARTS.items():
@@ -1153,4 +1198,5 @@ if __name__ == "__main__":
         link_chart_to_dashboard(session, headers, chart_id, dashboard_id)
     print(f"Linked all {len(chart_ids)} charts to dashboard {dashboard_id}.")
 
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{dashboard_id}/")
