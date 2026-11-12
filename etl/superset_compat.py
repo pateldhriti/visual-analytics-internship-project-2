@@ -185,3 +185,116 @@ def finish_dashboard(session, headers, dashboard_id: int) -> dict:
         json={"json_metadata": json.dumps(metadata)},
     ).raise_for_status()
     return {"colors_added": new_colors, "cross_filter_entries_added": sorted(int(k) for k in new_config)}
+
+
+# --- richer chart types -------------------------------------------------------
+# Built-in on both installations; where a type was replaced between versions
+# (the heatmap), the one this Superset has is chosen.
+
+
+def trendline_kpi(metric: dict, time_column: str, filters: list, number_format: str,
+                  compare_lag: int, compare_suffix: str, subheader: str = "") -> tuple[str, dict]:
+    """Big Number with Trendline: the latest value, its change over
+    `compare_lag` periods, and the line of every period underneath. Both
+    the newer (x_axis) and older (granularity_sqla) time settings are given,
+    so either version reads the one it uses."""
+    return "big_number", {
+        "metric": metric,
+        "adhoc_filters": filters,
+        "x_axis": time_column,
+        "granularity_sqla": time_column,
+        "time_grain_sqla": "P1Y",
+        "time_range": "No filter",
+        "compare_lag": compare_lag,
+        "compare_suffix": compare_suffix,
+        "show_trend_line": True,
+        "start_y_axis_at_zero": False,
+        "rolling_type": "None",
+        "y_axis_format": number_format,
+        "header_font_size": 0.4,
+        "subheader_font_size": 0.15,
+        "subheader": subheader,
+        "color_picker": {"r": 42, "g": 120, "b": 214, "a": 1},  # project blue, PALETTE[0]
+    }
+
+
+def heatmap(x: str, y: str, metric: dict, filters: list, number_format: str) -> tuple[str, dict]:
+    """A grid of `metric` by `x` (columns) and `y` (rows), one sequential
+    blue scale, each cell labelled with its value."""
+    common = {
+        "metric": metric,
+        "adhoc_filters": filters,
+        "row_limit": 1000,
+        "linear_color_scheme": "superset_seq_1",  # one blue scale, in both versions
+        "normalize_across": "heatmap",
+        "show_legend": False,  # every cell prints its value
+        "show_values": True,
+        "y_axis_format": number_format,
+        "sort_x_axis": "alpha_asc",
+        "sort_y_axis": "alpha_asc",
+        "xscale_interval": -1,
+        "yscale_interval": -1,
+    }
+    if SHARED:  # heatmap_v2 (ECharts), Superset 4.1 and later
+        return "heatmap_v2", {**common, "x_axis": x, "groupby": [y], "show_percentage": False,
+                              "value_bounds": [None, None]}
+    return "heatmap", {**common, "all_columns_x": x, "all_columns_y": y, "show_perc": False,
+                       "canvas_image_rendering": "pixelated", "left_margin": "auto", "bottom_margin": "auto"}
+
+
+def scatter(x_column: str, y: dict, series: str, filters: list, x_label: str, y_label: str,
+            x_format: str, y_format: str, x_bounds=(None, None), y_bounds=(None, None)) -> tuple[str, dict]:
+    """One point per `series` value: `y` against the numeric column
+    `x_column`, all points the same size (ECharts scatter, in both
+    versions). Used instead of the bubble chart, which scales sizes from
+    the smallest value to the largest and so shrinks the smallest to a dot."""
+    return "echarts_timeseries_scatter", {
+        "x_axis": x_column,
+        "metrics": [y],
+        "groupby": [series],
+        "adhoc_filters": filters,
+        "row_limit": 100,
+        "markerSize": 16,
+        "color_scheme": COLOR_SCHEME,
+        "show_legend": True,
+        "legendOrientation": "top",
+        "rich_tooltip": False,
+        "x_axis_title": x_label,
+        "x_axis_title_margin": 30,
+        "y_axis_title": y_label,
+        "y_axis_title_margin": 50,
+        "y_axis_title_position": "Left",
+        "x_axis_time_format": "smart_date",
+        "xAxisFormat": x_format,
+        "y_axis_format": y_format,
+        "truncateXAxis": True,
+        "xAxisBounds": list(x_bounds),
+        "truncateYAxis": True,
+        "y_axis_bounds": list(y_bounds),
+    }
+
+
+def gauge(metric: dict, filters: list, number_format: str, max_value: float) -> tuple[str, dict]:
+    """ECharts gauge (gauge_chart, in both versions): one value against a
+    full scale from 0 to `max_value`."""
+    return "gauge_chart", {
+        "metric": metric,
+        "adhoc_filters": filters,
+        "groupby": [],
+        "row_limit": 10,
+        "min_val": 0,
+        "max_val": max_value,
+        "start_angle": 225,
+        "end_angle": -45,
+        "font_size": 18,
+        "number_format": number_format,
+        "show_pointer": True,
+        "animation": True,
+        "show_axis_line_ticks": False,
+        "show_split_line": False,
+        "split_number": 5,
+        "show_progress": True,
+        "overlap": True,
+        "round_cap": True,
+        "color_scheme": COLOR_SCHEME,
+    }

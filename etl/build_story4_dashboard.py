@@ -34,7 +34,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, trendline_kpi, upgrade_legacy_bars
 
 DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
 DATASET_RENT = dataset_id("v_story4_rent_comparison")
@@ -209,23 +209,13 @@ CHARTS = {
         },
     },
     "kpi-rent-decade": {
-        "slice_name": "Windsor 2-Bedroom Rent Change, 2015 to 2025",
-        "description": "How much Windsor's October average 2-bedroom rent (apartments and row houses) rose from 2015 to 2025. warehouse.v_story4_period_comparison.",
-        "dataset_id": DATASET_PERIODS,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SQL",
-                "sqlExpression": "MAX(rent_change_2015_2025) / 100.0",
-                "label": "Rent Change",
-            },
-            "adhoc_filters": [market_filter_on("city")],
-            "y_axis_format": "+.0%",
-            "header_font_size": 0.5,
-            "subheader_font_size": 0.15,
-            "subheader": "2-bedroom rent · Oct-15 to Oct-25",
-            "color_scheme": COLOR_SCHEME,
-        },
+        "slice_name": "Windsor 2-Bedroom Rent, 2015 to 2025",
+        "description": "Windsor's October average 2-bedroom rent (apartments and row houses) in 2025, every October since 2015 underneath, and the change since 2015. warehouse.v_story4_rent_history.",
+        "dataset_id": DATASET_HISTORY,
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(average_rent_2br)", "label": "2-Bedroom Rent"},
+            "period_date", [market_filter_on("city")], "$,.0f", 10, " since 2015",
+        ))),
     },
     "vacancy-by-market": {
         "slice_name": "Apartment Vacancy Rate by Market (Oct-25)",
@@ -387,7 +377,7 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     resp.raise_for_status()
 
 
-def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 25) -> dict:
+def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 32) -> dict:
     # Default height, used only by the 3 KPI tiles (every bar chart below
     # passes its own height=55) -- was 50, which left a large empty gap
     # above the number inside every KPI card, confirmed visually.
