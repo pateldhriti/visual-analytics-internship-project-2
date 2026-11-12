@@ -165,7 +165,11 @@ SELECT
     END) / SUM(b.households), 1) AS pct_renters_who_cannot_afford_2br,
     c.pct_renters_spending_30pct_plus,
     c.renter_households,
-    ROUND(100.0 * c.renter_households / c.private_households, 1) AS pct_households_renting
+    ROUND(100.0 * c.renter_households / c.private_households, 1) AS pct_households_renting,
+    -- Short name for chart labels and colours (the Story 5 bubble chart).
+    CASE r.city WHEN 'Kitchener-Cambridge-Waterloo CMA' THEN 'Kitchener-Waterloo'
+                WHEN 'St. Catharines-Niagara CMA' THEN 'St. Catharines'
+                ELSE REPLACE(r.city, ' CMA', '') END AS city_short
 FROM rent r
 JOIN city c ON c.cma_name = r.city
 JOIN bands b ON b.cma_name = r.city

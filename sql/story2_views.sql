@@ -48,7 +48,9 @@ SELECT
             / NULLIF(LAG(f.value) OVER (PARTITION BY b.bedroom_type_label ORDER BY p.period_year), 0),
         1
     ) AS yoy_change_pct,
-    f.reliability_letter
+    f.reliability_letter,
+    -- The survey month as a real date, for Superset's trendline KPI tiles.
+    MAKE_DATE(p.period_year, 10, 1) AS period_date
 FROM warehouse.fact_rental_market f
 JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
 JOIN warehouse.dim_period p ON p.period_key = f.period_key
@@ -122,7 +124,9 @@ SELECT
     p.period_year,
     f.value AS vacancy_rate_pct,
     f.reliability_letter,
-    f.yoy_trend
+    f.yoy_trend,
+    -- The survey month as a real date, for Superset's trendline KPI tiles.
+    MAKE_DATE(p.period_year, 10, 1) AS period_date
 FROM warehouse.fact_rental_market f
 JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
 JOIN warehouse.dim_period p ON p.period_key = f.period_key

@@ -187,7 +187,9 @@ SELECT
     r.average_rent_2br,
     v.vacancy_rate,
     ROUND(100.0 * (r.average_rent_2br / LAG(r.average_rent_2br) OVER w - 1), 1) AS rent_change_pct,
-    ROUND(100.0 * r.average_rent_2br / FIRST_VALUE(r.average_rent_2br) OVER w, 1) AS rent_index_2015
+    ROUND(100.0 * r.average_rent_2br / FIRST_VALUE(r.average_rent_2br) OVER w, 1) AS rent_index_2015,
+    -- October of each survey year as a real date, for the trendline KPI tile.
+    MAKE_DATE(r.period_year, 10, 1) AS period_date
 FROM rent r
 LEFT JOIN vacancy v ON v.cma_name = r.cma_name AND v.period_year = r.period_year
 WINDOW w AS (PARTITION BY r.cma_name ORDER BY r.period_year);
