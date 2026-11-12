@@ -43,6 +43,12 @@ jobs:
       - name: Run pytest (website highlights export)
         working-directory: etl
         run: python -m pytest test_site_highlights.py -v
+      - name: Run pytest (Superset compatibility helpers)
+        working-directory: etl
+        run: python -m pytest test_superset_compat.py -v
+      - name: Run pytest (raw data setup)
+        working-directory: etl
+        run: python -m pytest test_fetch_raw_data.py -v
       - name: Run pytest (guest-token API)
         working-directory: api
         run: python -m pytest test_guest_token_server.py -v

@@ -34,14 +34,17 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 DATASET_RENTAL_YOY = dataset_id("v_dashboard1_rental_yoy")
 DATASET_CMA_BENCHMARK = dataset_id("v_dashboard1_cma_benchmark")
 DATASET_RENTAL_TREND = dataset_id("v_dashboard1_rental_trend")
 DATASET_SUPPLY = dataset_id("v_story3_starts_completions_by_dwelling_type")
 
-DASHBOARD_TITLE = "01 - Windsor Housing Executive Overview"
+DASHBOARD_TITLE = named("01 - Windsor Housing Executive Overview")
+# A fixed URL name: the website, the token API and the embedding script
+# use it instead of the dashboard id, which differs on every Superset.
+DASHBOARD_SLUG = "windsor-overview"
 
 # Story 1's existing chart ids (dashboard 3), reused here directly.
 AFFORDABILITY_CHART_IDS = {"tenure-bar": 2, "kpi-renter": 3, "kpi-owner": 4}
@@ -432,6 +435,7 @@ def build_native_filters() -> list:
 
 
 if __name__ == "__main__":
+    prefix_names(NEW_CHARTS)
     session, headers = get_session()
     print("Logged in to Superset.")
 
@@ -456,6 +460,7 @@ if __name__ == "__main__":
     metadata.update({"native_filter_configuration": build_native_filters(), "color_scheme": COLOR_SCHEME})
     body = {
         "dashboard_title": DASHBOARD_TITLE,
+        "slug": DASHBOARD_SLUG,
         "published": True,
         "position_json": json.dumps(position_json),
         "json_metadata": json.dumps(metadata),

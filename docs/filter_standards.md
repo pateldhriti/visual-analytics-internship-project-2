@@ -20,7 +20,7 @@ filters before this pass:
 
 2 of 5 existing filters weren't Title Case -- a real, if minor, inconsistency, not a hypothetical
 one. Story 1's "Household type" is corrected to "Household Type" here as the worked example (see
-`etl/apply_filter_standards_story1.py`). Dashboard 3's "Bedroom type" is flagged as the same issue
+`etl/apply_filter_standards_story1.py`, since replaced by the filters `etl/finalize_story1_layout.py` writes in full). Dashboard 3's "Bedroom type" is flagged as the same issue
 but left as a follow-up -- this task's scope is Story 1 specifically, not a rename sweep across
 every dashboard.
 

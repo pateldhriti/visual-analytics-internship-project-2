@@ -104,7 +104,7 @@ export default function StoryRentalMarket() {
       dashboard={
         <SupersetGuestEmbed
           dashboard="story2"
-          fallbackDashboardId={4}
+          fallbackDashboardId="windsor-story-2"
           title="Story 2: What is happening in Windsor's rental market? (Superset dashboard)"
         />
       }

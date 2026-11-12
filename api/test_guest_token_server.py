@@ -35,7 +35,7 @@ class FakeClient:
         return f"token-for-{embedded_uuid}"
 
 
-@pytest.mark.parametrize("name, dashboard_id", [("story1", 3), ("story2", 4), ("story3", 7), ("story4", 6), ("story5", 8)])
+@pytest.mark.parametrize("name, dashboard_id", [(f"story{n}", f"windsor-story-{n}") for n in range(1, 6)])
 def test_each_story_dashboard_returns_token_and_uuid(name, dashboard_id):
     client = FakeClient()
     status, body = server.issue_token(client, name)
@@ -118,7 +118,7 @@ def test_http_token_response_is_not_cacheable(running_server):
     assert status == 200
     assert headers["Cache-Control"] == "no-store"
     assert headers["X-Content-Type-Options"] == "nosniff"
-    assert body["dashboardUuid"] == "uuid-3"
+    assert body["dashboardUuid"] == "uuid-windsor-story-1"
 
 
 @pytest.mark.parametrize("payload", [b"not json", b"[1, 2]"])

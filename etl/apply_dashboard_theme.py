@@ -28,7 +28,9 @@ import sys
 from setup_superset_dashboard import SUPERSET_URL, get_session
 
 # Executive Overview, Stories 1-5.
-DASHBOARD_IDS = [5, 3, 4, 7, 6, 8]
+# Dashboards by slug (the fixed URL name each builder sets; ids differ on every Superset).
+DASHBOARD_SLUGS = ["windsor-overview", "windsor-story-1", "windsor-story-2", "windsor-story-3",
+                   "windsor-story-4", "windsor-story-5"]
 
 ACCENT = "#2a78d6"
 INK = "#1d2433"
@@ -152,7 +154,10 @@ THEME_CSS = f"""
 def main(remove: bool) -> None:
     session, headers = get_session()
     css = "" if remove else THEME_CSS
-    for dashboard_id in DASHBOARD_IDS:
+    for slug in DASHBOARD_SLUGS:
+        found = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{slug}", headers=headers)
+        found.raise_for_status()
+        dashboard_id = found.json()["result"]["id"]
         resp = session.put(f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}", headers=headers, json={"css": css})
         resp.raise_for_status()
         print(f"Dashboard {dashboard_id}: theme {'removed' if remove else 'applied'}.")

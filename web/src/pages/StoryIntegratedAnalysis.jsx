@@ -135,7 +135,7 @@ export default function StoryIntegratedAnalysis() {
       dashboard={
         <SupersetGuestEmbed
           dashboard="story5"
-          fallbackDashboardId={8}
+          fallbackDashboardId="windsor-story-5"
           title="Story 5: How do affordability, rental conditions, and supply fit together? (Superset dashboard)"
         />
       }
