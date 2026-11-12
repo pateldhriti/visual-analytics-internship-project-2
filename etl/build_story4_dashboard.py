@@ -34,6 +34,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 DATASET_VACANCY = 2  # v_story4_vacancy_comparison
 DATASET_RENT = 3  # v_story4_rent_comparison
@@ -41,7 +42,7 @@ DATASET_AFFORDABILITY_GAP = 4  # v_story4_affordability_gap
 DATASET_HISTORY = 33  # v_story4_rent_history
 DATASET_PERIODS = 34  # v_story4_period_comparison
 
-COLOR_SCHEME = "windsor_housing"
+# windsor_housing here, Superset's default on the shared server (superset_compat).
 DASHBOARD_TITLE = "Story 4: How does Windsor compare to similar markets?"
 
 
@@ -620,4 +621,5 @@ if __name__ == "__main__":
         link_chart_to_dashboard(session, headers, chart_id, dashboard_id)
     print(f"Linked all {len(chart_ids)} charts to dashboard {dashboard_id}.")
 
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{dashboard_id}/")

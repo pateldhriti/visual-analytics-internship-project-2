@@ -34,7 +34,10 @@ import requests
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SUPERSET_URL = "http://localhost:8088"
+load_dotenv(PROJECT_ROOT / ".env")  # SUPERSET_URL / SUPERSET_TARGET can be set there
+# The university's shared Superset: set SUPERSET_URL=https://apss.cs.uwindsor.ca
+# and SUPERSET_TARGET=shared (etl/superset_compat.py).
+SUPERSET_URL = os.getenv("SUPERSET_URL", "http://localhost:8088").rstrip("/")
 
 DATABASE_NAME = "Windsor Housing Data"
 DATASET_TABLE = "windsor_shelter_cost_long"
@@ -178,8 +181,19 @@ def ensure_dataset(session, headers, database_id: int) -> int:
 
 
 def build_chart_params(dataset_id: int) -> dict:
+    # Described as a dist_bar, drawn as an ECharts bar (superset_compat;
+    # imported here because superset_compat imports this module).
+    from superset_compat import from_dist_bar
+
     return {
         "datasource": f"{dataset_id}__table",
+        "viz_type": "echarts_timeseries_bar",
+        **from_dist_bar(legacy_chart_params()),
+    }
+
+
+def legacy_chart_params() -> dict:
+    return {
         "viz_type": "dist_bar",
         "groupby": ["tenure"],
         "metrics": [{
@@ -207,7 +221,7 @@ def ensure_chart(session, headers, dataset_id: int) -> int:
     body = {
         "slice_name": CHART_NAME,
         "description": CHART_DESCRIPTION,
-        "viz_type": "dist_bar",
+        "viz_type": "echarts_timeseries_bar",
         "datasource_id": dataset_id,
         "datasource_type": "table",
         "params": params_json,

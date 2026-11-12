@@ -34,6 +34,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 DATASET_RENTAL_YOY = 16  # v_dashboard1_rental_yoy
 DATASET_CMA_BENCHMARK = 17  # v_dashboard1_cma_benchmark
@@ -44,7 +45,7 @@ DASHBOARD_TITLE = "01 - Windsor Housing Executive Overview"
 # Story 1's existing chart ids (dashboard 3), reused here directly.
 AFFORDABILITY_CHART_IDS = {"tenure-bar": 2, "kpi-renter": 3, "kpi-owner": 4}
 
-COLOR_SCHEME = "windsor_housing"
+# windsor_housing here, Superset's default on the shared server (superset_compat).
 
 
 def metric_filter(value: str, col: str = "metric"):
@@ -272,6 +273,9 @@ NEW_CHARTS = {
     },
 }
 
+# The legacy dist_bar charts are drawn with the ECharts bar chart (superset_compat).
+upgrade_legacy_bars(NEW_CHARTS)
+
 
 def ensure_chart(session, headers, spec: dict) -> int:
     body = {
@@ -489,4 +493,5 @@ if __name__ == "__main__":
         link_chart_to_dashboard(session, headers, chart_id, dashboard_id)
     print(f"Linked all {len(chart_ids)} charts to dashboard {dashboard_id}.")
 
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{dashboard_id}/")

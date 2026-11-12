@@ -47,6 +47,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, find_existing, get_session
+from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_RENT_AFFORDABILITY = 25  # v_story5_rent_affordability
@@ -58,7 +59,7 @@ DATASET_BURDEN_BY_AGE = 30  # v_story5_renter_burden_by_age
 DATASET_RENTAL_STOCK = 31  # v_story5_rental_stock
 DATASET_CITY_PROFILE = 32  # v_story5_city_profile
 
-COLOR_SCHEME = "windsor_housing"  # validated CVD-safe palette, docker/superset_config.py
+# windsor_housing here, Superset's default on the shared server (superset_compat).
 DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"
 
 ACCENT = "#2a78d6"  # project blue: Windsor
@@ -972,4 +973,5 @@ if __name__ == "__main__":
     stale = unlink_stale_charts(session, headers, dashboard_id, set(chart_ids.values()))
     print(f"Linked {len(chart_ids)} charts; unlinked {len(stale)} earlier charts {stale}.")
 
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{dashboard_id}/")
