@@ -16,13 +16,13 @@ const INTRO =
 const NARRATIVE = [
   "Windsor is the cheapest of the five. A 2-bedroom apartment averaged $1,454 a month in October " +
     "2025, $73 less than St. Catharines-Niagara and $378 less than Kitchener-Cambridge-Waterloo, " +
-    "and $199.50 below the five-city median. It was also the cheapest a year earlier.",
+    "and $199.50 below the median of the other four cities. It was also the cheapest a year earlier.",
   "Cheap, but not loose. Windsor's apartment vacancy rate was 3.7%, the second lowest of the five; " +
     "only Hamilton (3.6%) was tighter. Vacancy rose in all five cities between 2024 and 2025, so " +
     "Windsor loosened along with the region rather than on its own.",
   "Rents are rising at a middle pace. In the same buildings both years, Windsor's 2-bedroom rent " +
     "rose 3.6%, third of five: faster than Hamilton (1.6%), slower than St. Catharines-Niagara " +
-    "(5.5%). Windsor also had the lowest turnover, 12.2% against a median of 14.1%, so fewer units " +
+    "(5.5%). Windsor also had the lowest turnover, 12.2% against the other four cities' median of 14.1%, so fewer units " +
     "come up for rent.",
   "Ten years on, the gap is closing. Windsor's 2-bedroom rent (apartments and row houses) went " +
     "from $823 in 2015 to $1,451 in 2025, up 76%; only Kitchener-Waterloo rose faster (82%). " +
@@ -72,7 +72,7 @@ const FILTERS = [
 
 const KPIS = [
   { label: "Windsor 2-bedroom apartment rent", value: "$1,454", accent: "blue", trend: "up" },
-  { label: "Below the five-city median", value: "$199.50", accent: "teal", trend: "flat" },
+  { label: "Below the other four cities' median", value: "$199.50", accent: "teal", trend: "flat" },
   { label: "Windsor apartment vacancy", value: "3.7%", accent: "violet", trend: "up" },
   { label: "Windsor 2-bedroom rent since 2015", value: "+76%", accent: "rose", trend: "up" },
 ];
