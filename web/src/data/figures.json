@@ -1,0 +1,220 @@
+{
+  "textWrittenFor": {
+    "rent_survey_year": 2025,
+    "construction_year": 2025
+  },
+  "latestData": {
+    "rent_survey_year": 2025,
+    "construction_year": 2025
+  },
+  "s1": {
+    "burdenPct": 17.5,
+    "burdened": 28745,
+    "households": 164220,
+    "burdenedByTenure": 28740,
+    "renterPct": 34.8,
+    "ownerPct": 10.9,
+    "renterTimesOwner": 3,
+    "renterShareOfHouseholds": 28.0,
+    "renterShareOfBurdened": 55.0,
+    "lowestBandPct": 93.1,
+    "highestBandPct": 1.5,
+    "under40ShareOfHouseholds": 18.0,
+    "under40ShareOfBurdened": 60.0,
+    "belowAverageFromIncome": 60000,
+    "onePersonPct": 32.9,
+    "onePersonShareOfBurdened": 53.0,
+    "oneParentPct": 23.3,
+    "couplePct": 9.1,
+    "hundredPlus": 2535
+  },
+  "s2": {
+    "firstYear": 2020,
+    "latestYear": 2025,
+    "units": 19883,
+    "rentFirst": 953,
+    "rentLatest": 1293,
+    "rentChangePct": 35.7,
+    "rentGrowthPrev": 8.1,
+    "rentGrowthLatest": 5.9,
+    "prevYear": 2024,
+    "twoBedFirst": 1038,
+    "twoBedLatest": 1451,
+    "twoBedRise": 413,
+    "twoBedRisePct": 39.8,
+    "vacancyFirst": 3.5,
+    "vacancyLow": 1.8,
+    "vacancyLowYear": 2022,
+    "vacancyLatest": 3.6,
+    "cityZoneShare": 82,
+    "cheapestZone": "Centre",
+    "cheapestRent": 1155,
+    "cheapestVacancy": 4.6,
+    "priciestZone": "Amherstburg",
+    "priciestRent": 1955,
+    "zoneRentGap": 800,
+    "countyVacancyMin": 2,
+    "countyVacancyMax": 2.7,
+    "turnover": 11.9,
+    "turnoverOneIn": 8,
+    "turnoverStudio": 15,
+    "turnoverThreeBed": 5.3
+  },
+  "s3": {
+    "firstYear": 2016,
+    "latestYear": 2025,
+    "peakYear": 2024,
+    "startsEarlyAvg": 1300.0,
+    "earlyLastYear": 2023,
+    "startsPeak": 2157,
+    "startsPeakPer1000": 13.02,
+    "startsLatest": 1262,
+    "startsFirst": 1266,
+    "startsDropPct": 41,
+    "aptShareFirst": 6.0,
+    "aptShareLatest": 60.0,
+    "aptStartsLatest": 752,
+    "singlesFirst": 804,
+    "singlesLatest": 331,
+    "completions2023": 1967,
+    "starts2023": 1208,
+    "completionsLatest": 1671,
+    "underConstructionLatest": 1635,
+    "completionsLast3": 5247,
+    "last3From": 2023
+  },
+  "s4": {
+    "ranking": [
+      {
+        "market": "Windsor CMA",
+        "rent": 1454,
+        "isWindsor": true
+      },
+      {
+        "market": "St. Catharines-Niagara CMA",
+        "rent": 1527,
+        "isWindsor": false
+      },
+      {
+        "market": "London CMA",
+        "rent": 1651,
+        "isWindsor": false
+      },
+      {
+        "market": "Hamilton CMA",
+        "rent": 1656,
+        "isWindsor": false
+      },
+      {
+        "market": "Kitchener-Cambridge-Waterloo CMA",
+        "rent": 1832,
+        "isWindsor": false
+      }
+    ],
+    "windsorRent": 1454,
+    "windsorRank": 1,
+    "nextCheapest": "St. Catharines-Niagara",
+    "nextCheapestGap": 73,
+    "priciest": "Kitchener-Cambridge-Waterloo",
+    "priciestGap": 378,
+    "belowPeerMedian": 199.5,
+    "windsorCheapestLastYear": true,
+    "windsorVacancy": 3.7,
+    "vacancyRanking": [
+      {
+        "market": "Hamilton",
+        "vacancy": 3.6
+      },
+      {
+        "market": "Windsor",
+        "vacancy": 3.7
+      },
+      {
+        "market": "St. Catharines-Niagara",
+        "vacancy": 3.9
+      },
+      {
+        "market": "London",
+        "vacancy": 4
+      },
+      {
+        "market": "Kitchener-Cambridge-Waterloo",
+        "vacancy": 4.1
+      }
+    ],
+    "windsorVacancyRankLowest": 2,
+    "tightest": "Hamilton",
+    "tightestVacancy": 3.6,
+    "windsorRentGrowth": 3.6,
+    "windsorRentGrowthRank": 3,
+    "slowestGrowth": "Hamilton",
+    "slowestGrowthPct": 1.6,
+    "fastestGrowth": "St. Catharines-Niagara",
+    "fastestGrowthPct": 5.5,
+    "windsorTurnover": 12.2,
+    "peerTurnoverMedian": 14.1,
+    "rent2015": 823,
+    "rent2025": 1451,
+    "rentChangeDecade": 76.3,
+    "fastestDecade": "Kitchener-Waterloo",
+    "fastestDecadePct": 82.3,
+    "growthBefore": 4.8,
+    "growthAfter": 6.9,
+    "biggestSpeedup": true,
+    "shareOfPeers2015": 84.4,
+    "shareOfPeers2025": 87.3,
+    "jumps": [
+      {
+        "year": 2020,
+        "pct": 9.7
+      },
+      {
+        "year": 2021,
+        "pct": 11
+      },
+      {
+        "year": 2024,
+        "pct": 10.4
+      }
+    ],
+    "vacancyLow": 1.8,
+    "vacancyLowYear": 2022,
+    "vacancyLatest": 3.6
+  },
+  "s5": {
+    "cannotAffordPct": 61,
+    "cannotAfford": 27700,
+    "oneBedCannotAffordPct": 49.1,
+    "rent2Bed": 1451,
+    "incomeNeeded": 58000,
+    "medianIncome": 48400,
+    "affordableRent": 1210,
+    "studioIncomeNeeded": 37900,
+    "rentShare": 36,
+    "rentShareMin": 36,
+    "rentShareMax": 39,
+    "sameShareAs": [
+      "Hamilton"
+    ],
+    "burdenPct": 34.8,
+    "burdenLowest": true,
+    "startsPer1000": 8.4,
+    "startsPer1000Rank": 1,
+    "topBuilder": "Kitchener-Cambridge-Waterloo",
+    "topBuilderPer1000": 19.7,
+    "populationGrowth": 23912,
+    "homesNeeded": 9500,
+    "homesCompleted": 5666,
+    "builtPerNeeded": 0.59,
+    "builtPerNeededMin": 0.72,
+    "builtPerNeededMax": 0.91,
+    "unitsPer100": 44,
+    "unitsPer100Rank": 2,
+    "vacancyMin": 3.6,
+    "vacancyMax": 4.1,
+    "youngPct": 46.5,
+    "allRentersPct": 34.8,
+    "youngOthersMin": 50.6,
+    "youngOthersMax": 55.3
+  }
+}

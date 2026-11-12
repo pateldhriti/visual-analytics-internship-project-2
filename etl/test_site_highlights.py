@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from export_site_highlights import OUTPUT, check
+from export_site_highlights import FIGURES_OUTPUT, OUTPUT, check
+from site_figures import stale_text
 
 CITIES = ["Windsor", "London", "Hamilton", "St. Catharines", "Kitchener-Waterloo"]
 
@@ -50,3 +51,18 @@ def test_a_missing_year_fails():
 
 def test_the_committed_file_passes_the_same_check():
     check(json.loads(Path(OUTPUT).read_text(encoding="utf-8")))
+
+
+def test_page_text_was_reviewed_for_the_data_it_shows():
+    """Fails after a refresh brings a newer rent survey or construction year:
+    re-read the story pages' wording, then update TEXT_WRITTEN_FOR."""
+    figures = json.loads(Path(FIGURES_OUTPUT).read_text(encoding="utf-8"))
+    assert stale_text(figures) == [], (
+        f"Page text written for {figures['textWrittenFor']}, data now {figures['latestData']}"
+    )
+
+
+def test_stale_text_names_what_changed():
+    figures = {"textWrittenFor": {"rent_survey_year": 2025, "construction_year": 2025},
+               "latestData": {"rent_survey_year": 2026, "construction_year": 2025}}
+    assert stale_text(figures) == ["rent_survey_year"]

@@ -10,6 +10,10 @@ show the same numbers as the Superset dashboards instead of hand-typed ones.
     5. what Windsor starts, by dwelling type, 2016-2020 vs 2021-2025 (v_story3_period_comparison;
        shown on the Story 3 page)
 
+It also writes web/src/data/figures.json: every figure the story pages and
+home page quote (etl/site_figures.py), and warns when the page text was
+written for older data than the warehouse now has.
+
 Run after a data refresh, then rebuild the website:
     .venv\Scripts\python.exe etl\export_site_highlights.py
 """
@@ -21,8 +25,10 @@ from pathlib import Path
 from sqlalchemy import text
 
 from load_windsor_shelter_cost_to_postgres import get_engine
+from site_figures import build_figures, stale_text
 
 OUTPUT = Path(__file__).resolve().parents[1] / "web" / "src" / "data" / "highlights.json"
+FIGURES_OUTPUT = OUTPUT.with_name("figures.json")
 
 SHORT_CITY = """CASE city WHEN 'Kitchener-Cambridge-Waterloo CMA' THEN 'Kitchener-Waterloo'
     WHEN 'St. Catharines-Niagara CMA' THEN 'St. Catharines' ELSE REPLACE(city, ' CMA', '') END"""
@@ -120,10 +126,18 @@ def check(data: dict) -> None:
 def main() -> None:
     with get_engine().connect() as conn:
         data = build(conn)
+        figures = build_figures(conn)
     check(data)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {OUTPUT}")
+    FIGURES_OUTPUT.write_text(json.dumps(figures, indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {FIGURES_OUTPUT}")
+    for part in stale_text(figures):
+        print(f"WARNING: the story pages were written for {part} {figures['textWrittenFor'][part]}, "
+              f"the data now has {figures['latestData'][part]}. The numbers update by themselves, but re-read "
+              f"the pages' wording (e.g. 'the most in ten years'), then update TEXT_WRITTEN_FOR in "
+              f"etl/site_figures.py.")
 
 
 if __name__ == "__main__":
