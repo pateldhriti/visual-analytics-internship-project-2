@@ -32,24 +32,20 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
+from setup_superset_dashboard import CHART_NAME as TENURE_BAR_NAME
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, upgrade_legacy_bars
 
-DASHBOARD_ID = 3
+DASHBOARD_TITLE = named("Story 1: Who faces the greatest affordability pressure?")
+# A fixed URL name: the website, the token API and the embedding script use it
+# instead of the dashboard id, which differs on every Superset.
+DASHBOARD_SLUG = "windsor-story-1"
+DATASET_TENURE = dataset_id("v_story1_burden_by_tenure")
+DATASET_INCOME_BAND = dataset_id("v_story1_burden_by_income_band")
+DATASET_HOUSEHOLD_TYPE = dataset_id("v_story1_burden_by_household_type")
 DATASET_SEVERITY = dataset_id("v_story1_burden_severity")
 DATASET_SEVERITY_BREAKDOWN = dataset_id("v_story1_burden_severity_breakdown")
 # windsor_housing here, Superset's default on the shared server (superset_compat).
-
-# Existing chart ids on dashboard 3, from Story 1's original build.
-EXISTING = {
-    "tenure-bar": 2,  # Share of households spending 30%+ on shelter costs, by tenure
-    "kpi-renter": 3,  # Renter Burden Rate
-    "kpi-owner": 4,  # Owner Burden Rate
-    "kpi-total": 5,  # Households Spending 30%+ on Shelter
-    "income-band": 6,  # Burden Rate by Income Band
-    "household-type": 7,  # Burden Rate by Household Type
-
-}
 
 NEW_CHARTS = {
     "kpi-severity-renter": {
@@ -224,30 +220,82 @@ HOUSEHOLD_TYPE_BARS = upgrade_legacy_bars(
     {"c": {"orientation": "horizontal"}},
 )["c"]["params"]
 
-EXISTING_CHART_UPDATES = {
-    2: {
-        "description": "Share of owner and renter households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census.",
-    },
-    3: {
+# The tenure KPIs and the income-band and household-type charts were first
+# built in the Superset UI; they are defined here so the dashboard can be
+# rebuilt on any Superset (the university's shared one included). The tenure
+# bar (chart 2) is built by etl/setup_superset_dashboard.py.
+BASE_CHARTS = {
+    "kpi-renter": {
+        "slice_name": "Renter Burden Rate",
         "description": "Share of renter households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_tenure.",
+        "dataset_id": DATASET_TENURE,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct) / 100.0", "label": "Renter Burden Rate"},
+            "adhoc_filters": [{"clause": "WHERE", "subject": "tenure", "operator": "==", "comparator": "Renter", "expressionType": "SIMPLE"}],
+            "y_axis_format": ".1%",
+            "header_font_size": 0.5,
+            "subheader_font_size": 0.15,
+            # "subtitle" in Superset 4 and later, "subheader" before.
+            "subtitle": "of renter households spend 30%+ of income on shelter",
+            "subheader": "of renter households spend 30%+ of income on shelter",
+            "color_scheme": COLOR_SCHEME,
+        },
     },
-    4: {
+    "kpi-owner": {
+        "slice_name": "Owner Burden Rate",
         "description": "Share of owner households spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_tenure.",
+        "dataset_id": DATASET_TENURE,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct) / 100.0", "label": "Owner Burden Rate"},
+            "adhoc_filters": [{"clause": "WHERE", "subject": "tenure", "operator": "==", "comparator": "Owner", "expressionType": "SIMPLE"}],
+            "y_axis_format": ".1%",
+            "header_font_size": 0.5,
+            "subheader_font_size": 0.15,
+            # "subtitle" in Superset 4 and later, "subheader" before.
+            "subtitle": "of owner households spend 30%+ of income on shelter",
+            "subheader": "of owner households spend 30%+ of income on shelter",
+            "color_scheme": COLOR_SCHEME,
+        },
     },
-    5: {
+    "kpi-total": {
+        "slice_name": "Households Spending 30%+ on Shelter",
         "description": "Number of Windsor households (owners and renters) spending 30% or more of income on shelter. StatCan 98-10-0252-01, 2021 Census -- warehouse.v_story1_burden_by_tenure.",
+        "dataset_id": DATASET_TENURE,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {"expressionType": "SIMPLE", "column": {"column_name": "burdened_households"}, "aggregate": "SUM", "label": "Burdened Households"},
+            "adhoc_filters": [],
+            "y_axis_format": ",d",
+            "header_font_size": 0.5,
+            "subheader_font_size": 0.15,
+            # "subtitle" in Superset 4 and later, "subheader" before.
+            "subtitle": "Windsor households, owners + renters combined",
+            "subheader": "Windsor households, owners + renters combined",
+            "color_scheme": COLOR_SCHEME,
+        },
     },
-    6: {
+    "income-band": {
+        "slice_name": "Burden Rate by Income Band",
         "description": "Share of households in each 2020 income band spending 30% or more of income on shelter. Households with no computable ratio are excluded. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_income_band.",
+        "dataset_id": DATASET_INCOME_BAND,
         "viz_type": "echarts_timeseries_bar",
         "params": INCOME_BAND_BARS,
     },
-    7: {
+    "household-type": {
+        "slice_name": "Burden Rate by Household Type",
         "description": "Share of households of each type spending 30% or more of income on shelter. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_burden_by_household_type.",
+        "dataset_id": DATASET_HOUSEHOLD_TYPE,
         "viz_type": "echarts_timeseries_bar",
         "params": HOUSEHOLD_TYPE_BARS,
     },
 }
+
+TENURE_BAR_DESCRIPTION = (
+    "Share of owner and renter households spending 30% or more of income on shelter. "
+    "StatCan 98-10-0252-01, Windsor CMA, 2021 Census."
+)
 
 
 def ensure_chart(session, headers, spec: dict) -> int:
@@ -432,76 +480,86 @@ def build_position_json(chart_ids: dict) -> dict:
     return add_tabs(position, TABS)
 
 
-def verify_native_filter_scope(
-    session, headers, dashboard_id: int, excluded_chart_ids: set, tenure_scoped_chart_id: int
-) -> None:
-    """The 2 severity KPIs are, like the Renter/Owner Burden Rate KPIs
-    (etl/fix_story1_tenure_filter_scope.py), fixed-per-tenure and must stay
-    out of both native filters' chartsInScope -- same conflict would occur
-    otherwise (each already has its own hardcoded tenure filter). Nothing
-    adds them to chartsInScope, so this only verifies that's still true
-    rather than silently assuming it.
+# Each filter reaches only the charts whose data has its column and whose own
+# filters do not fix it: the Renter/Owner tiles and the severity tiles are
+# fixed to one tenure, and the tenure bar is fixed to all household types.
+# Every other chart is excluded explicitly, since Superset applies a filter to
+# every chart its scope does not exclude.
+FILTERS = [
+    ("NATIVE_FILTER-story1-tenure", "Tenure", "DATASET_TENURE", "tenure",
+     ["tenure-bar", "kpi-total", "severity-breakdown"]),
+    ("NATIVE_FILTER-story1-household", "Household Type", "DATASET_HOUSEHOLD_TYPE", "household_type",
+     ["household-type"]),
+]
 
-    The new severity-breakdown chart is different: tenure is its groupby,
-    not a hardcoded filter, so including it in the Tenure filter's scope
-    is correct and useful (picking "Owner" narrows the stacked bar to just
-    Owner, same mechanism the Zone/Bedroom-type filters already use
-    elsewhere). Its dataset has no household_type column at all, though,
-    so it must be added to Tenure only -- added here directly rather than
-    left to be missed, since nothing else would add it."""
-    resp = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}", headers=headers)
+
+def build_native_filters(chart_ids: dict) -> list:
+    filters = []
+    for filter_id, name, dataset_var, column, keys in FILTERS:
+        in_scope = sorted(chart_ids[k] for k in keys)
+        filters.append({
+            "id": filter_id,
+            "name": name,
+            "filterType": "filter_select",
+            "targets": [{"datasetId": globals()[dataset_var], "column": {"name": column}}],
+            "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
+            "cascadeParentIds": [],
+            "scope": {"rootPath": ["ROOT_ID"],
+                      "excluded": sorted(c for c in chart_ids.values() if c not in in_scope)},
+            "type": "NATIVE_FILTER",
+            "description": "",
+            "chartsInScope": in_scope,
+            "tabsInScope": [],
+            "controlValues": {"enableEmptyFilter": False, "defaultToFirstItem": False, "multiSelect": True,
+                              "searchAllOptions": False, "inverseSelection": False},
+        })
+    return filters
+
+
+def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> int:
+    """Create the dashboard if this Superset does not have it yet, else
+    update it; keeps whatever else is stored in its metadata."""
+    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
+    metadata = {}
+    if existing:
+        current = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers)
+        current.raise_for_status()
+        metadata = json.loads(current.json()["result"]["json_metadata"] or "{}")
+    metadata["native_filter_configuration"] = build_native_filters(chart_ids)
+    metadata["color_scheme"] = COLOR_SCHEME
+    body = {
+        "dashboard_title": DASHBOARD_TITLE,
+        "slug": DASHBOARD_SLUG,
+        "published": True,
+        "position_json": json.dumps(position_json),
+        "json_metadata": json.dumps(metadata),
+    }
+    if existing:
+        session.put(f"{SUPERSET_URL}/api/v1/dashboard/{existing}", headers=headers, json=body).raise_for_status()
+        return existing
+    resp = session.post(f"{SUPERSET_URL}/api/v1/dashboard/", headers=headers, json=body)
     resp.raise_for_status()
-    metadata = json.loads(resp.json()["result"]["json_metadata"])
-
-    changed = False
-    for f in metadata.get("native_filter_configuration", []):
-        overlap = set(f["chartsInScope"]) & excluded_chart_ids
-        if overlap:
-            raise RuntimeError(f"Filter '{f['name']}' unexpectedly includes KPI chart(s) {overlap}")
-
-        if f["name"] == "Tenure" and tenure_scoped_chart_id not in f["chartsInScope"]:
-            f["chartsInScope"] = sorted(set(f["chartsInScope"]) | {tenure_scoped_chart_id})
-            changed = True
-
-    if changed:
-        resp = session.put(
-            f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}",
-            headers=headers,
-            json={"json_metadata": json.dumps(metadata)},
-        )
-        resp.raise_for_status()
-        print(f"Tenure filter now also scoped to chart {tenure_scoped_chart_id} (severity breakdown).")
-
-    print("Verified: no native filter includes the fixed-per-tenure KPI tiles.")
+    return resp.json()["id"]
 
 
 if __name__ == "__main__":
     session, headers = get_session()
     print("Logged in to Superset.")
+    charts = prefix_names({**BASE_CHARTS, **NEW_CHARTS})
 
-    chart_ids = dict(EXISTING)
-    for chart_id, update in EXISTING_CHART_UPDATES.items():
-        update_existing_chart(session, headers, chart_id, update)
-        print(f"Chart {chart_id}: labels and description updated.")
-    for key, spec in NEW_CHARTS.items():
-        chart_id = ensure_chart(session, headers, spec)
-        chart_ids[key] = chart_id
-        print(f"Chart ready: {spec['slice_name']} (id={chart_id})")
-        link_chart_to_dashboard(session, headers, chart_id, DASHBOARD_ID)
+    chart_ids = {}
+    tenure_bar = find_existing(session, headers, "chart", "slice_name", named(TENURE_BAR_NAME))
+    if not tenure_bar:
+        raise LookupError("The tenure bar chart is missing; run etl/setup_superset_dashboard.py first")
+    update_existing_chart(session, headers, tenure_bar, {"description": TENURE_BAR_DESCRIPTION})
+    chart_ids["tenure-bar"] = tenure_bar
+    for key, spec in charts.items():
+        chart_ids[key] = ensure_chart(session, headers, spec)
+        print(f"Chart ready: {spec['slice_name']} (id={chart_ids[key]})")
 
-    position_json = build_position_json(chart_ids)
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/dashboard/{DASHBOARD_ID}",
-        headers=headers,
-        json={"position_json": json.dumps(position_json)},
-    )
-    resp.raise_for_status()
-    print(f"Dashboard {DASHBOARD_ID} layout updated: 5 sections, {len(chart_ids)} charts.")
-    print(f"Finished: {finish_dashboard(session, headers, DASHBOARD_ID)}")
-
-    excluded_ids = {chart_ids["kpi-severity-renter"], chart_ids["kpi-severity-owner"]}
-    verify_native_filter_scope(
-        session, headers, DASHBOARD_ID, excluded_ids, chart_ids["severity-breakdown"]
-    )
-
-    print(f"View it at: {SUPERSET_URL}/superset/dashboard/{DASHBOARD_ID}/")
+    dashboard_id = ensure_dashboard(session, headers, build_position_json(chart_ids), chart_ids)
+    for chart_id in chart_ids.values():
+        link_chart_to_dashboard(session, headers, chart_id, dashboard_id)
+    print(f"Dashboard ready: id={dashboard_id}, {len(chart_ids)} charts, 5 tabs.")
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
+    print(f"View it at: {SUPERSET_URL}/superset/dashboard/{DASHBOARD_SLUG}/")
