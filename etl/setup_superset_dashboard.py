@@ -105,6 +105,8 @@ def get_session() -> tuple[requests.Session, dict]:
     """
     load_dotenv(PROJECT_ROOT / ".env")
     session = requests.Session()
+    if SHARED_TARGET:
+        return _api_login(session)
 
     login_page = session.get(f"{SUPERSET_URL}/login/")
     login_page.raise_for_status()
@@ -138,6 +140,26 @@ def get_session() -> tuple[requests.Session, dict]:
     }
     return session, headers
 
+
+def _api_login(session: requests.Session) -> tuple[requests.Session, dict]:
+    """The university's Superset (6.x) has no classic login form (its login
+    page is part of the app), so log in through the API with the university
+    (LDAP) account from .env.apss; the token goes on every request."""
+    resp = session.post(
+        f"{SUPERSET_URL}/api/v1/security/login",
+        json={
+            "username": os.environ["SUPERSET_LOGIN_USER"],
+            "password": os.environ["SUPERSET_LOGIN_PASSWORD"],
+            "provider": os.getenv("SUPERSET_LOGIN_PROVIDER", "ldap"),
+            "refresh": True,
+        },
+    )
+    if resp.status_code != 200:
+        raise PermissionError(f"Could not log in to {SUPERSET_URL}: check SUPERSET_LOGIN_USER / PASSWORD")
+    session.headers["Authorization"] = f"Bearer {resp.json()['access_token']}"
+    csrf = session.get(f"{SUPERSET_URL}/api/v1/security/csrf_token/")
+    csrf.raise_for_status()
+    return session, {"X-CSRFToken": csrf.json()["result"], "Referer": SUPERSET_URL}
 
 def find_existing(session, headers, endpoint: str, name_field: str, name_value: str):
     """Paginates through every page, not just the first. An unpaginated
