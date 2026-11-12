@@ -64,7 +64,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, trendline_kpi, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
@@ -350,37 +350,26 @@ CHART_GUIDE_MARKDOWN = """**How to read this dashboard**
 # KPI tiles are "big_number_total" (same viz_type Story 1's KPI tiles
 # use); everything else is "dist_bar".
 CHARTS = {
+    # Rent and vacancy show October 2025 with every October since 2020 as a
+    # trendline underneath. Vacancy has no "% change" line: a percent change
+    # of a rate (3.5% to 3.6% = +2.9%) reads as if vacancy rose 2.9 points.
     "kpi-vacancy": {
         "slice_name": "Windsor CMA Vacancy Rate",
-        "description": "Share of purpose-built rental units (apartments and row houses) vacant and available, October 2025. CMHC Rental Market Survey -- warehouse.v_story2_vacancy_trend.",
+        "description": "Share of purpose-built rental units (apartments and row houses) vacant and available, October 2025, with every October since 2020 underneath. CMHC Rental Market Survey -- warehouse.v_story2_vacancy_trend.",
         "dataset_id": DATASET_VACANCY,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SQL",
-                "sqlExpression": "AVG(vacancy_rate_pct) / 100.0",
-                "label": "Vacancy Rate",
-            },
-            "adhoc_filters": [combined_filter(), bedroom_filter("Total"), period_filter("Oct-25")],
-            "y_axis_format": ".1%",
-            "subheader": "Windsor benchmark · all units",
-        },
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(vacancy_rate_pct) / 100.0", "label": "Vacancy Rate"},
+            "period_date", [combined_filter(), bedroom_filter("Total")], ".1%", None, "",
+        ))),
     },
     "kpi-rent": {
         "slice_name": "Windsor CMA Average Rent",
-        "description": "Average monthly rent across all unit sizes, apartments and row houses (Combined), October 2025. CMHC Rental Market Survey -- warehouse.v_story2_rent_yoy_change.",
+        "description": "Average monthly rent across all unit sizes, apartments and row houses (Combined), October 2025, with every October since 2020 underneath and the change since October 2020. CMHC Rental Market Survey -- warehouse.v_story2_rent_yoy_change.",
         "dataset_id": DATASET_RENT_YOY,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SQL",
-                "sqlExpression": "AVG(average_rent)",
-                "label": "Average Rent",
-            },
-            "adhoc_filters": [bedroom_filter("Total"), period_filter("Oct-25")],
-            "y_axis_format": "$,.0f",
-            "subheader": "Windsor benchmark · per month",
-        },
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average Rent"},
+            "period_date", [bedroom_filter("Total")], "$,.0f", 5, " since Oct-20",
+        ))),
     },
     "kpi-turnover": {
         "slice_name": "Windsor CMA Turnover Rate",
@@ -480,17 +469,20 @@ CHARTS = {
     "zone-vacancy-trend": {
         "slice_name": "Vacancy Rate by Zone and Period (Oct-20 to Oct-25)",
         "description": (
-            "Vacancy rate in each zone every October from 2020 to 2025, apartments and row houses. "
-            "Shows whether a zone is getting tighter (line falling) or looser (rising). Zone 7 has "
-            "no data before Oct-23 and two Zone 5 values are suppressed by CMHC; gaps are not zeros. "
-            "Click a line to select that zone -- warehouse.v_story2_vacancy_by_zone_trend."
+            "Vacancy rate in each zone (rows) every October from 2020 to 2025 (columns), apartments "
+            "and row houses. Darker cells are looser markets, lighter cells tighter. Zone 7 has no "
+            "data before Oct-23 and two Zone 5 values are suppressed by CMHC; blank cells are not "
+            "zeros -- warehouse.v_story2_vacancy_by_zone_trend."
         ),
         "dataset_id": DATASET_ZONE_VACANCY,
-        "viz_type": "echarts_timeseries_line",
-        "params": echarts_params(
-            "line", "period_label", "AVG(vacancy_rate_pct) / 100.0", "Vacancy rate", ".1%",
-            groupby=["zone_label"],
-        ),
+        # A heatmap instead of seven crossing lines: every zone and year at once.
+        **dict(zip(("viz_type", "params"), heatmap(
+            "period_label", "zone_label",
+            {"expressionType": "SQL", "sqlExpression": "AVG(vacancy_rate_pct) / 100.0", "label": "Vacancy rate"},
+            # Suppressed values are left out, not drawn as a (black) cell.
+            [{"clause": "WHERE", "expressionType": "SQL", "sqlExpression": "vacancy_rate_pct IS NOT NULL"}],
+            ".1%",
+        ))),
     },
     "zone-table": {
         "slice_name": "Zone Snapshot: Rent, Vacancy, Stock and Turnover (Oct-25)",
@@ -745,7 +737,7 @@ ZONE_CHART_KEYS = ["zone-table", "zone-explain", "zone-stock", "zone-vacancy", "
 # stored one makes it try to save (see build_cross_filter_config).
 CROSS_FILTER_GROUPS = {
     "zone": {
-        "emitters": ["zone-table", "zone-stock", "zone-vacancy", "zone-vacancy-trend"],
+        "emitters": ["zone-table", "zone-stock", "zone-vacancy"],  # the heatmap cannot emit
         "receivers": ZONE_CHART_KEYS,
     },
     "bedroom": {
@@ -761,7 +753,7 @@ NO_CROSS_FILTER_KEYS = ["vacancy-dwelling"]
 # Chart heights in Superset grid units (8px each). KPI tiles stay
 # compact; the zone table only has 7 rows, so 55 would leave a large
 # blank area under it.
-KPI_HEIGHT = 25
+KPI_HEIGHT = 32  # room for the trendline under the rent and vacancy tiles
 TABLE_HEIGHT = 40
 CHART_HEIGHT = 55
 

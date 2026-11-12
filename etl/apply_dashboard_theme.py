@@ -37,7 +37,7 @@ MUTED = "#5f6b7d"
 KPI_COLOURS = ["#2a78d6", "#1baf7a", "#eb6834", "#4a3aa7"]
 
 KPI_BARS = "\n".join(
-    f""".grid-row > .dragdroppable-column:nth-child({i}) .dashboard-component-chart-holder:has(.big_number_total) {{
+    f""".grid-row > .dragdroppable-column:nth-child({i}) .dashboard-component-chart-holder:has(.big_number_total, .big_number) {{
   --kpi: {colour};
 }}"""
     for i, colour in enumerate(KPI_COLOURS, start=1)
@@ -81,31 +81,31 @@ THEME_CSS = f"""
 
 /* KPI tiles: a colour bar on top, a light tint and a bigger number on hover */
 {KPI_BARS}
-.dashboard-component-chart-holder:has(.big_number_total) {{
+.dashboard-component-chart-holder:has(.big_number_total, .big_number) {{
   border-top: 5px solid var(--kpi, {ACCENT}) !important;
   background: #ffffff;
 }}
-.dashboard-component-chart-holder:has(.big_number_total):hover {{
+.dashboard-component-chart-holder:has(.big_number_total, .big_number):hover {{
   background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
   border-color: var(--kpi, {ACCENT});
 }}
-.dashboard-component-chart-holder:has(.big_number_total) .header-title .editable-title {{
+.dashboard-component-chart-holder:has(.big_number_total, .big_number) .header-title .editable-title {{
   color: {MUTED};
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .05em;
   text-transform: uppercase;
 }}
-.big_number_total .header-line {{
+:is(.big_number_total, .big_number) .header-line {{
   color: {INK} !important;
   transition: transform .2s ease, color .2s ease;
   transform-origin: left center;
 }}
-.dashboard-component-chart-holder:has(.big_number_total):hover .header-line {{
+.dashboard-component-chart-holder:has(.big_number_total, .big_number):hover .header-line {{
   transform: scale(1.05);
   color: var(--kpi, {ACCENT}) !important;
 }}
-.big_number_total .subheader-line {{ color: {MUTED} !important; }}
+:is(.big_number_total, .big_number) .subheader-line {{ color: {MUTED} !important; }}
 
 /* Tables: tinted header, blue in-cell bars, highlighted clickable rows */
 .dashboard-component-chart-holder table thead th {{

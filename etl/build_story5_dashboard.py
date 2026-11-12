@@ -47,7 +47,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, scatter, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_RENT_AFFORDABILITY = dataset_id("v_story5_rent_affordability")
@@ -86,6 +86,13 @@ LABEL_COLORS = {
     "Renters aged 15-24": "#d0703c",
     "All renters": PEER_GREY,
     "Renters spending 30%+ on shelter": ACCENT,
+    # The bubble chart names cities by their short names (SHORT_CITY_SQL), each
+    # in its own colour so the bubbles can be told apart; Windsor stays blue.
+    "Windsor": ACCENT,
+    "Hamilton": "#eb6834",
+    "Kitchener-Waterloo": "#1baf7a",
+    "London": "#eda100",
+    "St. Catharines": "#e87ba4",
 }
 
 
@@ -377,27 +384,20 @@ CHARTS = {
             "MAX(pct_renters_spending_30pct_plus) / 100.0", "Renters spending 30%+ on shelter", ".0%", upper=0.5
         ),
     },
-    "peer-table": {
-        "slice_name": "Story 5: Rent and Renter Income, Windsor and Comparison Cities",
+    "peer-scatter": {
+        "slice_name": "Story 5: Rent vs Renter Income by City",
         "description": (
-            "Each city's Oct-25 average 2-bedroom apartment rent (CMHC) next to its renters' 2020 "
-            "incomes and shelter-cost burden (2021 Census). warehouse.v_story5_peer_affordability."
+            "Each city's Oct-25 average 2-bedroom apartment rent (up) against its renters' median 2020 "
+            "income (across). Windsor is lowest on both. Hover a bubble for the city. "
+            "warehouse.v_story5_peer_affordability."
         ),
         "dataset_id": DATASET_PEER_AFFORDABILITY,
-        "viz_type": "table",
-        "params": table_params(
-            ["city", "average_rent_2br", "median_renter_income", "rent_pct_of_median_renter_income",
-             "pct_renters_who_cannot_afford_2br", "pct_renters_spending_30pct_plus", "pct_households_renting"],
-            {
-                "average_rent_2br": "$,.0f",
-                "median_renter_income": "$,.0f",
-                "rent_pct_of_median_renter_income": ",.1f",
-                "pct_renters_who_cannot_afford_2br": ",.1f",
-                "pct_renters_spending_30pct_plus": ",.1f",
-                "pct_households_renting": ",.1f",
-            },
-            "average_rent_2br",
-        ),
+        **dict(zip(("viz_type", "params"), scatter(
+            "median_renter_income",
+            {"expressionType": "SQL", "sqlExpression": "MAX(average_rent_2br)", "label": "2-bedroom rent"},
+            "city_short", [], "Median renter household income (2020)", "Average 2-bedroom rent (Oct-25)",
+            "$,.0f", "$,.0f", x_bounds=(45000, 62000), y_bounds=(1300, 1950),
+        ))),
     },
     # --- 3. Story 3 x Story 2 ------------------------------------------------
     "supply-completions": {
@@ -484,6 +484,18 @@ CHARTS = {
         "params": city_bar_params(
             "MAX(homes_built_per_home_needed)", "Share of needed homes completed", ".0%", upper=1.2
         ),
+    },
+    "demand-gauge": {
+        "slice_name": "Story 5: Share of Needed Homes Windsor Built, 2016 to 2021",
+        "description": (
+            "Homes Windsor completed in 2016-2020 as a share of the homes its 2016-2021 population growth "
+            "needed. The full dial is 100%: building kept pace. warehouse.v_story5_supply_vs_demand."
+        ),
+        "dataset_id": DATASET_SUPPLY_DEMAND,
+        **dict(zip(("viz_type", "params"), gauge(
+            {"expressionType": "SQL", "sqlExpression": "MAX(homes_built_per_home_needed)", "label": "Needed homes built"},
+            [eq_filter("city", "Windsor CMA")], ".0%", 1,
+        ))),
     },
     "demand-needed-built": {
         "slice_name": "Story 5: Homes Needed vs Homes Completed, 2016 to 2021, by City",
@@ -655,6 +667,9 @@ cannot afford the average 2-bedroom in every city.
 
 **So Windsor is cheap, but not more affordable.** Its share of renters spending 30%+ on shelter
 (34.8%) is still the lowest of the five.
+
+*Scatter chart: across is renter income, up is rent. Windsor sits lowest on both: cheaper
+because its renters earn less.*
 """,
     "supply": """**What it shows.** Few homes were finished in 2021 and 2022, and vacancy fell to **1.8%** in
 2022 while rent jumped **10.9%** in 2021. Completions then rose to **1,967** in 2023 (1,162
@@ -722,7 +737,7 @@ LAYOUT = [
     ("markdown-row", "ROW-afford-note", [("MARKDOWN-afford", NOTES["afford"], 12, 28)]),
     ("header", "HEADER-peer", "2. Is Windsor affordable, or only cheap? (Story 1 + Story 4)"),
     ("chart-row", "ROW-peer", [("peer-rent-income", 6, 45), ("peer-burden", 6, 45)]),
-    ("chart-row", "ROW-peer-table", [("peer-table", 7, 45)], ("MARKDOWN-peer", NOTES["peer"], 5, 45)),
+    ("chart-row", "ROW-peer-table", [("peer-scatter", 7, 45)], ("MARKDOWN-peer", NOTES["peer"], 5, 45)),
     ("header", "HEADER-supply", "3. Did new homes ease the rental market? (Story 3 + Story 2)"),
     ("chart-row", "ROW-supply", [("supply-completions", 6, 50), ("supply-vacancy", 6, 50)]),
     ("markdown-row", "ROW-supply-note", [("MARKDOWN-supply", NOTES["supply"], 12, 28)]),
@@ -731,7 +746,7 @@ LAYOUT = [
     ("markdown-row", "ROW-build-note", [("MARKDOWN-build", NOTES["build"], 12, 28)]),
     ("header", "HEADER-demand", "5. Did building keep up with population growth? (Story 3 + Census population)"),
     ("chart-row", "ROW-demand", [("demand-ratio", 7, 50)], ("MARKDOWN-demand", NOTES["demand"], 5, 50)),
-    ("chart-row", "ROW-demand-built", [("demand-needed-built", 12, 42)]),
+    ("chart-row", "ROW-demand-built", [("demand-gauge", 4, 42), ("demand-needed-built", 8, 42)]),
     ("header", "HEADER-young", "6. Can young renters and students afford to rent? (Census renters by age + Story 1 + Story 4)"),
     ("chart-row", "ROW-young", [("young-vs-all", 12, 42)]),
     ("chart-row", "ROW-young-age", [("windsor-by-age", 12, 40)]),
