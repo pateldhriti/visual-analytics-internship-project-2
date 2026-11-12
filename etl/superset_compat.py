@@ -156,10 +156,13 @@ def chart_series(session, headers, chart: dict) -> list[str]:
     return [m["label"] if isinstance(m, dict) else m for m in metrics]
 
 
-def finish_dashboard(session, headers, dashboard_id: int) -> dict:
+def finish_dashboard(session, headers, dashboard_id: int, drop_title_prefix: str = "") -> dict:
     """Fill in what a dashboard's builder did not set, without changing what
     it did: a colour for every series, a cross-filter entry for every ECharts
-    chart, and the colour scheme for this Superset. Returns what was added."""
+    chart, and the colour scheme for this Superset. On the dashboard, chart
+    titles lose the shared-server name prefix and `drop_title_prefix` (e.g.
+    "Story 5: ", which every Story 5 chart name starts with). Returns what
+    was added."""
     resp = session.get(f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}", headers=headers)
     resp.raise_for_status()
     metadata = json.loads(resp.json()["result"]["json_metadata"] or "{}")
@@ -199,15 +202,18 @@ def finish_dashboard(session, headers, dashboard_id: int) -> dict:
     for key, default in (("timed_refresh_immune_slices", []), ("expanded_slices", {}), ("refresh_frequency", 0)):
         metadata.setdefault(key, default)
     body = {"json_metadata": json.dumps(metadata)}
-    if NAME_PREFIX:
+    if NAME_PREFIX or drop_title_prefix:
         # Show the plain chart titles on the dashboard, not the prefixed names.
         position = json.loads(resp.json()["result"]["position_json"] or "{}")
         names = {c["id"]: c["slice_name"] for c in charts}
         for node in position.values():
-            if isinstance(node, dict) and node.get("type") == "CHART":
+            if isinstance(node, dict) and node.get("type") == "CHART" and not node["meta"].get("sliceNameOverride"):
                 name = names.get(node["meta"].get("chartId"), "")
-                if name.startswith(NAME_PREFIX) and not node["meta"].get("sliceNameOverride"):
-                    node["meta"]["sliceNameOverride"] = name[len(NAME_PREFIX):]
+                shown = name[len(NAME_PREFIX):] if NAME_PREFIX and name.startswith(NAME_PREFIX) else name
+                if drop_title_prefix and shown.startswith(drop_title_prefix):
+                    shown = shown[len(drop_title_prefix):]
+                if shown != name:
+                    node["meta"]["sliceNameOverride"] = shown
         body["position_json"] = json.dumps(position)
     session.put(f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}", headers=headers, json=body).raise_for_status()
     return {"colors_added": new_colors, "cross_filter_entries_added": sorted(int(k) for k in new_config)}

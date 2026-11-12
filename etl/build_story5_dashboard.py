@@ -46,7 +46,7 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, named, prefix_names, radar, scatter, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
@@ -988,13 +988,7 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
-    """POST /api/v1/dashboard/ doesn't fill the dashboard_slices join
-    table from position_json -- see etl/build_story2_dashboard.py's
-    function of the same name for how that was found."""
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": [dashboard_id]}
-    )
-    resp.raise_for_status()
+    add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
 def unlink_stale_charts(session, headers, dashboard_id: int, keep: set) -> list:
@@ -1032,5 +1026,7 @@ if __name__ == "__main__":
     stale = unlink_stale_charts(session, headers, dashboard_id, set(chart_ids.values()))
     print(f"Linked {len(chart_ids)} charts; unlinked {len(stale)} earlier charts {stale}.")
 
-    print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
+    # Every chart name starts with "Story 5: " (to tell them apart in the chart
+    # list); on the dashboard itself that is redundant.
+    print(f"Finished: {finish_dashboard(session, headers, dashboard_id, drop_title_prefix='Story 5: ')}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{dashboard_id}/")

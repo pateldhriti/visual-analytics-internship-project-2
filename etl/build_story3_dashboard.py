@@ -32,7 +32,7 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
@@ -366,6 +366,18 @@ TABS = [
 ]
 
 
+# Shorter titles on the dashboard for the KPI tiles: the Year filter's badge
+# takes part of the title bar, which cut the full names off.
+TITLE_OVERRIDES = {
+    "kpi-starts": "Homes started",
+    "kpi-completions": "Homes completed",
+    "kpi-under-construction": "Under construction",
+    "kpi-per-1000": "Starts per 1,000 households",
+}
+# Taller than CHART_HEIGHT where a chart is alone in its tab.
+HEIGHTS = {"starts-mix": 72}
+
+
 def build_position_json(chart_ids: dict) -> dict:
     grid_children = []
     position = {
@@ -425,8 +437,9 @@ def build_position_json(chart_ids: dict) -> dict:
                 "meta": {
                     "chartId": chart_ids[key],
                     "width": width,
-                    "height": KPI_HEIGHT if key.startswith("kpi") else CHART_HEIGHT,
+                    "height": HEIGHTS.get(key, KPI_HEIGHT if key.startswith("kpi") else CHART_HEIGHT),
                     "uuid": str(uuid.uuid4()),
+                    **({"sliceNameOverride": TITLE_OVERRIDES[key]} if key in TITLE_OVERRIDES else {}),
                 },
             }
 
@@ -479,13 +492,7 @@ def build_native_filters(chart_ids: dict) -> list:
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
-    """POST /api/v1/dashboard/ doesn't fill the dashboard_slices join
-    table from position_json -- see etl/build_story2_dashboard.py's
-    function of the same name for how that was found."""
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": [dashboard_id]}
-    )
-    resp.raise_for_status()
+    add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
 def ensure_dashboard(session, headers, position_json: dict, native_filters: list, chart_ids: dict) -> int:

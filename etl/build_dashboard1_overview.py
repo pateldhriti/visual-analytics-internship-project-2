@@ -33,7 +33,7 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 DATASET_RENTAL_YOY = dataset_id("v_dashboard1_rental_yoy")
@@ -47,7 +47,12 @@ DASHBOARD_TITLE = named("01 - Windsor Housing Executive Overview")
 DASHBOARD_SLUG = "windsor-overview"
 
 # Story 1's existing chart ids (dashboard 3), reused here directly.
-AFFORDABILITY_CHART_IDS = {"tenure-bar": 2, "kpi-renter": 3, "kpi-owner": 4}
+# Story 1's charts shown here too, found by name (build Story 1 first).
+AFFORDABILITY_CHARTS = {
+    "tenure-bar": "Share of households spending 30%+ on shelter costs, by tenure",
+    "kpi-renter": "Renter Burden Rate",
+    "kpi-owner": "Owner Burden Rate",
+}
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 
@@ -286,18 +291,7 @@ def ensure_chart(session, headers, spec: dict) -> int:
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
-    # Fetch the chart's current dashboards first -- PUT replaces the list,
-    # so a chart already on another dashboard (e.g. Story 1's charts,
-    # already on dashboard 3) must keep that membership, not lose it.
-    resp = session.get(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers)
-    resp.raise_for_status()
-    current = [d["id"] for d in resp.json()["result"].get("dashboards", [])]
-    if dashboard_id not in current:
-        current.append(dashboard_id)
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": current}
-    )
-    resp.raise_for_status()
+    add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
 # Both tables on this dashboard have 4 rows -- at 55 (the bar-chart
@@ -439,7 +433,11 @@ if __name__ == "__main__":
     session, headers = get_session()
     print("Logged in to Superset.")
 
-    chart_ids = dict(AFFORDABILITY_CHART_IDS)
+    chart_ids = {}
+    for key, name in AFFORDABILITY_CHARTS.items():
+        chart_ids[key] = find_existing(session, headers, "chart", "slice_name", named(name))
+        if not chart_ids[key]:
+            raise LookupError(f"{name!r} not found; build Story 1 first (finalize_story1_layout.py)")
     for key, spec in NEW_CHARTS.items():
         chart_id = ensure_chart(session, headers, spec)
         chart_ids[key] = chart_id

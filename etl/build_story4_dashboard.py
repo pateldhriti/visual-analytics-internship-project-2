@@ -33,7 +33,7 @@ import json
 import uuid
 
 from dashboard_tabs import add_tabs
-from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
+from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
@@ -374,10 +374,7 @@ def ensure_chart(session, headers, spec: dict) -> int:
 
 
 def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
-    resp = session.put(
-        f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers, json={"dashboards": [dashboard_id]}
-    )
-    resp.raise_for_status()
+    add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
 def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 32) -> dict:
@@ -487,7 +484,7 @@ def build_position_json(chart_ids: dict) -> dict:
     position["HEADER-rent-growth"] = header_node("HEADER-rent-growth", "Rent Growth: How Fast Rents Rose (Oct-24 to Oct-25)")
     position["ROW-rent-growth"] = row_node("ROW-rent-growth", ["CHART-rent-growth-by-market"])
     position["CHART-rent-growth-by-market"] = chart_node(
-        "CHART-rent-growth-by-market", "ROW-rent-growth", chart_ids["rent-growth-by-market"], 12, 40
+        "CHART-rent-growth-by-market", "ROW-rent-growth", chart_ids["rent-growth-by-market"], 12, 58
     )
 
     position["HEADER-history"] = header_node(
