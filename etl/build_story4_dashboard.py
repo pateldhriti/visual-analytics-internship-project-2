@@ -34,7 +34,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
 DATASET_RENT = dataset_id("v_story4_rent_comparison")
@@ -43,7 +43,10 @@ DATASET_HISTORY = dataset_id("v_story4_rent_history")
 DATASET_PERIODS = dataset_id("v_story4_period_comparison")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
-DASHBOARD_TITLE = "Story 4: How does Windsor compare to similar markets?"
+DASHBOARD_TITLE = named("Story 4: How does Windsor compare to similar markets?")
+# A fixed URL name: the website, the token API and the embedding script
+# use it instead of the dashboard id, which differs on every Superset.
+DASHBOARD_SLUG = "windsor-story-4"
 
 
 def market_filter(market: str = "Windsor CMA"):
@@ -580,6 +583,7 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
         metadata.setdefault(key, default)
     body = {
         "dashboard_title": DASHBOARD_TITLE,
+        "slug": DASHBOARD_SLUG,
         "published": True,
         "position_json": json.dumps(position_json),
         "json_metadata": json.dumps(metadata),
@@ -594,6 +598,7 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
 
 
 if __name__ == "__main__":
+    prefix_names(CHARTS)
     session, headers = get_session()
     print("Logged in to Superset.")
 

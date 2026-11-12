@@ -36,6 +36,25 @@ SHARED = SUPERSET_TARGET == "shared"
 PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
 COLOR_SCHEME = "supersetColors" if SHARED else "windsor_housing"
 
+# On the shared server every chart and dashboard name starts with this, so a
+# builder (which finds charts and dashboards by name) can only ever match our
+# own; dashboards still show the plain chart titles (finish_dashboard()).
+NAME_PREFIX = "Windsor Housing | " if SHARED else ""
+
+
+def named(name: str) -> str:
+    """A chart or dashboard name with the shared-server prefix (no change locally)."""
+    return name if name.startswith(NAME_PREFIX) else NAME_PREFIX + name
+
+
+def prefix_names(charts: dict) -> dict:
+    """Apply named() to every chart spec's slice_name (and legacy_names), in place."""
+    for spec in charts.values():
+        spec["slice_name"] = named(spec["slice_name"])
+        if "legacy_names" in spec:
+            spec["legacy_names"] = [named(n) for n in spec["legacy_names"]]
+    return charts
+
 # Series that appear on several dashboards keep one colour everywhere.
 PROJECT_LABEL_COLORS = {
     "Starts": PALETTE[0],
@@ -179,11 +198,18 @@ def finish_dashboard(session, headers, dashboard_id: int) -> dict:
         metadata.setdefault("shared_label_colors", {})
     for key, default in (("timed_refresh_immune_slices", []), ("expanded_slices", {}), ("refresh_frequency", 0)):
         metadata.setdefault(key, default)
-    session.put(
-        f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}",
-        headers=headers,
-        json={"json_metadata": json.dumps(metadata)},
-    ).raise_for_status()
+    body = {"json_metadata": json.dumps(metadata)}
+    if NAME_PREFIX:
+        # Show the plain chart titles on the dashboard, not the prefixed names.
+        position = json.loads(resp.json()["result"]["position_json"] or "{}")
+        names = {c["id"]: c["slice_name"] for c in charts}
+        for node in position.values():
+            if isinstance(node, dict) and node.get("type") == "CHART":
+                name = names.get(node["meta"].get("chartId"), "")
+                if name.startswith(NAME_PREFIX) and not node["meta"].get("sliceNameOverride"):
+                    node["meta"]["sliceNameOverride"] = name[len(NAME_PREFIX):]
+        body["position_json"] = json.dumps(position)
+    session.put(f"{SUPERSET_URL}/api/v1/dashboard/{dashboard_id}", headers=headers, json=body).raise_for_status()
     return {"colors_added": new_colors, "cross_filter_entries_added": sorted(int(k) for k in new_config)}
 
 

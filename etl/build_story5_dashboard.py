@@ -47,7 +47,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, radar, scatter, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, named, prefix_names, radar, scatter, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_RENT_AFFORDABILITY = dataset_id("v_story5_rent_affordability")
@@ -61,7 +61,10 @@ DATASET_CITY_PROFILE = dataset_id("v_story5_city_profile")
 DATASET_WINDSOR_VS_PEERS = dataset_id("v_story5_windsor_vs_peers")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
-DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"
+DASHBOARD_TITLE = named("Story 5: How do affordability, rental conditions, and supply fit together?")
+# A fixed URL name: the website, the token API and the embedding script
+# use it instead of the dashboard id, which differs on every Superset.
+DASHBOARD_SLUG = "windsor-story-5"
 
 ACCENT = "#2a78d6"  # project blue: Windsor
 PEER_GREY = "#aab6c8"  # comparison cities
@@ -970,6 +973,7 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
         metadata.setdefault(key, default)
     body = {
         "dashboard_title": DASHBOARD_TITLE,
+        "slug": DASHBOARD_SLUG,
         "published": True,
         "position_json": json.dumps(position_json),
         "json_metadata": json.dumps(metadata),
@@ -1008,6 +1012,7 @@ def unlink_stale_charts(session, headers, dashboard_id: int, keep: set) -> list:
 
 
 if __name__ == "__main__":
+    prefix_names(CHARTS)
     session, headers = get_session()
     print("Logged in to Superset.")
 

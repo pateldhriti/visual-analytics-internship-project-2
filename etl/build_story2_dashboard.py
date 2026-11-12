@@ -64,7 +64,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
@@ -602,7 +602,10 @@ CHARTS = {
     },
 }
 
-DASHBOARD_TITLE = "Story 2: What is happening in Windsor's rental market?"
+DASHBOARD_TITLE = named("Story 2: What is happening in Windsor's rental market?")
+# A fixed URL name: the website, the token API and the embedding script
+# use it instead of the dashboard id, which differs on every Superset.
+DASHBOARD_SLUG = "windsor-story-2"
 
 # Readable column names for the zone snapshot table, set as the dataset's
 # column labels (Superset's table chart shows a column's label as its
@@ -1139,6 +1142,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
 
     body = {
         "dashboard_title": DASHBOARD_TITLE,
+        "slug": DASHBOARD_SLUG,
         "published": True,
         "position_json": json.dumps(position_json),
         "json_metadata": json.dumps(metadata),
@@ -1155,6 +1159,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
 
 
 if __name__ == "__main__":
+    prefix_names(CHARTS)
     session, headers = get_session()
     print("Logged in to Superset.")
 
@@ -1169,7 +1174,7 @@ if __name__ == "__main__":
     print("Dataset column labels set.")
 
     if SHARED:
-        CHARTS["zone-explain"] = SIMPLE_PANEL
+        CHARTS["zone-explain"] = prefix_names({"p": SIMPLE_PANEL})["p"]
         set_column_labels(session, headers, DATASET_ZONE_EXPLANATION, {**COMMON_LABELS, **PANEL_LABELS})
         print("Explanation panel: simple table (shared Superset).")
     else:

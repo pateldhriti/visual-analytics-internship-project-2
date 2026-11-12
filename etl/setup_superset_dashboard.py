@@ -253,9 +253,11 @@ def legacy_chart_params() -> dict:
 
 
 def ensure_chart(session, headers, dataset_id: int) -> int:
+    from superset_compat import named  # superset_compat imports this module
+
     params_json = json.dumps(build_chart_params(dataset_id))
     body = {
-        "slice_name": CHART_NAME,
+        "slice_name": named(CHART_NAME),
         "description": CHART_DESCRIPTION,
         "viz_type": "echarts_timeseries_bar",
         "datasource_id": dataset_id,
@@ -263,7 +265,7 @@ def ensure_chart(session, headers, dataset_id: int) -> int:
         "params": params_json,
     }
 
-    existing = find_existing(session, headers, "chart", "slice_name", CHART_NAME)
+    existing = find_existing(session, headers, "chart", "slice_name", named(CHART_NAME))
     if existing:
         resp = session.put(f"{SUPERSET_URL}/api/v1/chart/{existing}", headers=headers, json=body)
         resp.raise_for_status()

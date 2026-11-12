@@ -33,7 +33,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_ANNUAL = dataset_id("v_story3_windsor_supply_annual")
@@ -305,7 +305,10 @@ available, so read it as a trend against a fixed base. The current year is
 partial and is labelled with the months it covers.
 """
 
-DASHBOARD_TITLE = "Story 3: Is Windsor building enough housing?"
+DASHBOARD_TITLE = named("Story 3: Is Windsor building enough housing?")
+# A fixed URL name: the website, the token API and the embedding script
+# use it instead of the dashboard id, which differs on every Superset.
+DASHBOARD_SLUG = "windsor-story-3"
 
 # Top-to-bottom grid entries: a HEADER-* id with its text, a MARKDOWN-* id
 # with its code, or a ROW-* id with (chart key, width) pairs -- widths sum
@@ -525,6 +528,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
         metadata.setdefault(key, default)
     body = {
         "dashboard_title": DASHBOARD_TITLE,
+        "slug": DASHBOARD_SLUG,
         "published": True,
         "position_json": json.dumps(position_json),
         "json_metadata": json.dumps(metadata),
@@ -541,6 +545,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
 
 
 if __name__ == "__main__":
+    prefix_names(CHARTS)
     session, headers = get_session()
     print("Logged in to Superset.")
 
