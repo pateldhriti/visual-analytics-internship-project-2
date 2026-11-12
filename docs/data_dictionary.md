@@ -196,9 +196,9 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story1_burden_by_household_type` | household type: burden rate % | Story 1 |
 | `v_story1_burden_severity` | tenure: burdened split into 30%–<100% and 100%+ | Story 1 |
 | `v_story1_burden_severity_breakdown` | tenure × band (long form of the above) | Story 1 |
-| `v_story2_rent_yoy_change` | bedroom type × survey year: average rent and change from the year before ($, %) | Story 2 |
+| `v_story2_rent_yoy_change` | bedroom type × survey year: average rent and change from the year before ($, %), `period_date` (1 October, for trendline tiles) | Story 2 |
 | `v_story2_rent_growth` | bedroom type: rent in the first vs last survey year, growth ($, %) | Story 2 |
-| `v_story2_vacancy_trend` | dwelling type × bedroom type × survey year: vacancy rate | Story 2 |
+| `v_story2_vacancy_trend` | dwelling type × bedroom type × survey year: vacancy rate, `period_date` (1 October) | Story 2 |
 | `v_story2_turnover_by_bedroom` | dwelling type × bedroom type × survey year: turnover rate | Story 2 |
 | `v_story2_rent_by_zone_bedroom` | zone × bedroom type × survey year: average rent | Story 2 |
 | `v_story2_zone_snapshot` | zone: Oct-25 rent, vacancy, units, turnover, share of stock | Story 2 |
@@ -212,14 +212,14 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story3_windsor_supply_per_1000_households` | year: Windsor starts and completions per 1,000 households (2021 household count) | Story 3 |
 | `v_story4_vacancy_comparison` | market × period: vacancy rate | Story 4 |
 | `v_story4_rent_comparison` | market × period: average 2-bedroom rent | Story 4; Story 5 through `v_story5_peer_affordability` |
-| `v_story4_rent_history` | city × year (2015 onward): October 2-bedroom rent and vacancy rate (apartments and row houses), yearly rent change, rent as % of 2015 | Story 4 ten-year section |
+| `v_story4_rent_history` | city × year (2015 onward): October 2-bedroom rent and vacancy rate (apartments and row houses), yearly rent change, rent as % of 2015, `period_date` (1 October of the year, for trendline tiles) | Story 4 ten-year section |
 | `v_story4_period_comparison` | city: rent in 2015, 2020, 2025; average yearly rent rise 2015-2020 and 2020-2025; average vacancy per period; Windsor's rent as % of the other four cities' average | Story 4 ten-year section |
 | `v_story4_affordability_gap` | market: rent growth %; renter income growth and the gap index stay NULL until an income-growth source exists (`docs/affordability_gap_index.md`) | Story 4 |
 | `v_dashboard1_rental_yoy` | metric × dwelling type: Windsor previous vs latest survey and the change | Dashboard 1 |
 | `v_dashboard1_cma_benchmark` | metric: Windsor vs median of the 5 CMAs, with rank | Dashboard 1 |
 | `v_story5_income_bands` | income band: lower and upper bound, for counting households below an income | Story 5 views |
 | `v_story5_rent_affordability` | unit size: Windsor Oct-25 rent, income needed, median renter income, renters who cannot afford it | Story 5 (Story 1 + 2) |
-| `v_story5_peer_affordability` | city: 2-bedroom rent, median renter income, rent as % of income, % who cannot afford, % spending 30%+ | Story 5 (Story 1 + 4) |
+| `v_story5_peer_affordability` | city: 2-bedroom rent, median renter income, rent as % of income, % who cannot afford, % spending 30%+, short city name (`city_short`) | Story 5 (Story 1 + 4) |
 | `v_story5_supply_vs_rental_market` | year 2020–2025: Windsor starts and completions, October vacancy, rent and rent change | Story 5 (Story 3 + 2) |
 | `v_story5_peer_construction` | city × year: starts, completions, starts per 1,000 households, apartment share | Story 5 (Story 3 + 4) |
 | `v_story5_supply_vs_demand` | city: 2016–2021 population growth, homes needed, homes completed 2016–2020, built per home needed | Story 5 (Story 3 + Census population) |
