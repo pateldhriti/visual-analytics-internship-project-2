@@ -298,3 +298,23 @@ def gauge(metric: dict, filters: list, number_format: str, max_value: float) -> 
         "round_cap": True,
         "color_scheme": COLOR_SCHEME,
     }
+
+
+def radar(group_column: str, metrics: list[dict], filters: list, number_format: str,
+          axis_max: float) -> tuple[str, dict]:
+    """ECharts radar (in both versions): one shape per `group_column` value,
+    one axis per metric, every axis on the same 0..`axis_max` scale. No
+    legend: Superset's radar leaves no room for one, so it covers the top or
+    bottom axis label; name the shapes and their colours in the chart title."""
+    return "radar", {
+        "groupby": [group_column],
+        "metrics": metrics,
+        "adhoc_filters": filters,
+        "row_limit": 10,
+        "column_config": {m["label"]: {"radarMetricMaxValue": axis_max} for m in metrics},
+        "is_circle_shape": False,
+        "show_labels": False,
+        "show_legend": False,
+        "number_format": number_format,
+        "color_scheme": COLOR_SCHEME,
+    }
