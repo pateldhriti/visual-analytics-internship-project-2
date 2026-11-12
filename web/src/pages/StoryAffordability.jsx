@@ -1,30 +1,41 @@
 import StoryPage from "../components/StoryPage.jsx";
 import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
+import { F, money, num, pct } from "../lib/figures.js";
 
 // Text condensed from docs/story1_narrative_final.md. Every figure comes
-// from the warehouse.v_story1_* views behind the Story 1 dashboard (id 3);
-// re-check both after a data refresh.
+// from the warehouse.v_story1_* views behind the Story 1 dashboard, through
+// web/src/data/figures.json (etl/site_figures.py).
+const S = F.s1;
+const TIMES =
+  ["", "as", "twice as", "three times as", "four times as"][S.renterTimesOwner] ??
+  `${S.renterTimesOwner} times as`;
+
 const INTRO =
   "A household is cost-burdened when it spends 30% or more of its income on shelter: rent or " +
-  "mortgage, utilities and property tax. In the Windsor area, 17.5% of households (28,745 of " +
-  "164,220) were over that line in the 2021 Census. This story looks at which households carry " +
-  "that burden.";
+  `mortgage, utilities and property tax. In the Windsor area, ${pct(S.burdenPct)} of households ` +
+  `(${num(S.burdened)} of ${num(S.households)}) were over that line in the 2021 Census. This ` +
+  "story looks at which households carry that burden.";
 
 const NARRATIVE = [
-  "Renters carry most of the burden. 34.8% of renter households spend 30% or more of their " +
-    "income on shelter, against 10.9% of owner households, so a renter household is about three " +
-    "times as likely to be cost-burdened. Renters are only 28% of Windsor's households but 55% of " +
-    "those over the line. Both rates match the Census Profile's own published figures for Windsor.",
-  "Income is the strongest driver. 93.1% of households earning under $10,000 are over the line, " +
-    "and the rate falls steadily as income rises, to 1.5% for households earning $100,000 or more. " +
-    "Households under $40,000 are 18% of all households but 60% of the burdened ones. The burden " +
-    "rate drops below the Windsor average only once income passes about $60,000.",
+  `Renters carry most of the burden. ${pct(S.renterPct)} of renter households spend 30% or more ` +
+    `of their income on shelter, against ${pct(S.ownerPct)} of owner households, so a renter ` +
+    `household is about ${TIMES} likely to be cost-burdened. Renters are only ` +
+    `${pct(S.renterShareOfHouseholds, 0)} of Windsor's households but ` +
+    `${pct(S.renterShareOfBurdened, 0)} of those over the line. Both rates match the Census ` +
+    "Profile's own published figures for Windsor.",
+  `Income is the strongest driver. ${pct(S.lowestBandPct)} of households earning under $10,000 ` +
+    "are over the line, and the rate falls steadily as income rises, to " +
+    `${pct(S.highestBandPct)} for households earning $100,000 or more. Households under $40,000 ` +
+    `are ${pct(S.under40ShareOfHouseholds, 0)} of all households but ` +
+    `${pct(S.under40ShareOfBurdened, 0)} of the burdened ones. The burden rate drops below the ` +
+    `Windsor average only once income passes about ${money(S.belowAverageFromIncome)}.`,
   "Households with one income are most exposed. People living alone have the highest rate, " +
-    "32.9%, and make up more than half of all burdened households; one-parent families follow at " +
-    "23.3%, while couples are at about 9%. Most burdened households spend 30% to under 100% of " +
-    "income on shelter; about 2,535 report shelter costs equal to or above their whole income, " +
-    "often because their 2020 income was very low.",
+    `${pct(S.onePersonPct)}, and make up ${pct(S.onePersonShareOfBurdened, 0)} of all burdened ` +
+    `households; one-parent families follow at ${pct(S.oneParentPct)}, while couples are at about ` +
+    `${pct(S.couplePct, 0)}. Most burdened households spend 30% to under 100% of income on ` +
+    `shelter; about ${num(S.hundredPlus)} report shelter costs equal to or above their whole ` +
+    "income, often because their 2020 income was very low.",
 ];
 
 const DEFINITIONS = [
@@ -48,7 +59,7 @@ const DEFINITIONS = [
 
 const LIMITATIONS = [
   "One 2021 Census snapshot with 2020 incomes, so it can't show whether the burden is rising or falling. Pandemic benefits raised many low incomes in 2020.",
-  "StatCan rounds counts to multiples of 5, so totals can differ slightly (28,740 by tenure vs 28,745 overall).",
+  `StatCan rounds counts to multiples of 5, so totals can differ slightly (${num(S.burdenedByTenure)} by tenure vs ${num(S.burdened)} overall).`,
   "The 100%-or-more group is derived rather than published, and often reflects very low reported income rather than very high shelter costs.",
 ];
 
@@ -58,22 +69,43 @@ const FILTERS = [
 ];
 
 const KPIS = [
-  { label: "Renter households cost-burdened", value: "34.8%", accent: "rose", trend: "up" },
-  { label: "Owner households cost-burdened", value: "10.9%", accent: "blue", trend: "flat" },
-  { label: "Burdened households who rent", value: "55%", accent: "teal", trend: "up" },
-  { label: "Burden rate, income under $10,000", value: "93.1%", accent: "violet", trend: "up" },
+  {
+    label: "Renter households cost-burdened",
+    value: pct(S.renterPct),
+    accent: "rose",
+    trend: "up",
+  },
+  {
+    label: "Owner households cost-burdened",
+    value: pct(S.ownerPct),
+    accent: "blue",
+    trend: "flat",
+  },
+  {
+    label: "Burdened households who rent",
+    value: pct(S.renterShareOfBurdened, 0),
+    accent: "teal",
+    trend: "up",
+  },
+  {
+    label: "Burden rate, income under $10,000",
+    value: pct(S.lowestBandPct),
+    accent: "violet",
+    trend: "up",
+  },
 ];
 
 // Story 5 findings that combine this story's data with another story's
-// (docs/story5_combined_analysis.md; re-check after a data refresh).
+// (docs/story5_combined_analysis.md).
+const C = F.s5;
 const CONNECTIONS = [
   {
     with: "With Story 2's rents",
-    text: "An average Windsor 2-bedroom ($1,451) needs a household income of about $58,000 under the 30% rule. The median renter household earned $48,400, so about 61% of renter households earn less than that.",
+    text: `An average Windsor 2-bedroom (${money(C.rent2Bed)}) needs a household income of about ${money(C.incomeNeeded)} under the 30% rule. The median renter household earned ${money(C.medianIncome)}, so about ${pct(C.cannotAffordPct, 0)} of renter households earn less than that.`,
   },
   {
     with: "With Story 4's comparison cities",
-    text: "Windsor has the lowest rent of the five cities but also the second-lowest renter incomes: a year of 2-bedroom rent takes 36% of the median renter's income, the same as Hamilton. Its share of renters spending 30% or more (34.8%) is still the lowest of the five.",
+    text: `Windsor has the lowest rent of the five cities but also the second-lowest renter incomes: a year of 2-bedroom rent takes ${pct(C.rentShare, 0)} of the median renter's income${C.sameShareAs.length ? `, the same as ${C.sameShareAs.join(" and ")}` : ""}. Its share of renters spending 30% or more (${pct(C.burdenPct)}) is ${C.burdenLowest ? "still the lowest of the five" : "not the lowest of the five"}.`,
   },
 ];
 
@@ -92,9 +124,9 @@ export default function StoryAffordability() {
       variant="spotlight"
       theme="neighbourhood"
       highlightStat={{
-        value: "34.8%",
+        value: pct(S.renterPct),
         label: "of renter households spend 30%+ of income on shelter",
-        detail: "against 10.9% of owners",
+        detail: `against ${pct(S.ownerPct)} of owners`,
       }}
       highlights={<StoryHighlights only={["afford"]} here="/stories/affordability" />}
       dashboard={

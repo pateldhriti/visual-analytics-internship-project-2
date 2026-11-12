@@ -4,6 +4,7 @@ import { AnimatePresence, animate, motion, MotionConfig, useMotionValue } from "
 import PageContainer from "../components/PageContainer.jsx";
 import KpiRow from "../components/KpiRow.jsx";
 import StoryHighlights from "../components/StoryHighlights.jsx";
+import { F, money, num, ordinal, pct } from "../lib/figures.js";
 import { staggerParent, fadeUp, fadeIn } from "../lib/motion.js";
 
 const MotionLink = motion(Link);
@@ -110,45 +111,45 @@ const STORIES = [
 ];
 
 // Flat KPI row directly below the banner -- same KpiRow component every
-// story page uses, each value real and traced to the panel it replaces.
+// story page uses; every value from web/src/data/figures.json.
 const HOME_KPIS = [
   {
     label: "Renter households spending 30%+ on shelter",
-    value: "34.8%",
+    value: pct(F.s1.renterPct),
     accent: "rose",
     trend: "up",
     caption: "Windsor CMA, 2021 Census",
   },
   {
     label: "Average 2-bedroom rent",
-    value: "$1,451",
+    value: money(F.s2.twoBedLatest),
     accent: "blue",
     trend: "up",
-    // Story 2's figure (apartments + row houses). Story 4/5 show $1,454
-    // because the city comparison is apartments only -- the caption says which.
-    caption: "Windsor CMA, apartments + row houses, October 2025",
+    // Story 2's figure (apartments + row houses). Story 4/5 show the
+    // apartments-only figure because the city comparison is apartments only.
+    caption: `Windsor CMA, apartments + row houses, October ${F.s2.latestYear}`,
   },
   {
-    // Windsor's own starts, the same figure as Story 3's dashboard card
-    // (warehouse.v_story3_windsor_supply_annual); was an Ontario quarter.
     label: "Homes started in Windsor",
-    value: "1,262",
+    value: num(F.s3.startsLatest),
     accent: "teal",
     trend: "down",
-    caption: "Windsor CMA, 2025",
+    caption: `Windsor CMA, ${F.s3.latestYear}`,
   },
   {
     label: "Windsor apartment vacancy rank",
-    value: "2nd-tightest",
+    value:
+      F.s4.windsorVacancyRankLowest === 1
+        ? "Tightest"
+        : `${ordinal(F.s4.windsorVacancyRankLowest)}-tightest`,
     accent: "violet",
     trend: "flat",
-    caption: "of 5 Ontario CMAs, October 2025",
+    caption: `of 5 Ontario CMAs, October ${F.s2.latestYear}`,
   },
 ];
 
-// Data-explorer preview: a metric selector switching between 3 real,
-// already-verified datasets -- not a decorative chart. Reuses the site's
-// existing native bar-chart styling.
+// Data-explorer preview: a metric selector switching between 3 datasets,
+// every value from web/src/data/figures.json.
 const EXPLORER_METRICS = [
   {
     id: "burden",
@@ -156,8 +157,8 @@ const EXPLORER_METRICS = [
     max: 40,
     unit: "%",
     rows: [
-      { label: "Renter", value: 34.8 },
-      { label: "Owner", value: 10.9 },
+      { label: "Renter", value: F.s1.renterPct },
+      { label: "Owner", value: F.s1.ownerPct },
     ],
     caption:
       "StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- reproduced and independently verified against StatCan's own published Census Profile rate.",
@@ -166,16 +167,14 @@ const EXPLORER_METRICS = [
   {
     id: "supply",
     label: "Supply pipeline",
-    max: 162138,
+    max: Math.max(F.s3.startsLatest, F.s3.completionsLatest, F.s3.underConstructionLatest) * 1.2,
     unit: "units",
-    // Windsor CMA, 2025 -- the same figures as the Story 3 dashboard.
     rows: [
-      { label: "Starts", value: 1262 },
-      { label: "Completions", value: 1671 },
-      { label: "Under construction", value: 1635 },
+      { label: "Starts", value: F.s3.startsLatest },
+      { label: "Completions", value: F.s3.completionsLatest },
+      { label: "Under construction", value: F.s3.underConstructionLatest },
     ],
-    caption:
-      "CMHC Starts and Completions Survey (StatCan 34-10-0154-01), Windsor CMA, 2025; under construction at year end.",
+    caption: `CMHC Starts and Completions Survey (StatCan 34-10-0154-01), Windsor CMA, ${F.s3.latestYear}; under construction at year end.`,
     to: "/stories/housing-supply",
   },
   {
@@ -183,15 +182,8 @@ const EXPLORER_METRICS = [
     label: "Comparator vacancy",
     max: 4.5,
     unit: "%",
-    rows: [
-      { label: "Hamilton", value: 3.6 },
-      { label: "Windsor", value: 3.7 },
-      { label: "St. Catharines-Niagara", value: 3.9 },
-      { label: "London", value: 4.0 },
-      { label: "Kitchener-Cambridge-Waterloo", value: 4.1 },
-    ],
-    caption:
-      "CMHC Rental Market Survey, apartment-only scope, October 2025 -- Windsor and 4 size-comparable Ontario CMAs.",
+    rows: F.s4.vacancyRanking.map((r) => ({ label: r.market, value: r.vacancy })),
+    caption: `CMHC Rental Market Survey, apartment-only scope, October ${F.s2.latestYear} -- Windsor and 4 size-comparable Ontario CMAs.`,
     to: "/stories/comparison",
   },
 ];

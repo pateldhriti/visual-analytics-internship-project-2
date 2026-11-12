@@ -1,29 +1,39 @@
 import StoryPage from "../components/StoryPage.jsx";
 import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
+import { F, nth, num, pct } from "../lib/figures.js";
 
 // Text condensed from docs/story3_narrative_final.md. Every figure comes
 // from warehouse.v_story3_windsor_supply_annual and
 // v_story3_windsor_supply_per_1000_households, the views behind the Story 3
-// dashboard (id 7); re-check both after a data refresh.
+// dashboard, through web/src/data/figures.json (etl/site_figures.py).
+const S = F.s3;
+
 const INTRO =
   "Rents and affordability depend partly on how many new homes are built. CMHC counts every " +
   "home whose construction starts and finishes in the Windsor area each month. This story " +
-  "follows those counts from 2016 to 2025: how much Windsor is building, and what kind of housing.";
+  `follows those counts from ${S.firstYear} to ${S.latestYear}: how much Windsor is building, ` +
+  "and what kind of housing.";
 
 const NARRATIVE = [
-  "Building rose, then fell back. Windsor started about 1,300 homes a year from 2016 to 2023. " +
-    "In 2024 starts jumped to 2,157, the most in ten years (13.0 per 1,000 households), but " +
-    "2025 fell back to 1,262, 41% fewer and about the level of 2016.",
-  "The mix has turned to apartments. Only 6% of the homes started in 2016 were apartments; in " +
-    "2025 it was 60% (752 of 1,262), while single-detached starts fell from 804 to 331. That is " +
-    "the housing type most renters use, although the apartment count also includes condos.",
-  "More homes are being finished than started. In 2023 and 2025 completions outpaced starts " +
-    "(1,967 against 1,208, and 1,671 against 1,262) as earlier projects reached the end. Homes " +
-    "under construction fell to 1,635 at the end of 2025, so the pipeline is getting smaller.",
+  `Building rose, then fell back. Windsor started about ${num(S.startsEarlyAvg)} homes a year ` +
+    `from ${S.firstYear} to ${S.earlyLastYear}. In ${S.peakYear} starts jumped to ` +
+    `${num(S.startsPeak)}, the most in ten years (${num(S.startsPeakPer1000, 1)} per 1,000 ` +
+    `households), but ${S.latestYear} fell back to ${num(S.startsLatest)}, ` +
+    `${pct(S.startsDropPct, 0)} fewer and about the level of ${S.firstYear}.`,
+  `The mix has turned to apartments. Only ${pct(S.aptShareFirst, 0)} of the homes started in ` +
+    `${S.firstYear} were apartments; in ${S.latestYear} it was ${pct(S.aptShareLatest, 0)} ` +
+    `(${num(S.aptStartsLatest)} of ${num(S.startsLatest)}), while single-detached starts fell from ` +
+    `${num(S.singlesFirst)} to ${num(S.singlesLatest)}. That is the housing type most renters use, ` +
+    "although the apartment count also includes condos.",
+  `More homes are being finished than started. In 2023 and ${S.latestYear} completions outpaced ` +
+    `starts (${num(S.completions2023)} against ${num(S.starts2023)}, and ` +
+    `${num(S.completionsLatest)} against ${num(S.startsLatest)}) as earlier projects reached the ` +
+    `end. Homes under construction fell to ${num(S.underConstructionLatest)} at the end of ` +
+    `${S.latestYear}, so the pipeline is getting smaller.`,
   "What this means: Windsor is building more apartments, not more homes overall. Story 2 found " +
-    "vacancy rising since 2022, consistent with these completions; with starts down again, that " +
-    "flow of new homes is likely to slow unless building picks up.",
+    `vacancy rising since ${F.s2.vacancyLowYear}, consistent with these completions; with starts ` +
+    "down again, that flow of new homes is likely to slow unless building picks up.",
 ];
 
 const DEFINITIONS = [
@@ -53,32 +63,53 @@ const LIMITATIONS = [
 
 const FILTERS = [
   { label: "Geography", value: "Windsor CMA" },
-  { label: "Period", value: "2016 to 2025" },
+  { label: "Period", value: `${S.firstYear} to ${S.latestYear}` },
   { label: "Dwelling type", value: "All types" },
 ];
 
-// Windsor CMA, 2025 -- the same figures as the Story 3 dashboard's cards.
+// Windsor CMA, latest full year -- the same figures as the Story 3 dashboard's cards.
 const KPIS = [
-  { label: "Homes started in Windsor, 2025", value: "1,262", accent: "teal", trend: "down" },
-  { label: "Homes completed, 2025", value: "1,671", accent: "blue", trend: "flat" },
-  { label: "Under construction at year end", value: "1,635", accent: "violet", trend: "flat" },
-  { label: "Apartment share of 2025 starts", value: "60%", accent: "rose", trend: "up" },
+  {
+    label: `Homes started in Windsor, ${S.latestYear}`,
+    value: num(S.startsLatest),
+    accent: "teal",
+    trend: "down",
+  },
+  {
+    label: `Homes completed, ${S.latestYear}`,
+    value: num(S.completionsLatest),
+    accent: "blue",
+    trend: "flat",
+  },
+  {
+    label: "Under construction at year end",
+    value: num(S.underConstructionLatest),
+    accent: "violet",
+    trend: "flat",
+  },
+  {
+    label: `Apartment share of ${S.latestYear} starts`,
+    value: pct(S.aptShareLatest, 0),
+    accent: "rose",
+    trend: "up",
+  },
 ];
 
 // Story 5 findings that combine this story's data with another story's
-// (docs/story5_combined_analysis.md; re-check after a data refresh).
+// (docs/story5_combined_analysis.md).
+const C = F.s5;
 const CONNECTIONS = [
   {
     with: "With Story 2's vacancy",
-    text: "The 2023 completion surge lines up with the rental market loosening: vacancy rose from 1.8% in 2022 to 3.6% in 2025.",
+    text: `The 2023 completion surge lines up with the rental market loosening: vacancy rose from ${pct(F.s2.vacancyLow)} in ${F.s2.vacancyLowYear} to ${pct(F.s2.vacancyLatest)} in ${F.s2.latestYear}.`,
   },
   {
     with: "With Story 4's comparison cities",
-    text: "Since 2016 Windsor has started 8.4 homes a year per 1,000 households, the fewest of the five cities; Kitchener-Cambridge-Waterloo started 19.7.",
+    text: `Since ${S.firstYear} Windsor has started ${num(C.startsPer1000, 1)} homes a year per 1,000 households, ${C.startsPer1000Rank === 1 ? "the fewest" : `the ${nth(C.startsPer1000Rank)}-fewest`} of the five cities; ${C.topBuilder} started ${num(C.topBuilderPer1000, 1)}.`,
   },
   {
     with: "With Census population growth",
-    text: "Windsor gained 23,912 people from 2016 to 2021, about 9,500 homes' worth, but completed 5,666 homes: 59% of what was needed, the lowest of the five cities.",
+    text: `Windsor gained ${num(C.populationGrowth)} people from 2016 to 2021, about ${num(C.homesNeeded)} homes' worth, but completed ${num(C.homesCompleted)} homes: ${pct(C.builtPerNeeded * 100, 0)} of what was needed, the lowest of the five cities.`,
   },
 ];
 
@@ -108,7 +139,7 @@ export default function StoryHousingSupply() {
       }
       limitations={LIMITATIONS}
       connections={CONNECTIONS}
-      source="CMHC Starts and Completions Survey, Windsor CMA, Statistics Canada Table 34-10-0154-01, January 2016 to September 2026"
+      source={`CMHC Starts and Completions Survey, Windsor CMA, Statistics Canada Table 34-10-0154-01, January ${S.firstYear} onward`}
     />
   );
 }

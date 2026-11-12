@@ -138,6 +138,14 @@ one screen: the builder lists its sections per tab in a `TABS` constant and
 `dashboard_tabs.add_tabs()` arranges them (tested in `test_dashboard_tabs.py`).
 To move a chart to another tab, move its row id between the lists.
 
+Every figure quoted on the website (KPI tiles, story text, home page) comes
+from `web/src/data/figures.json`, written by the same export
+(`etl/site_figures.py`), so a refresh updates the numbers on the site. The
+pages' wording also makes comparisons ("the most in ten years"); when a
+refresh brings a newer rent survey or construction year, the export prints a
+warning and `test_site_highlights.py` fails until someone re-reads the story
+pages and updates `TEXT_WRITTEN_FOR` in `etl/site_figures.py`.
+
 The home page's "story in four charts" is drawn by the website itself
 (`web/src/components/StoryHighlights.jsx`) from `web/src/data/highlights.json`.
 After a data refresh, re-export it from the warehouse views and rebuild the
