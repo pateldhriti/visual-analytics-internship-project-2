@@ -1,33 +1,44 @@
 import StoryPage from "../components/StoryPage.jsx";
 import StoryHighlights from "../components/StoryHighlights.jsx";
 import SupersetGuestEmbed from "../components/SupersetGuestEmbed.jsx";
+import { F, money, num, pct } from "../lib/figures.js";
 
 // Text condensed from docs/story2_narrative_final.md. Every figure comes
-// from the warehouse.v_story2_* views behind the Story 2 dashboard (id 4);
-// re-check both after a data refresh.
+// from the warehouse.v_story2_* views behind the Story 2 dashboard, through
+// web/src/data/figures.json (etl/site_figures.py).
+const S = F.s2;
+const YEARS = S.latestYear - S.firstYear;
+
 const INTRO =
-  "Windsor has 19,883 purpose-built rental units. Each October, CMHC surveys them for rent, " +
-  "vacancy and how often tenants move. This story follows those measures from 2020 to 2025 and " +
-  "across the area's seven rental zones. In the dashboard below, click any zone to filter the " +
-  "zone charts and see that zone explained in plain language.";
+  `Windsor has ${num(S.units)} purpose-built rental units. Each October, CMHC surveys them for ` +
+  `rent, vacancy and how often tenants move. This story follows those measures from ` +
+  `${S.firstYear} to ${S.latestYear} and across the area's seven rental zones. In the dashboard ` +
+  "below, click any zone to filter the zone charts and see that zone explained in plain language.";
 
 const NARRATIVE = [
-  "Rents rose every year. The average rent across all unit sizes went from $953 a month in 2020 " +
-    "to $1,293 in 2025, up 35.7% in five years. Two-bedroom units rose the most, by $413 (39.8%) " +
-    "to $1,451. Three-bedroom units are the exception, but their figures rest on a small sample " +
-    "and CMHC publishes no 2025 value for them.",
-  "Vacancy dipped, then recovered. It fell from 3.5% in 2020 to a low of 1.8% in 2022, when very " +
-    "few units were free, and climbed back to 3.6% in 2025, around the level usually seen as " +
-    "balanced. Rents kept rising through the recovery, by 8.1% in 2024 and 5.9% in 2025, so more " +
-    "vacancy has not yet meant lower rents.",
-  "Most rentals are in the city, and the city is cheaper. The four Windsor city zones hold 82% of " +
-    "units; the Centre is the cheapest zone at $1,155 a month, with the highest vacancy (4.6%). " +
-    "The county zones are smaller, pricier and tighter: Amherstburg averages $1,955, $800 more " +
-    "than the Centre, and county vacancy is 2.0% to 2.7%.",
-  "Small units turn over most. About 1 in 8 units changed tenants in the past year: 15.0% of " +
-    "studios but only 5.3% of three-bedroom units, where households, often families, stay longer. " +
-    "At 30% of income, Story 1's median renter income of $48,400 affords about $1,210 a month, " +
-    "already below the 2025 average rent.",
+  "Rents rose every year. The average rent across all unit sizes went from " +
+    `${money(S.rentFirst)} a month in ${S.firstYear} to ${money(S.rentLatest)} in ${S.latestYear}, ` +
+    `up ${pct(S.rentChangePct)} in ${YEARS} years. Two-bedroom units rose the most, by ` +
+    `${money(S.twoBedRise)} (${pct(S.twoBedRisePct)}) to ${money(S.twoBedLatest)}. Three-bedroom ` +
+    "units are the exception, but their figures rest on a small sample and CMHC publishes no " +
+    `${S.latestYear} value for them.`,
+  `Vacancy dipped, then recovered. It fell from ${pct(S.vacancyFirst)} in ${S.firstYear} to a low ` +
+    `of ${pct(S.vacancyLow)} in ${S.vacancyLowYear}, when very few units were free, and climbed ` +
+    `back to ${pct(S.vacancyLatest)} in ${S.latestYear}, around the level usually seen as ` +
+    `balanced. Rents kept rising through the recovery, by ${pct(S.rentGrowthPrev)} in ` +
+    `${S.prevYear} and ${pct(S.rentGrowthLatest)} in ${S.latestYear}, so more vacancy has not yet ` +
+    "meant lower rents.",
+  "Most rentals are in the city, and the city is cheaper. The four Windsor city zones hold " +
+    `${pct(S.cityZoneShare, 0)} of units; the ${S.cheapestZone} is the cheapest zone at ` +
+    `${money(S.cheapestRent)} a month, with the highest vacancy (${pct(S.cheapestVacancy)}). The ` +
+    `county zones are smaller, pricier and tighter: ${S.priciestZone} averages ` +
+    `${money(S.priciestRent)}, ${money(S.zoneRentGap)} more than the ${S.cheapestZone}, and county ` +
+    `vacancy is ${pct(S.countyVacancyMin)} to ${pct(S.countyVacancyMax)}.`,
+  `Small units turn over most. About 1 in ${S.turnoverOneIn} units changed tenants in the past ` +
+    `year: ${pct(S.turnoverStudio)} of studios but only ${pct(S.turnoverThreeBed)} of three-bedroom ` +
+    "units, where households, often families, stay longer. At 30% of income, Story 1's median " +
+    `renter income of ${money(F.s5.medianIncome)} affords about ${money(F.s5.affordableRent)} a ` +
+    `month, already below the ${S.latestYear} average rent.`,
 ];
 
 const DEFINITIONS = [
@@ -62,27 +73,37 @@ const LIMITATIONS = [
 
 const FILTERS = [
   { label: "Geography", value: "Windsor CMA, 7 zones" },
-  { label: "Period", value: "October 2020 to October 2025" },
+  { label: "Period", value: `October ${S.firstYear} to October ${S.latestYear}` },
   { label: "Unit scope", value: "Apartments and row houses" },
 ];
 
 const KPIS = [
-  { label: "Average monthly rent, all units", value: "$1,293", accent: "violet", trend: "up" },
-  { label: "Vacancy rate", value: "3.6%", accent: "blue", trend: "up" },
-  { label: "Rent increase since 2020", value: "35.7%", accent: "rose", trend: "up" },
-  { label: "Rental units", value: "19,883", accent: "teal", trend: "flat" },
+  {
+    label: "Average monthly rent, all units",
+    value: money(S.rentLatest),
+    accent: "violet",
+    trend: "up",
+  },
+  { label: "Vacancy rate", value: pct(S.vacancyLatest), accent: "blue", trend: "up" },
+  {
+    label: `Rent increase since ${S.firstYear}`,
+    value: pct(S.rentChangePct),
+    accent: "rose",
+    trend: "up",
+  },
+  { label: "Rental units", value: num(S.units), accent: "teal", trend: "flat" },
 ];
 
 // Story 5 findings that combine this story's data with another story's
-// (docs/story5_combined_analysis.md; re-check after a data refresh).
+// (docs/story5_combined_analysis.md).
 const CONNECTIONS = [
   {
     with: "With Story 1's renter incomes",
-    text: "About 61% of Windsor renter households earn less than the roughly $58,000 an average 2-bedroom needs under the 30% rule, and about half could not afford an average 1-bedroom.",
+    text: `About ${pct(F.s5.cannotAffordPct, 0)} of Windsor renter households earn less than the roughly ${money(F.s5.incomeNeeded)} an average 2-bedroom needs under the 30% rule, and about half could not afford an average 1-bedroom.`,
   },
   {
     with: "With Story 3's completions",
-    text: "Vacancy fell to 1.8% in 2022, when few new homes were being finished. After completions jumped to 1,967 in 2023 it rose back to 3.6% by 2025, and rent growth slowed from 8.1% to 5.9%.",
+    text: `Vacancy fell to ${pct(S.vacancyLow)} in ${S.vacancyLowYear}, when few new homes were being finished. After completions jumped to ${num(F.s3.completions2023)} in 2023 it rose back to ${pct(S.vacancyLatest)} by ${S.latestYear}, and rent growth slowed from ${pct(S.rentGrowthPrev)} to ${pct(S.rentGrowthLatest)}.`,
   },
 ];
 
@@ -112,7 +133,7 @@ export default function StoryRentalMarket() {
       definitions={DEFINITIONS}
       limitations={LIMITATIONS}
       connections={CONNECTIONS}
-      source="CMHC Rental Market Survey, Windsor CMA, October 2020 to October 2025"
+      source={`CMHC Rental Market Survey, Windsor CMA, October ${S.firstYear} to October ${S.latestYear}`}
     />
   );
 }
