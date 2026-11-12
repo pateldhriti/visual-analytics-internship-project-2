@@ -49,6 +49,9 @@ jobs:
       - name: Run pytest (raw data setup)
         working-directory: etl
         run: python -m pytest test_fetch_raw_data.py -v
+      - name: Run pytest (university database package)
+        working-directory: etl
+        run: python -m pytest test_export_for_shared_db.py -v
       - name: Run pytest (guest-token API)
         working-directory: api
         run: python -m pytest test_guest_token_server.py -v
