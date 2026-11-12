@@ -106,6 +106,13 @@ THEME_CSS = f"""
   color: var(--kpi, {ACCENT}) !important;
 }}
 :is(.big_number_total, .big_number) .subheader-line {{ color: {MUTED} !important; }}
+/* Superset sizes the line under a KPI number from the tile height, so long
+   sentences came out at about 9px; keep them readable and let them wrap. */
+.big_number_total .subheader-line {{
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+}}
 
 /* Tables: tinted header, blue in-cell bars, highlighted clickable rows */
 .dashboard-component-chart-holder table thead th {{
