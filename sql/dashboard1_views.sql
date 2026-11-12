@@ -169,3 +169,27 @@ FROM ranked r
 JOIN comparator_medians cm
     ON cm.metric_type = r.metric_type AND cm.period_label = r.period_label
 WHERE r.zone_level = 'cma_total';
+
+-- ============================================================
+-- v_dashboard1_rental_trend
+-- Windsor CMA's four rental benchmarks every October (2020 onward), all
+-- unit sizes, Combined scope (apartments and row houses): the same figures
+-- as Story 2's benchmark cards, one row per (metric, year), with the survey
+-- month as a real date for the overview's trendline tiles.
+-- ============================================================
+CREATE OR REPLACE VIEW warehouse.v_dashboard1_rental_trend AS
+SELECT
+    f.metric_type AS metric,
+    p.period_label,
+    p.period_year,
+    MAKE_DATE(p.period_year, 10, 1) AS period_date,
+    f.value
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE z.zone_label = 'Windsor CMA'
+  AND b.bedroom_type_label = 'Total'
+  AND d.dwelling_type_label = 'Combined'
+  AND f.metric_type IN ('average_rent', 'vacancy_rate', 'universe', 'turnover_rate');

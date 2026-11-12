@@ -11,7 +11,7 @@ A rent of $1,454 means little on its own: is that high or low? This story places
 
 ## Windsor is the cheapest of the five
 
-In October 2025 the average 2-bedroom apartment in Windsor rented for **$1,454 a month**, the lowest of the five cities. St. Catharines-Niagara was next at $1,527, then London ($1,651) and Hamilton ($1,656), with Kitchener-Cambridge-Waterloo the most expensive at $1,832. Windsor sits **$199.50 below the five-city median** of $1,653.50, and $378 below Kitchener-Cambridge-Waterloo. It was also the cheapest a year earlier, at $1,387 in October 2024.
+In October 2025 the average 2-bedroom apartment in Windsor rented for **$1,454 a month**, the lowest of the five cities. St. Catharines-Niagara was next at $1,527, then London ($1,651) and Hamilton ($1,656), with Kitchener-Cambridge-Waterloo the most expensive at $1,832. Windsor sits **$199.50 below the median of the other four cities** ($1,653.50), and $378 below Kitchener-Cambridge-Waterloo. It was also the cheapest a year earlier, at $1,387 in October 2024.
 
 ## Cheap, but not loose
 
@@ -29,7 +29,7 @@ St. Catharines-Niagara is Windsor's closest peer on price: its 2-bedroom rent wa
 
 ## Tenants in Windsor move least
 
-Windsor also had the **lowest turnover** of the five: 12.2% of apartments changed tenants in the year, against a five-city median of 14.1%. Fewer moves means fewer units come up for rent at any one time, which fits with Windsor's below-median vacancy.
+Windsor also had the **lowest turnover** of the five: 12.2% of apartments changed tenants in the year, against the other four cities' median of 14.1%. Fewer moves means fewer units come up for rent at any one time, which fits with Windsor's below-median vacancy.
 
 ## Ten years on, the gap is closing
 
@@ -51,7 +51,7 @@ CMHC's October survey, republished by Statistics Canada (tables 34-10-0133-01 an
 
 ## What this means
 
-Windsor is the least expensive of these five comparable Ontario markets, but it is not the easiest place to find an apartment: vacancy is below the group median and tenants move less often. Being cheaper than its peers also does not make Windsor affordable for its own renters. Story 1 found the median renter household in Windsor earned $48,400 in 2020; at 30% of income that covers about $1,210 a month, well under the $1,454 average 2-bedroom rent shown here.
+Windsor is the least expensive of these five comparable Ontario markets, but it is not the easiest place to find an apartment: vacancy is below the other four cities' median and tenants move less often. Being cheaper than its peers also does not make Windsor affordable for its own renters. Story 1 found the median renter household in Windsor earned $48,400 in 2020; at 30% of income that covers about $1,210 a month, well under the $1,454 average 2-bedroom rent shown here.
 
 ## Limitations
 

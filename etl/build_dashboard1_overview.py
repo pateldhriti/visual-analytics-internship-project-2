@@ -34,10 +34,11 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, trendline_kpi, upgrade_legacy_bars
 
 DATASET_RENTAL_YOY = dataset_id("v_dashboard1_rental_yoy")
 DATASET_CMA_BENCHMARK = dataset_id("v_dashboard1_cma_benchmark")
+DATASET_RENTAL_TREND = dataset_id("v_dashboard1_rental_trend")
 DATASET_SUPPLY = dataset_id("v_story3_starts_completions_by_dwelling_type")
 
 DASHBOARD_TITLE = "01 - Windsor Housing Executive Overview"
@@ -63,107 +64,77 @@ def province_filter(value: str = "Ontario"):
 
 
 NEW_CHARTS = {
+    # Windsor's four rental benchmarks for October 2025, each with every October
+    # since 2020 as a trendline underneath (the same figures as Story 2's cards).
+    # Rates show no % change: a percent change of a rate reads as points.
     "kpi-rent": {
         "slice_name": "Windsor Average Rent",
         "legacy_names": ["Windsor Average Rent (Apartment)"],
-        "description": "Average monthly rent, all unit sizes, apartments and row houses, Windsor CMA, Oct-25 -- the same figure as Story 2's benchmark card. warehouse.v_dashboard1_rental_yoy.",
-        "dataset_id": DATASET_RENTAL_YOY,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SIMPLE",
-                "column": {"column_name": "latest_value"},
-                "aggregate": "MAX",
-                "label": "Average Rent",
-            },
-            "adhoc_filters": [metric_filter("average_rent")],
-            "y_axis_format": "$,.0f",
-            "header_font_size": 0.5,
-            "subheader_font_size": 0.15,
-            "subheader": "Windsor benchmark · Oct-25",
-            "color_scheme": COLOR_SCHEME,
-        },
+        "description": "Average monthly rent, all unit sizes, apartments and row houses, Windsor CMA, Oct-25, with every October since 2020. warehouse.v_dashboard1_rental_trend.",
+        "dataset_id": DATASET_RENTAL_TREND,
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(value)", "label": "Average Rent"},
+            "period_date", [metric_filter("average_rent")], "$,.0f", 5, " since Oct-20",
+        ))),
     },
     "kpi-vacancy": {
         "slice_name": "Windsor Vacancy Rate",
         "legacy_names": ["Windsor Vacancy Rate (Apartment)"],
-        "description": "Vacancy rate, all unit sizes, apartments and row houses, Windsor CMA, Oct-25 -- the same figure as Story 2's benchmark card. warehouse.v_dashboard1_rental_yoy.",
-        "dataset_id": DATASET_RENTAL_YOY,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SQL",
-                "sqlExpression": "MAX(latest_value) / 100.0",
-                "label": "Vacancy Rate",
-            },
-            "adhoc_filters": [metric_filter("vacancy_rate")],
-            "y_axis_format": ".1%",
-            "header_font_size": 0.5,
-            "subheader_font_size": 0.15,
-            "subheader": "Windsor benchmark · Oct-25",
-            "color_scheme": COLOR_SCHEME,
-        },
+        "description": "Vacancy rate, all unit sizes, apartments and row houses, Windsor CMA, Oct-25, with every October since 2020. warehouse.v_dashboard1_rental_trend.",
+        "dataset_id": DATASET_RENTAL_TREND,
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(value) / 100.0", "label": "Vacancy Rate"},
+            "period_date", [metric_filter("vacancy_rate")], ".1%", None, "",
+        ))),
     },
     "kpi-stock": {
         "slice_name": "Windsor Rental Stock",
         "legacy_names": ["Windsor Rental Stock (Combined)"],
-        "description": "Oct-25, Combined dwelling scope (not Apartment -- rental-stock universe isn't published at Apartment scope in this project's data) -- warehouse.v_dashboard1_rental_yoy.",
-        "dataset_id": DATASET_RENTAL_YOY,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SIMPLE",
-                "column": {"column_name": "latest_value"},
-                "aggregate": "MAX",
-                "label": "Rental Stock",
-            },
-            "adhoc_filters": [metric_filter("universe")],
-            "y_axis_format": ",d",
-            "header_font_size": 0.5,
-            "subheader_font_size": 0.15,
-            "subheader": "Windsor benchmark · Oct-25",
-            "color_scheme": COLOR_SCHEME,
-        },
+        "description": "Purpose-built rental units, apartments and row houses, Windsor CMA, Oct-25, with every October since 2020. warehouse.v_dashboard1_rental_trend.",
+        "dataset_id": DATASET_RENTAL_TREND,
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(value)", "label": "Rental Stock"},
+            "period_date", [metric_filter("universe")], ",d", 5, " since Oct-20",
+        ))),
     },
     "kpi-turnover": {
         "slice_name": "Windsor Turnover Rate",
         "legacy_names": ["Windsor Turnover Rate (Combined)"],
-        "description": "Oct-25, Combined dwelling scope -- warehouse.v_dashboard1_rental_yoy.",
-        "dataset_id": DATASET_RENTAL_YOY,
-        "viz_type": "big_number_total",
-        "params": {
-            "metric": {
-                "expressionType": "SQL",
-                "sqlExpression": "MAX(latest_value) / 100.0",
-                "label": "Turnover Rate",
-            },
-            "adhoc_filters": [metric_filter("turnover_rate")],
-            "y_axis_format": ".1%",
-            "header_font_size": 0.5,
-            "subheader_font_size": 0.15,
-            "subheader": "Windsor benchmark · Oct-25",
-            "color_scheme": COLOR_SCHEME,
-        },
+        "description": "Share of occupied units whose tenant changed, apartments and row houses, Windsor CMA, Oct-25, with every October since 2020. warehouse.v_dashboard1_rental_trend.",
+        "dataset_id": DATASET_RENTAL_TREND,
+        **dict(zip(("viz_type", "params"), trendline_kpi(
+            {"expressionType": "SQL", "sqlExpression": "AVG(value) / 100.0", "label": "Turnover Rate"},
+            "period_date", [metric_filter("turnover_rate")], ".1%", None, "",
+        ))),
     },
     "rental-yoy-table": {
         "slice_name": "Rental Market Oct-24 vs Oct-25",
-        "description": "All 4 metrics, Windsor CMA -- warehouse.v_dashboard1_rental_yoy.",
+        "description": "Windsor CMA's four rental benchmarks, October 2024 and 2025, apartments and row houses, all unit sizes. warehouse.v_dashboard1_rental_yoy.",
         "dataset_id": DATASET_RENTAL_YOY,
         "viz_type": "table",
+        # Readable rows and headers instead of the view's column names.
         "params": {
-            "query_mode": "raw",
-            "columns": [
-                "metric",
-                "dwelling_type_label",
-                "previous_period_label",
-                "previous_value",
-                "latest_period_label",
-                "latest_value",
-                "change_value",
-                "change_unit",
+            "query_mode": "aggregate",
+            "groupby": [
+                {"expressionType": "SQL", "label": "Measure", "sqlExpression": (
+                    "CASE metric WHEN 'average_rent' THEN 'Average rent ($ a month)' "
+                    "WHEN 'vacancy_rate' THEN 'Vacancy rate (%)' WHEN 'universe' THEN 'Rental units' "
+                    "WHEN 'turnover_rate' THEN 'Turnover rate (%)' ELSE metric END")},
+                {"expressionType": "SQL", "label": "Change in", "sqlExpression": (
+                    "CASE change_unit WHEN 'dollars' THEN '$' WHEN 'percentage_points' THEN 'points' "
+                    "ELSE change_unit END")},
             ],
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(previous_value)", "label": "Oct-24"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(latest_value)", "label": "Oct-25"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(change_value)", "label": "Change"},
+            ],
+            "column_config": {c: {"d3NumberFormat": ",.1~f"} for c in ("Oct-24", "Oct-25", "Change")},
+            "adhoc_filters": [],
             "row_limit": 10,
             "server_pagination": False,
+            "show_cell_bars": False,
+            "order_desc": True,
         },
     },
     "supply-snapshot": {
@@ -244,20 +215,30 @@ NEW_CHARTS = {
     },
     "cma-benchmark-table": {
         "slice_name": "Windsor vs CMA Benchmark",
-        "description": "Windsor vs. the median of this project's real 4 comparator CMAs (5 total, not a national ranking) -- warehouse.v_dashboard1_cma_benchmark.",
+        "description": "Windsor against the median of the four comparison cities (Hamilton, Kitchener-Cambridge-Waterloo, London, St. Catharines-Niagara), Oct-25; rank among all five, 1 = highest. Apartments only, as CMHC publishes the city comparison. warehouse.v_dashboard1_cma_benchmark.",
         "dataset_id": DATASET_CMA_BENCHMARK,
         "viz_type": "table",
         "params": {
-            "query_mode": "raw",
-            "columns": [
-                "metric",
-                "period_label",
-                "windsor_value",
-                "cma_median_value",
-                "windsor_minus_median",
-                "windsor_rank_highest_first",
-                "cmas_ranked",
+            "query_mode": "aggregate",
+            "groupby": [
+                {"expressionType": "SQL", "label": "Measure (Oct-25, apartments)", "sqlExpression": (
+                    "CASE metric WHEN 'average_rent' THEN 'Average 2-bedroom rent ($)' "
+                    "WHEN 'pct_change_rent' THEN 'Rent growth, same units (%)' "
+                    "WHEN 'turnover_rate' THEN 'Turnover rate (%)' WHEN 'vacancy_rate' THEN 'Vacancy rate (%)' "
+                    "ELSE metric END")},
             ],
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(windsor_value)", "label": "Windsor"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(cma_median_value)", "label": "Median of the other 4 cities"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(windsor_minus_median)", "label": "Windsor minus median"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(windsor_rank_highest_first)", "label": "Windsor's rank of 5 (1 = highest)"},
+            ],
+            "column_config": {
+                "Windsor": {"d3NumberFormat": ",.1~f"},
+                "Median of the other 4 cities": {"d3NumberFormat": ",.1~f"},
+                "Windsor minus median": {"d3NumberFormat": "+,.1~f"},
+                "Windsor's rank of 5 (1 = highest)": {"d3NumberFormat": "d"},
+            },
             "adhoc_filters": [
                 {
                     "clause": "WHERE",
@@ -269,6 +250,7 @@ NEW_CHARTS = {
             ],
             "row_limit": 10,
             "server_pagination": False,
+            "show_cell_bars": False,
         },
     },
 }
@@ -321,7 +303,7 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
 TABLE_HEIGHT = 40
 
 
-def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 25) -> dict:
+def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 32) -> dict:
     # Default height, used only by big_number_total KPI tiles (every bar
     # chart below passes its own height=55, tables TABLE_HEIGHT) -- was
     # 50, which left a large empty gap above the number inside every KPI

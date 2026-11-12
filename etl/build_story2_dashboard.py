@@ -432,17 +432,20 @@ CHARTS = {
     "rent-zone": {
         "slice_name": "Average Rent by Zone and Bedroom Type",
         "description": (
-            "Average monthly rent by zone and unit size, October 2025, apartments and row houses. "
-            "Compare bars within a zone to see the price step between unit sizes. Missing bars are "
-            "values CMHC suppressed. Click a unit size to filter the other unit-size charts -- "
+            "Average monthly rent by zone (rows) and unit size (columns), October 2025, apartments "
+            "and row houses; darker is pricier. Read across a row for the price step between unit "
+            "sizes, down a column to compare zones. Blank cells are values CMHC suppressed -- "
             "warehouse.v_story2_rent_by_zone_bedroom."
         ),
         "dataset_id": DATASET_RENT_ZONE,
-        "viz_type": "echarts_timeseries_bar",
-        "params": echarts_params(
-            "bar", "zone_label", "AVG(average_rent)", "Average monthly rent", "$,.0f",
-            groupby=["bedroom_type_label"], filters=[EXCLUDE_TOTAL_BEDROOM], rotate=30,
-        ),
+        # A heatmap instead of 7 zones x 4 sizes of grouped bars (28 bars).
+        **dict(zip(("viz_type", "params"), heatmap(
+            "bedroom_type_label", "zone_label",
+            {"expressionType": "SQL", "sqlExpression": "AVG(average_rent)", "label": "Average monthly rent"},
+            [EXCLUDE_TOTAL_BEDROOM,
+             {"clause": "WHERE", "expressionType": "SQL", "sqlExpression": "average_rent IS NOT NULL"}],
+            "$,.0f",
+        ))),
     },
     "zone-stock": {
         "slice_name": "Rental Stock by Zone (Oct-25)",
@@ -741,7 +744,7 @@ CROSS_FILTER_GROUPS = {
         "receivers": ZONE_CHART_KEYS,
     },
     "bedroom": {
-        "emitters": ["rent-zone", "rent-trend", "vacancy-trend", "turnover"],
+        "emitters": ["rent-trend", "vacancy-trend", "turnover"],  # the rent heatmap cannot emit
         "receivers": ["rent-zone", "rent-trend", "vacancy-trend", "turnover", *PANEL_BY_UNIT_SIZE],
     },
 }

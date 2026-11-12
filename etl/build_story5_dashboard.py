@@ -47,7 +47,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, scatter, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, radar, scatter, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_RENT_AFFORDABILITY = dataset_id("v_story5_rent_affordability")
@@ -58,6 +58,7 @@ DATASET_SUPPLY_DEMAND = dataset_id("v_story5_supply_vs_demand")
 DATASET_BURDEN_BY_AGE = dataset_id("v_story5_renter_burden_by_age")
 DATASET_RENTAL_STOCK = dataset_id("v_story5_rental_stock")
 DATASET_CITY_PROFILE = dataset_id("v_story5_city_profile")
+DATASET_WINDSOR_VS_PEERS = dataset_id("v_story5_windsor_vs_peers")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 DASHBOARD_TITLE = "Story 5: How do affordability, rental conditions, and supply fit together?"
@@ -384,6 +385,29 @@ CHARTS = {
             "MAX(pct_renters_spending_30pct_plus) / 100.0", "Renters spending 30%+ on shelter", ".0%", upper=0.5
         ),
     },
+    "windsor-radar": {
+        "slice_name": "Story 5: Windsor (Blue) vs the Comparison-City Average (Grey = 100)",
+        "description": (
+            "Each measure is Windsor's value as a % of the four comparison cities' average (the grey "
+            "shape, 100). Windsor is below average on all eight; furthest on homes started per 1,000 "
+            "households. warehouse.v_story5_windsor_vs_peers."
+        ),
+        "dataset_id": DATASET_WINDSOR_VS_PEERS,
+        **dict(zip(("viz_type", "params"), radar(
+            "group_label",
+            [{"expressionType": "SQL", "sqlExpression": f"MAX({col})", "label": label} for col, label in (
+                ("rent_index", "2-bed rent"),
+                ("income_index", "Renter income"),
+                ("rent_share_index", "Rent % of income"),
+                ("burden_index", "Renters 30%+"),
+                ("vacancy_index", "Vacancy"),
+                ("rental_units_index", "Rental units per renter"),
+                ("build_rate_index", "Homes started"),
+                ("needed_built_index", "Needed homes built"),
+            )],
+            [], ",d", 120,
+        ))),
+    },
     "peer-scatter": {
         "slice_name": "Story 5: Rent vs Renter Income by City",
         "description": (
@@ -660,6 +684,18 @@ how many renters each rent leaves behind.
 *Incomes are for 2020 and rents for 2025, so the shares are an upper bound: incomes have risen
 since.*
 """,
+    "radar": """**Windsor at a glance.** Each point is Windsor as a % of the four comparison cities'
+average (the grey shape is 100).
+
+- **Cheaper, but poorer:** rent is about 13% below average and renter incomes about 10% below,
+  so rent takes nearly the same share of income (96).
+- **The outlier is building:** Windsor starts homes at about **half** the comparison cities'
+  rate (56) and built 71% as many of the homes its growth needed.
+- **Below average on every measure**, including renters spending 30%+ (91) and rental units
+  per renter (86).
+
+*Every figure is in the all-measures table (tab 7).*
+""",
     "peer": """**What it shows.** Windsor has the **lowest** 2-bedroom rent of the five cities, but its renters
 also have the second-lowest incomes. A year of rent takes **36%** of the median renter's income,
 the same as Hamilton and close to every other city (36%-39%), and about **6 in 10** renters
@@ -732,6 +768,7 @@ measure leaves out most student households, so it is not used here.*
 LAYOUT = [
     ("markdown-row", "ROW-intro", [("MARKDOWN-intro", INTRO_MARKDOWN, 12, 14)]),
     ("chart-row", "ROW-kpis", [("kpi-afford", 3, 22), ("kpi-rent-income", 3, 22), ("kpi-completions", 3, 22), ("kpi-build-rate", 3, 22)]),
+    ("chart-row", "ROW-radar", [("windsor-radar", 7, 52)], ("MARKDOWN-radar", NOTES["radar"], 5, 52)),
     ("header", "HEADER-afford", "1. Can Windsor renters afford the rent? (Story 1 + Story 2)"),
     ("chart-row", "ROW-afford", [("afford-by-size", 5, 50), ("afford-table", 7, 50)]),
     ("markdown-row", "ROW-afford-note", [("MARKDOWN-afford", NOTES["afford"], 12, 28)]),
@@ -814,14 +851,14 @@ def row_node(row_id: str, children: list) -> dict:
 # One screen per tab (etl/dashboard_tabs.py): an overview with the
 # all-measures table, then one tab per combined question.
 TABS = [
-    ("TAB-overview", "Overview", ["ROW-intro", "ROW-kpis", "ROW-profile"]),
+    ("TAB-overview", "Overview", ["ROW-intro", "ROW-kpis", "ROW-radar"]),
     ("TAB-afford", "1. Afford the rent?", ["HEADER-afford", "ROW-afford", "ROW-afford-note"]),
     ("TAB-peer", "2. Cheap or affordable?", ["HEADER-peer", "ROW-peer", "ROW-peer-table"]),
     ("TAB-supply", "3. New homes and rents", ["HEADER-supply", "ROW-supply", "ROW-supply-note"]),
     ("TAB-build", "4. Building vs peers", ["HEADER-build", "ROW-build", "ROW-build-note"]),
     ("TAB-demand", "5. Population growth", ["HEADER-demand", "ROW-demand", "ROW-demand-built"]),
     ("TAB-young", "6. Young renters", ["HEADER-young", "ROW-young", "ROW-young-age", "ROW-young-note"]),
-    ("TAB-stock", "7. Rental market size", ["HEADER-stock", "ROW-stock"]),
+    ("TAB-stock", "7. Rental market size", ["HEADER-stock", "ROW-stock", "ROW-profile"]),
 ]
 
 

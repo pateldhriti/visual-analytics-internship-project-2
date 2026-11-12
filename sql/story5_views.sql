@@ -443,3 +443,43 @@ JOIN warehouse.v_story5_rental_stock s ON s.city = a.city
 JOIN warehouse.v_story5_renter_burden_by_age y ON y.city = a.city AND y.age_sort = 15
 JOIN build b ON b.city = a.city
 JOIN warehouse.v_story5_supply_vs_demand d ON d.city = a.city;
+
+
+-- ---------------------------------------------------------------------------
+-- v_story5_windsor_vs_peers (radar chart on the Story 5 overview)
+-- Two rows: Windsor, and the average of the four comparison cities, on
+-- eight measures from v_story5_city_profile. Each measure is Windsor's
+-- value as a % of the four cities' average, so different units (dollars,
+-- %, homes) share one scale: 100 = the average, 80 = 20% below it. The
+-- comparison row is 100 on every measure by definition.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story5_windsor_vs_peers AS
+WITH w AS (
+    SELECT * FROM warehouse.v_story5_city_profile WHERE is_windsor
+),
+a AS (
+    SELECT
+        AVG(average_rent_2br) AS rent,
+        AVG(median_renter_income) AS income,
+        AVG(rent_pct_of_median_renter_income) AS rent_share,
+        AVG(pct_renters_spending_30pct_plus) AS burden,
+        AVG(units_per_100_renter_households) AS rental_units,
+        AVG(vacancy_rate) AS vacancy,
+        AVG(starts_per_1000_households) AS build_rate,
+        AVG(pct_needed_homes_built) AS needed_built
+    FROM warehouse.v_story5_city_profile
+    WHERE NOT is_windsor
+)
+SELECT
+    'Windsor' AS group_label,
+    ROUND(100.0 * w.average_rent_2br / a.rent) AS rent_index,
+    ROUND(100.0 * w.median_renter_income / a.income) AS income_index,
+    ROUND(100.0 * w.rent_pct_of_median_renter_income / a.rent_share) AS rent_share_index,
+    ROUND(100.0 * w.pct_renters_spending_30pct_plus / a.burden) AS burden_index,
+    ROUND(100.0 * w.units_per_100_renter_households / a.rental_units) AS rental_units_index,
+    ROUND(100.0 * w.vacancy_rate / a.vacancy) AS vacancy_index,
+    ROUND(100.0 * w.starts_per_1000_households / a.build_rate) AS build_rate_index,
+    ROUND(100.0 * w.pct_needed_homes_built / a.needed_built) AS needed_built_index
+FROM w CROSS JOIN a
+UNION ALL
+SELECT 'Average of the 4 comparison cities', 100, 100, 100, 100, 100, 100, 100, 100;

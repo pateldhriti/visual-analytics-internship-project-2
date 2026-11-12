@@ -342,6 +342,24 @@ VIEWS = {
             "description": "Oct-25 average 2-bedroom apartment rent. One row per city; the view holds every Story 5 measure for the five cities.",
         },
     ],
+    "v_dashboard1_rental_trend": [
+        {
+            "metric_name": "rental_trend_value",
+            "expression": "AVG(value)",
+            "verbose_name": "Value",
+            "metric_type": "avg",
+            "description": "Windsor CMA rent, vacancy, rental stock or turnover each October (filter to one metric).",
+        },
+    ],
+    "v_story5_windsor_vs_peers": [
+        {
+            "metric_name": "rent_index",
+            "expression": "MAX(rent_index)",
+            "verbose_name": "2-Bedroom Rent (% of Peer Average)",
+            "metric_type": "max",
+            "description": "Windsor's 2-bedroom rent as a % of the four comparison cities' average (100 = average).",
+        },
+    ],
     "v_story3_period_comparison": [
         {
             "metric_name": "avg_units_per_year",

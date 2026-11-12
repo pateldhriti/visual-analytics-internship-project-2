@@ -216,9 +216,11 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story4_period_comparison` | city: rent in 2015, 2020, 2025; average yearly rent rise 2015-2020 and 2020-2025; average vacancy per period; Windsor's rent as % of the other four cities' average | Story 4 ten-year section |
 | `v_story4_affordability_gap` | market: rent growth %; renter income growth and the gap index stay NULL until an income-growth source exists (`docs/affordability_gap_index.md`) | Story 4 |
 | `v_dashboard1_rental_yoy` | metric × dwelling type: Windsor previous vs latest survey and the change | Dashboard 1 |
+| `v_dashboard1_rental_trend` | metric (average_rent, vacancy_rate, universe, turnover_rate) × October: Windsor CMA, apartments and row houses, all unit sizes, with `period_date` | Overview trendline tiles |
 | `v_dashboard1_cma_benchmark` | metric: Windsor vs median of the 5 CMAs, with rank | Dashboard 1 |
 | `v_story5_income_bands` | income band: lower and upper bound, for counting households below an income | Story 5 views |
 | `v_story5_rent_affordability` | unit size: Windsor Oct-25 rent, income needed, median renter income, renters who cannot afford it | Story 5 (Story 1 + 2) |
+| `v_story5_windsor_vs_peers` | two rows (Windsor; average of the 4 comparison cities): eight measures from `v_story5_city_profile`, each as Windsor's % of the four cities' average (the average row is 100) | Story 5 overview radar |
 | `v_story5_peer_affordability` | city: 2-bedroom rent, median renter income, rent as % of income, % who cannot afford, % spending 30%+, short city name (`city_short`) | Story 5 (Story 1 + 4) |
 | `v_story5_supply_vs_rental_market` | year 2020–2025: Windsor starts and completions, October vacancy, rent and rent change | Story 5 (Story 3 + 2) |
 | `v_story5_peer_construction` | city × year: starts, completions, starts per 1,000 households, apartment share | Story 5 (Story 3 + 4) |
