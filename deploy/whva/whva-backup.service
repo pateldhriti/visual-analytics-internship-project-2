@@ -1,0 +1,10 @@
+# Runs one backup of the warehouse schema (backup_whva_warehouse.sh).
+# A user unit: install in ~/.config/systemd/user/ (docs/production_hardening.md, section 6).
+[Unit]
+Description=Back up the warehouse schema of the whva database
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/whva/backup_whva_warehouse.sh

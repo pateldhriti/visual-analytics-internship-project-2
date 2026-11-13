@@ -39,7 +39,9 @@ development and the prototype; for production it would sit behind the
 same reverse proxy as the site.
 
 Requires .env with SUPERSET_ADMIN_USER / SUPERSET_ADMIN_PASSWORD (see
-.env.example) and Superset running. The Vite dev server proxies /api to
+.env.example) and Superset running. A Superset without a login form (the
+university's apss, which uses LDAP) needs SUPERSET_LOGIN_PROVIDER=ldap: the
+API then logs in through Superset's REST login instead. The Vite dev server proxies /api to
 this process (web/vite.config.js), so the browser calls it same-origin.
 
 Run from the project virtual environment:
@@ -137,10 +139,11 @@ class SupersetClient:
     restart). Form login rather than the JWT login endpoint, for the same
     reason as etl/setup_superset_dashboard.py's get_session()."""
 
-    def __init__(self, base_url: str, username: str, password: str):
+    def __init__(self, base_url: str, username: str, password: str, provider: str | None = None):
         self.base_url = base_url
         self.username = username
         self.password = password
+        self.provider = provider  # "db" or "ldap": REST login; None: the login form
         self.session = None
         self.headers = {}
         self.embedded_uuids = {}
@@ -148,6 +151,29 @@ class SupersetClient:
 
     def login(self) -> None:
         session = requests.Session()
+        if self.provider:
+            self._api_login(session)
+        else:
+            self._form_login(session)
+
+        csrf = session.get(f"{self.base_url}/api/v1/security/csrf_token/", timeout=REQUEST_TIMEOUT)
+        if csrf.status_code != 200:
+            raise SupersetError(f"Superset login failed (csrf_token returned {csrf.status_code})")
+
+        self.session = session
+        self.headers = {"X-CSRFToken": csrf.json()["result"], "Referer": self.base_url}
+
+    def _api_login(self, session: requests.Session) -> None:
+        resp = session.post(
+            f"{self.base_url}/api/v1/security/login",
+            json={"username": self.username, "password": self.password, "provider": self.provider, "refresh": False},
+            timeout=REQUEST_TIMEOUT,
+        )
+        if resp.status_code != 200 or "access_token" not in resp.json():
+            raise SupersetError(f"Superset login failed (security/login returned {resp.status_code})")
+        session.headers["Authorization"] = f"Bearer {resp.json()['access_token']}"
+
+    def _form_login(self, session: requests.Session) -> None:
         page = session.get(f"{self.base_url}/login/", timeout=REQUEST_TIMEOUT)
         page.raise_for_status()
         match = re.search(r'name="csrf_token" type="hidden" value="([^"]+)"', page.text)
@@ -160,13 +186,6 @@ class SupersetClient:
             timeout=REQUEST_TIMEOUT,
         )
         resp.raise_for_status()
-
-        csrf = session.get(f"{self.base_url}/api/v1/security/csrf_token/", timeout=REQUEST_TIMEOUT)
-        if csrf.status_code != 200:
-            raise SupersetError(f"Superset login failed (csrf_token returned {csrf.status_code})")
-
-        self.session = session
-        self.headers = {"X-CSRFToken": csrf.json()["result"], "Referer": self.base_url}
 
     def request(self, method: str, path: str, **kwargs) -> requests.Response:
         with self.lock:
@@ -297,7 +316,10 @@ class GuestTokenHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     GuestTokenHandler.client = SupersetClient(
-        SUPERSET_URL, os.environ["SUPERSET_ADMIN_USER"], os.environ["SUPERSET_ADMIN_PASSWORD"]
+        SUPERSET_URL,
+        os.environ["SUPERSET_ADMIN_USER"],
+        os.environ["SUPERSET_ADMIN_PASSWORD"],
+        os.environ.get("SUPERSET_LOGIN_PROVIDER") or None,
     )
     server = ThreadingHTTPServer((HOST, PORT), GuestTokenHandler)
     print(f"Guest-token API on http://{HOST}:{PORT} (Superset: {SUPERSET_URL})")

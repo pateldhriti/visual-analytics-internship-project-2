@@ -1,0 +1,29 @@
+# The guest-token API (api/guest_token_server.py) on whva, listening on
+# 127.0.0.1:8090 behind nginx. Secrets come from /etc/whva/token-api.env
+# (root-owned, chmod 600; template: token-api.env.example), never from this file.
+# Install as /etc/systemd/system/whva-token-api.service (docs/production_hardening.md, section 6).
+[Unit]
+Description=Windsor Housing guest-token API
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=whva-api
+Group=whva-api
+WorkingDirectory=/opt/whva/app
+EnvironmentFile=/etc/whva/token-api.env
+ExecStart=/opt/whva/venv/bin/python api/guest_token_server.py
+Restart=on-failure
+RestartSec=5
+
+# The service needs nothing but the network and its own code.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

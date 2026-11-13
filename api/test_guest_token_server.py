@@ -170,3 +170,46 @@ def test_http_unknown_path_is_404(running_server):
 def test_http_health(running_server):
     with urllib.request.urlopen(f"{running_server}/api/health") as resp:
         assert json.loads(resp.read()) == {"status": "ok"}
+
+
+class FakeResponse:
+    def __init__(self, status, body):
+        self.status_code, self.body = status, body
+
+    def json(self):
+        return self.body
+
+
+class FakeSession:
+    """Records requests; answers Superset's REST login and CSRF endpoints."""
+
+    def __init__(self, login_status=200):
+        self.headers, self.calls, self.login_status = {}, [], login_status
+
+    def post(self, url, **kwargs):
+        self.calls.append(("POST", url, kwargs.get("json")))
+        return FakeResponse(self.login_status, {"access_token": "jwt"} if self.login_status == 200 else {})
+
+    def get(self, url, **kwargs):
+        self.calls.append(("GET", url, None))
+        return FakeResponse(200, {"result": "csrf"})
+
+
+def test_rest_login_for_superset_without_a_login_form(monkeypatch):
+    fake = FakeSession()
+    monkeypatch.setattr(server.requests, "Session", lambda: fake)
+    client = server.SupersetClient("https://superset.example", "user", "pw", provider="ldap")
+    client.login()
+    method, url, body = fake.calls[0]
+    assert (method, url) == ("POST", "https://superset.example/api/v1/security/login")
+    assert body["provider"] == "ldap" and body["username"] == "user"
+    assert fake.headers["Authorization"] == "Bearer jwt"
+    assert not any(u.endswith("/login/") for _, u, _ in fake.calls)  # the form is never used
+    assert client.headers["X-CSRFToken"] == "csrf"
+
+
+def test_rest_login_failure_is_reported(monkeypatch):
+    monkeypatch.setattr(server.requests, "Session", lambda: FakeSession(login_status=401))
+    client = server.SupersetClient("https://superset.example", "user", "wrong", provider="ldap")
+    with pytest.raises(server.SupersetError, match="login failed"):
+        client.login()
