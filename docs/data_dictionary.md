@@ -2,7 +2,9 @@
 
 The single index for every table and view in the project database. Tables already described column by column in a source-specific dictionary link to it; everything else is described here.
 
-Row counts are from the local warehouse on 5 November 2026, after `etl/refresh_all.py`.
+Row counts are from the local warehouse, checked again on 13 November 2026 after `etl/refresh_all.py`.
+
+**Two copies.** The local database `housing_windsor` holds every schema below. The university's database (`whva` on psql.cs.uwindsor.ca, which apss reads) holds only the `warehouse` schema, loaded from `etl/export_for_shared_db.py`; there, `windsor_shelter_cost_long` is in `warehouse` instead of `public` (`docs/deploy_university.md`).
 
 ## Index
 
@@ -24,8 +26,11 @@ Row counts are from the local warehouse on 5 November 2026, after `etl/refresh_a
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
 | `fact_peer_cma_context` | warehouse | 1,054 | [Section 2.4](#24-fact_peer_cma_context) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
-| `v_*` views (32) | warehouse | — | [Section 4](#4-views) |
+| `v_*` views (37) | warehouse | — | [Section 4](#4-views) |
+| `windsor_shelter_cost_long` | public (warehouse on `whva`) | 90,720 | [Section 5](#5-story-1-source-tables) |
+| `windsor_shelter_cost` | public | 30,240 | [Section 5](#5-story-1-source-tables) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
+| `staging.*` tables | staging | — | Cleaned copies of the `raw.*` tables with the same names, input to the warehouse loads; rebuilt by `etl/refresh_all.py`, not backed up (`docs/data_architecture.md`) |
 
 ## How the tables connect
 
@@ -228,3 +233,22 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story5_renter_burden_by_age` | city × age group: renter households, share spending 30%+ on shelter, the all-renter share and the gap | Story 5 (Census renters by age + Story 1 + Story 4) |
 | `v_story5_rental_stock` | city: purpose-built rental units (Oct-24, Oct-25), renter households, units per 100 renters | Story 5 (CMHC rental units + Census renters) |
 | `v_story5_city_profile` | city: rent, vacancy, units per 100 renters, renter income, rent share, burden (all and 15–24), starts per 1,000, share of needed homes built | Story 5 (all stories) |
+
+## 5. Story 1 source tables
+
+StatCan Table 98-10-0252-01 (shelter-cost-to-income ratio by tenure, Windsor CMA, 2021 Census), extracted by `etl/extract_windsor_shelter_cost.py` (wide) and reshaped by `etl/reshape_shelter_cost_long.py` (long). `fact_shelter_cost` is built from the same file; these two keep the source's own labels and are what Story 1's tenure chart (`setup_superset_dashboard.py`) reads.
+
+**`windsor_shelter_cost`** (wide, 30,240 rows): one row per income group × household type × housing suitability × dwelling condition × statistic × shelter-cost ratio.
+
+| Column | Type | Meaning |
+|---|---|---|
+| `ref_date` | text | Census year (2021) |
+| `geo`, `dguid` | text | Windsor CMA and its StatCan geography id |
+| `income_group`, `household_type`, `housing_suitability`, `dwelling_condition` | text | StatCan dimension labels as published |
+| `statistic` | text | Number of private households, or the lower / upper bound of its confidence interval |
+| `shelter_cost_ratio` | text | Total, less than 30%, 30% or more, 30% to less than 100%, or Not applicable |
+| `coordinate` | text | StatCan's cell coordinate |
+| `tenure_total`, `tenure_owner`, `tenure_renter` | double | Value for all, owner and renter households; NULL where suppressed |
+| `tenure_*_symbol` | text | StatCan symbol for the value ("x" = suppressed) |
+
+**`windsor_shelter_cost_long`** (long, 90,720 rows): the same data with one row per tenure. Same columns as above, except that `tenure` (Total, Owner, Renter) and `value` / `symbol` replace the three tenure column pairs, `source_coordinate` replaces `coordinate`, and it adds `household_type_member_id` (StatCan member id) and `data_quality_flag`: `suppressed` (symbol "x", value NULL; 906 rows), `not_applicable` (symbol "..."; 2,940 rows), otherwise empty.

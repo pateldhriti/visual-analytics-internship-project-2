@@ -1,7 +1,7 @@
 # Story 1: Who Faces the Greatest Housing Affordability Pressure? (Final Narrative)
 
 **Status:** final text for the React Story 1 page and the final report. Replaces the working draft in `docs/story1_narrative_v1.md`.
-**Source:** Statistics Canada, Table 98-10-0252-01, Shelter-cost-to-income ratio by tenure, Windsor CMA, 2021 Census (2020 incomes). Figures come from the `warehouse.v_story1_*` views and match the Story 1 Superset dashboard (id 3).
+**Source:** Statistics Canada, Table 98-10-0252-01, Shelter-cost-to-income ratio by tenure, Windsor CMA, 2021 Census (2020 incomes). Figures come from the `warehouse.v_story1_*` views and match the Story 1 Superset dashboard (slug `windsor-story-1`, locally and on the university's Superset).
 
 ---
 
@@ -33,7 +33,7 @@ Most burdened households spend between 30% and 100% of their income on shelter: 
 
 ## What this means
 
-In Windsor, affordability pressure is concentrated among **renters, low-income households and people living alone**, and these groups overlap heavily. The other stories build on this: Story 2 asks what renters actually pay, Story 3 whether new supply suits them, and Story 4 whether Windsor's lower rents relieve the pressure.
+In Windsor, affordability pressure is concentrated among **renters, low-income households and people living alone**, and these groups overlap heavily. The other stories build on this: Story 2 asks what renters actually pay, Story 3 whether new supply suits them, Story 4 whether Windsor's lower rents relieve the pressure, and Story 5 combines them: an average 2-bedroom rent is out of reach for about 61% of renter households.
 
 ## Limitations
 
