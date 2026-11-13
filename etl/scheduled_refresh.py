@@ -5,9 +5,10 @@ pipeline. Any failure stops the run and raises an alert.
 
 Steps:
   1. Download the latest StatCan 34-10-0154-01 zip (Windsor housing
-     starts, updated monthly). The other sources are annual CMHC/Census
-     files placed in data/raw by hand; they are checked but not downloaded.
-     Skip with --no-download.
+     starts, updated monthly) and the two ten-year tables, 34-10-0133-01
+     (rents) and 34-10-0130-01 (vacancy), which gain a year each October.
+     The other sources are annual CMHC/Census files; they are checked but
+     not downloaded. Skip with --no-download.
   2. Schema guard (etl/schema_guard.py). If any file's columns, sheets or
      header rows changed, stop before anything is read or loaded, so the
      database and dashboards keep the last good data.
@@ -62,6 +63,9 @@ EXTRACT_STEPS = [
     "extract_windsor_starts_completions.py",
     "extract_peer_cma_context.py",
 ]
+# Steps run with extra arguments: the ten-year tables were downloaded and
+# checked above, so the extract must not download them again after the guard.
+STEP_ARGS = {"extract_peer_cma_context.py": ["--no-download"]}
 LOAD_STEP = "refresh_all.py"
 
 EXIT_OK, EXIT_DOWNLOAD, EXIT_SCHEMA, EXIT_PIPELINE = 0, 1, 2, 3
@@ -135,11 +139,16 @@ def run_script(script: str, log: RunLog, args: list[str] | None = None) -> bool:
 
 
 def download_latest(log: RunLog) -> None:
+    import extract_peer_cma_context as peers
     import extract_windsor_starts_completions as starts
 
-    log("\n=== Download latest StatCan 34-10-0154-01 ===")
-    path = starts.download_source(refresh=True)
-    log(f"Downloaded {path.relative_to(PROJECT_ROOT)} ({path.stat().st_size // 1024} KB)")
+    log("\n=== Download latest StatCan 34-10-0154-01, 34-10-0133-01 and 34-10-0130-01 ===")
+    for path in (
+        starts.download_source(refresh=True),
+        peers.download_table(peers.RENT_HISTORY_ZIP),
+        peers.download_table(peers.VACANCY_HISTORY_ZIP),
+    ):
+        log(f"Downloaded {path.relative_to(PROJECT_ROOT)} ({path.stat().st_size // 1024} KB)")
 
 
 def run(download: bool = True, check_only: bool = False, log: RunLog | None = None) -> int:
@@ -150,7 +159,7 @@ def run(download: bool = True, check_only: bool = False, log: RunLog | None = No
         try:
             download_latest(log)
         except Exception as exc:  # network, HTTP or disk error
-            send_alert(f"download of StatCan 34-10-0154-01 failed: {exc}", log)
+            send_alert(f"download of the latest StatCan tables failed: {exc}", log)
             return EXIT_DOWNLOAD
 
     log("\n=== Schema guard ===")
@@ -171,7 +180,7 @@ def run(download: bool = True, check_only: bool = False, log: RunLog | None = No
         return EXIT_OK
 
     for script in EXTRACT_STEPS:
-        if not run_script(script, log):
+        if not run_script(script, log, STEP_ARGS.get(script)):
             send_alert(f"{script} failed; the warehouse was not reloaded. See {log.path.name}.", log)
             return EXIT_PIPELINE
 

@@ -4779,5 +4779,4852 @@
     ]
    ]
   }
+ },
+ "statcan_rent_history": {
+  "path": "data/raw/statcan/34100133-eng.zip",
+  "columns": [
+   "REF_DATE",
+   "GEO",
+   "DGUID",
+   "Type of structure",
+   "Type of unit",
+   "UOM",
+   "UOM_ID",
+   "SCALAR_FACTOR",
+   "SCALAR_ID",
+   "VECTOR",
+   "COORDINATE",
+   "VALUE",
+   "STATUS",
+   "SYMBOL",
+   "TERMINATED",
+   "DECIMALS"
+  ]
+ },
+ "statcan_vacancy_history": {
+  "path": "data/raw/statcan/34100130-eng.zip",
+  "columns": [
+   "REF_DATE",
+   "GEO",
+   "DGUID",
+   "UOM",
+   "UOM_ID",
+   "SCALAR_FACTOR",
+   "SCALAR_ID",
+   "VECTOR",
+   "COORDINATE",
+   "VALUE",
+   "STATUS",
+   "SYMBOL",
+   "TERMINATED",
+   "DECIMALS"
+  ]
+ },
+ "statcan_housing_by_age": {
+  "path": "data/raw/statcan/98100241-eng.zip",
+  "columns": [
+   "REF_DATE",
+   "GEO",
+   "DGUID",
+   "Age of primary household maintainer (#)",
+   "Household type including census family structure (#)",
+   "Period of construction (#)",
+   "Statistics (#C)",
+   "Housing indicators (#)",
+   "Coordinate",
+   "Tenure including presence of mortgage payments and subsidized housing (#):Total - Tenure including presence of mortgage payments and subsidized housing[#]",
+   "Symbol",
+   "Tenure including presence of mortgage payments and subsidized housing (#):Owner[#]",
+   "Symbol",
+   "Tenure including presence of mortgage payments and subsidized housing (#):With mortgage[#]",
+   "Symbol",
+   "Tenure including presence of mortgage payments and subsidized housing (#):Without mortgage[#]",
+   "Symbol",
+   "Tenure including presence of mortgage payments and subsidized housing (#):Renter[#]",
+   "Symbol",
+   "Tenure including presence of mortgage payments and subsidized housing (#):Subsidized housing[#]",
+   "Symbol",
+   "Tenure including presence of mortgage payments and subsidized housing (#):Not subsidized housing[#]",
+   "Symbol"
+  ]
+ },
+ "cmhc_peer_rms_windsor_2025": {
+  "path": "data/raw/cmhc/peer_rms_2025/rmr-windsor-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Windsor, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Windsor CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Quartile and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Quartiles",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Windsor CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Windsor CMA"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - Windsor CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Windsor CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_peer_rms_london_2025": {
+  "path": "data/raw/cmhc/peer_rms_2025/rmr-london-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "London, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - London CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - London CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Quartile and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Quartiles",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - London CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - London CMA"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - London CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - London CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 4.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%) - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Rental Condominium Apartments",
+     "Apartments in the RMS"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Average Rents ($) by Bedroom Type - London CMA (October #)"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +"
+    ],
+    [
+     "Condo Sub Area",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS"
+    ]
+   ],
+   "Table 4.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments, Average Rents ($) by Bedroom Type - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Total Vacancy Rates (%) by Project* Size - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Rental Condominium Apartments",
+     "Apartments in the RMS"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ],
+   "Table 4.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Condominium Universe, Rental Units, Percentage of Units in Rental and Vacancy Rate (%) - Condominium Apartments - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Condominium Universe",
+     "Rental Units",
+     "Percentage of Units in Rental",
+     "Vacancy Rate"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Condominium Universe, Rental Units, Percentage of Units in Rental and Vacancy Rate (%) - Condominium Apartments by Project* Size - London CMA"
+    ],
+    [],
+    [],
+    [
+     "Condominium Universe",
+     "Rental Units",
+     "Percentage of Units in Rental",
+     "Vacancy Rate"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "London CMA"
+    ]
+   ]
+  }
+ },
+ "cmhc_peer_rms_hamilton_2025": {
+  "path": "data/raw/cmhc/peer_rms_2025/rmr-hamilton-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Hamilton, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Hamilton CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Hamilton CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Quartile and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Quartiles",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Hamilton CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Hamilton CMA"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - Hamilton CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Hamilton CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 4.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%) - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Rental Condominium Apartments",
+     "Apartments in the RMS"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Average Rents ($) by Bedroom Type - Hamilton CMA (October #)"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +"
+    ],
+    [
+     "Condo Sub Area",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS"
+    ]
+   ],
+   "Table 4.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments, Average Rents ($) by Bedroom Type - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Total Vacancy Rates (%) by Project* Size - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Rental Condominium Apartments",
+     "Apartments in the RMS"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ],
+   "Table 4.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Condominium Universe, Rental Units, Percentage of Units in Rental and Vacancy Rate (%) - Condominium Apartments - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Condominium Universe",
+     "Rental Units",
+     "Percentage of Units in Rental",
+     "Vacancy Rate"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Condominium Universe, Rental Units, Percentage of Units in Rental and Vacancy Rate (%) - Condominium Apartments by Project* Size - Hamilton CMA"
+    ],
+    [],
+    [],
+    [
+     "Condominium Universe",
+     "Rental Units",
+     "Percentage of Units in Rental",
+     "Vacancy Rate"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Hamilton CMA"
+    ]
+   ]
+  }
+ },
+ "cmhc_peer_rms_st-catharines-niagara_2025": {
+  "path": "data/raw/cmhc/peer_rms_2025/rmr-st-catharines-niagara-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "St. Catharines-Niagara, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - St. Catharines-Niagara CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - St. Catharines-Niagara CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Quartile and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Quartiles",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "St. Catharines-Niagara CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - St. Catharines-Niagara CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - St. Catharines-Niagara CMA"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - St. Catharines-Niagara CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - St. Catharines-Niagara CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ]
+  }
+ },
+ "cmhc_peer_rms_kitchener-cambridge-waterloo_2025": {
+  "path": "data/raw/cmhc/peer_rms_2025/rmr-kitchener-cambridge-waterloo-2025-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Apartment Units in the Universe, by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 1.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 1.1.9": [
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 1.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Year of Construction and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 1.2.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Year of Construction and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 1.2.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Year of Construction and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Year of Construction",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 1.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 1.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Average Rents ($), by Structure Size and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 1.3.3": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Vacancy Rates (%), by Structure Size and Zone - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    []
+   ],
+   "Table 1.3.4": [
+    [],
+    [],
+    [
+     "#.#.# Private Apartment Turnover Rates (%), by Structure Size and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 1.4": [
+    [],
+    [],
+    [
+     "#.# Private Apartment Vacancy Rates (%), by Rent Quartile and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Rent Quartiles",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 2.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Vacancy Rates (%), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) Units in the Universe, by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 2.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Turnover Rates (%), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 2.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 3.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rates (%), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Number of Private Row (Townhouse) and Apartment Units in the Universe, by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.5": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Estimate of Percentage Change (%) of Average Rent*, by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 3.1.6": [
+    [],
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Turnover Rates (%), by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 3.1.7": [
+    [],
+    [
+     "#.#.# Profile of New Rental Stock - Private Row (Townhouse) and Apartment Vacancy Rate (%), Average Rent ($) and Universe by Zone and Bedroom Type - For Structures Completed Between July # and June # - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent",
+     "Universe",
+     "Vacancy Rate",
+     "Average Rent"
+    ]
+   ],
+   "Table 3.1.8": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Vacancy Rate (%) and Universe by Household Income Quintiles / Monthly Rent Below #% of Income Quintile* by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [
+     "Note: The numbers in this table are based on market units that provided rent data. Data may not add due to rounding."
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Income Quintile",
+     "Renter household income range",
+     "Monthly Rent Range Affordable",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate",
+     "Universe",
+     "Vacancy Rate"
+    ]
+   ],
+   "Table 3.1.9": [
+    [],
+    [
+     "#.#.# Private Row (Townhouse) and Apartment Average Rents ($) of Vacant and Occupied Units by Zone and Bedroom Type - Kitchener-Cambridge-Waterloo CMA (October #)"
+    ],
+    [],
+    [
+     "Y/N: Are the average rents of vacant units statistically higher than the occupied units? (#% of Confidence Level is used for the test)"
+    ],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Zone",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N",
+     "Vacant Units",
+     "Occupied Units",
+     "Y/N"
+    ]
+   ],
+   "Table 4.1.1": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%) - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Rental Condominium Apartments",
+     "Apartments in the RMS"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.1.2": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Average Rents ($) by Bedroom Type - Kitchener-Cambridge-Waterloo CMA (October #)"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +"
+    ],
+    [
+     "Condo Sub Area",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS",
+     "Rental Condo Apts.",
+     "Apts. in the RMS"
+    ]
+   ],
+   "Table 4.1.3": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments, Average Rents ($) by Bedroom Type - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Studio",
+     "# Bedroom",
+     "# Bedroom",
+     "# Bedroom +",
+     "Total"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.2.1": [
+    [],
+    [],
+    [
+     "#.#.# Rental Condominium Apartments and Private Apartments in the RMS, Total Vacancy Rates (%) by Project* Size - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Rental Condominium Apartments",
+     "Apartments in the RMS"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ],
+   "Table 4.3.1": [
+    [],
+    [],
+    [
+     "#.#.# Condominium Universe, Rental Units, Percentage of Units in Rental and Vacancy Rate (%) - Condominium Apartments - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Condominium Universe",
+     "Rental Units",
+     "Percentage of Units in Rental",
+     "Vacancy Rate"
+    ],
+    [
+     "Condo Sub Area",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 4.3.2": [
+    [],
+    [],
+    [
+     "#.#.# Condominium Universe, Rental Units, Percentage of Units in Rental and Vacancy Rate (%) - Condominium Apartments by Project* Size - Kitchener-Cambridge-Waterloo CMA"
+    ],
+    [],
+    [],
+    [
+     "Condominium Universe",
+     "Rental Units",
+     "Percentage of Units in Rental",
+     "Vacancy Rate"
+    ],
+    [
+     "Size",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ],
+    [
+     "Kitchener-Cambridge-Waterloo CMA"
+    ]
+   ]
+  }
  }
 }
