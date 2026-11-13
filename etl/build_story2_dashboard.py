@@ -64,7 +64,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, named, prefix_names, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, match_bar_order, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
@@ -1147,7 +1147,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
 
 
 if __name__ == "__main__":
-    prefix_names(CHARTS)
+    match_bar_order(prefix_names(CHARTS))
     session, headers = get_session()
     print("Logged in to Superset.")
 

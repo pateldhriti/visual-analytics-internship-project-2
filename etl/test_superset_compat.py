@@ -64,6 +64,40 @@ def test_names_are_prefixed_once_on_the_shared_server(monkeypatch):
         importlib.reload(compat)
 
 
+def horizontal_bars():
+    zone = {"expressionType": "SQL", "sqlExpression": "zone_label", "label": "Zone"}
+    return {
+        "zones": {"viz_type": "echarts_timeseries_bar",
+                  "params": {"orientation": "horizontal", "x_axis": zone, "groupby": ["zone_label"], "stack": True}},
+        "ranked": {"viz_type": "echarts_timeseries_bar",
+                   "params": {"orientation": "horizontal", "x_axis": "city", "groupby": [],
+                              "x_axis_sort": "Rent", "x_axis_sort_asc": False}},
+        "column": {"viz_type": "echarts_timeseries_bar", "params": {"x_axis": "year"}},
+    }
+
+
+def test_bar_order_is_unchanged_locally():
+    assert compat.match_bar_order(horizontal_bars()) == horizontal_bars()
+
+
+def test_horizontal_bars_are_reversed_on_the_shared_server(monkeypatch):
+    """Superset 6 draws horizontal bars bottom-up; reversing the sort keeps
+    the order of the local 3.1 charts, read top-down."""
+    monkeypatch.setenv("SUPERSET_TARGET", "shared")
+    shared = importlib.reload(compat)
+    try:
+        charts = shared.match_bar_order(horizontal_bars())
+        zones = charts["zones"]["params"]
+        # with series, Superset 6 reads the sort as a type: by name here
+        assert (zones["x_axis_sort"], zones["x_axis_sort_asc"], zones["stack"]) == ("name", False, "Stack")
+        ranked = charts["ranked"]["params"]
+        assert (ranked["x_axis_sort"], ranked["x_axis_sort_asc"]) == ("Rent", True)
+        assert charts["column"] == horizontal_bars()["column"]
+    finally:
+        monkeypatch.setenv("SUPERSET_TARGET", "local")
+        importlib.reload(compat)
+
+
 def test_an_unknown_target_is_rejected(monkeypatch):
     monkeypatch.setenv("SUPERSET_TARGET", "staging")
     with pytest.raises(ValueError, match="local' or 'shared"):

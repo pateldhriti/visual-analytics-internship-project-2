@@ -34,7 +34,7 @@ import uuid
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import CHART_NAME as TENURE_BAR_NAME
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, upgrade_legacy_bars
 
 DASHBOARD_TITLE = named("Story 1: Who faces the greatest affordability pressure?")
 # A fixed URL name: the website, the token API and the embedding script use it
@@ -542,7 +542,7 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
 if __name__ == "__main__":
     session, headers = get_session()
     print("Logged in to Superset.")
-    charts = prefix_names({**BASE_CHARTS, **NEW_CHARTS})
+    charts = match_bar_order(prefix_names({**BASE_CHARTS, **NEW_CHARTS}))
 
     chart_ids = {}
     tenure_bar = find_existing(session, headers, "chart", "slice_name", named(TENURE_BAR_NAME))
