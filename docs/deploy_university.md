@@ -59,4 +59,7 @@ dashboards in place.
 ## 3. The website on whva
 
 Waiting for the admin's answer on installing nginx and python3-venv and on
-public dashboard access; this part will be filled in then.
+public dashboard access. The configuration is ready in `deploy/whva/` and
+the steps are in `docs/production_hardening.md`, section 6: HTTPS with the
+university's certificate, secrets, firewall, and a daily backup of our
+schema. The backup (6.3) needs no new packages and can be installed now.
