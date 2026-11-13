@@ -1,7 +1,7 @@
 # Story 2: What Is Happening in Windsor's Rental Market? (Final Narrative)
 
 **Status:** final text for the React Story 2 page and the final report. Builds on the patterns in `docs/story2_exploratory_findings.md`.
-**Source:** CMHC Rental Market Survey, Windsor CMA, October 2020 to October 2025. Purpose-built rental buildings with 3 or more units, apartments and row houses combined unless stated. Figures come from the `warehouse.v_story2_*` views and match the Story 2 Superset dashboard (id 4).
+**Source:** CMHC Rental Market Survey, Windsor CMA, October 2020 to October 2025. Purpose-built rental buildings with 3 or more units, apartments and row houses combined unless stated. Figures come from the `warehouse.v_story2_*` views and match the Story 2 Superset dashboard (slug `windsor-story-2`, locally and on the university's Superset).
 
 ---
 
@@ -33,7 +33,7 @@ About 1 in 8 units (11.9%) changed tenants in the year to October 2025. Turnover
 
 ## What this means
 
-Windsor's rental market has loosened since 2022, but rents have kept climbing faster than in earlier years. Story 1 found the median renter household earned $48,400 in 2020; at 30% of income, that affords about $1,210 a month, already below the 2025 average rent of $1,293. Story 3 looks at whether new construction is adding the kind of units renters need, and Story 4 at how these rents compare with similar cities.
+Windsor's rental market has loosened since 2022, but rents have kept climbing faster than in earlier years. Story 1 found the median renter household earned $48,400 in 2020; at 30% of income, that affords about $1,210 a month, already below the 2025 average rent of $1,293. Story 3 looks at whether new construction is adding the kind of units renters need, and Story 4 at how these rents compare with similar cities. CMHC's zone tables cannot be downloaded before 2021, so Story 4 also gives the longer view: Windsor's rent and vacancy every October since 2015, comparing the five years before the pandemic with the five from it.
 
 ## Limitations
 

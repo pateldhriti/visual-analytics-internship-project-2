@@ -291,14 +291,20 @@ UNIT_SIZES = {
 }
 
 
+def download_table(path: Path) -> Path:
+    """Download the latest copy of a small StatCan table; raises if it fails."""
+    resp = requests.get(TABLE_URL.format(pid=path.name.split("-")[0]), timeout=120)
+    resp.raise_for_status()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(resp.content)
+    return path
+
+
 def refresh_table(path: Path) -> Path:
     """Download the latest copy of a small StatCan table; keep the saved one
     if StatCan cannot be reached."""
     try:
-        resp = requests.get(TABLE_URL.format(pid=path.name.split("-")[0]), timeout=120)
-        resp.raise_for_status()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(resp.content)
+        download_table(path)
     except requests.RequestException as exc:
         if not path.exists():
             raise
@@ -402,15 +408,18 @@ def check(rows: list[dict]) -> None:
         raise ValueError(f"No rows extracted for: {missing}")
 
 
-def main() -> pd.DataFrame:
+def main(download: bool = True) -> pd.DataFrame:
+    """download=False reads the saved ten-year tables as they are: the
+    weekly refresh downloads them itself, before the schema guard checks them."""
+    latest = refresh_table if download else (lambda path: path)
     rows = (
         extract_census_profile()
         + extract_starts()
         + extract_shelter_cost()
         + extract_housing_indicators_by_age(download_indicators())
         + extract_rental_universe(download_rms())
-        + extract_rent_history(refresh_table(RENT_HISTORY_ZIP))
-        + extract_vacancy_history(refresh_table(VACANCY_HISTORY_ZIP))
+        + extract_rent_history(latest(RENT_HISTORY_ZIP))
+        + extract_vacancy_history(latest(VACANCY_HISTORY_ZIP))
     )
     check(rows)
     out = pd.DataFrame(rows, columns=COLUMNS)
@@ -422,4 +431,6 @@ def main() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    main(download="--no-download" not in sys.argv[1:])

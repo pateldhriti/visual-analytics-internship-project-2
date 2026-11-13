@@ -218,8 +218,8 @@ CSS only, see the script's docstring; dashboard rebuilds keep it:
 
 `etl/scheduled_refresh.py` is the job to schedule. Each run:
 
-1. downloads the latest StatCan 34-10-0154-01 zip (Windsor housing starts, updated monthly; the CMHC and Census files are annual and are placed in `data/raw` by hand);
-2. runs the **schema guard** (`etl/schema_guard.py`), which compares every source file's columns, sheets and header rows with the saved snapshot in `etl/configs/source_schemas.json`;
+1. downloads the latest StatCan 34-10-0154-01 zip (Windsor housing starts, updated monthly) and the two ten-year tables 34-10-0133-01 (rents) and 34-10-0130-01 (vacancy), which gain a year each October; the CMHC and Census files are annual and are placed in `data/raw` by hand (`etl/fetch_raw_data.py`);
+2. runs the **schema guard** (`etl/schema_guard.py`), which compares every source file's columns, sheets and header rows with the saved snapshot in `etl/configs/source_schemas.json` (18 files, including the comparison cities' CMHC workbooks and the ten-year tables). Everything is downloaded before the guard, and nothing after it: `extract_peer_cma_context.py` runs with `--no-download`, so a file the guard has not checked is never loaded;
 3. only if the guard passes, runs every extract/reshape script and then `refresh_all.py`.
 
 If the download, the guard or any step fails, the run stops (the database keeps the last good data), appends the reason to `logs/refresh_alerts.log`, and posts it to `ALERT_WEBHOOK_URL` (a Microsoft Teams or Slack incoming webhook) if that is set in `.env`. Every run's full output is in `logs/scheduled_refresh_<time>.log`. Exit codes: 0 success, 1 download failed, 2 schema guard failed, 3 a step failed.

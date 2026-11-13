@@ -12,6 +12,7 @@ import zipfile
 
 import openpyxl
 import pytest
+import requests
 
 import scheduled_refresh
 import schema_guard
@@ -198,3 +199,47 @@ def test_alert_is_posted_to_the_webhook(tmp_path, monkeypatch):
 
     assert posted["url"] == "https://example.org/hook"
     assert "test failure" in posted["json"]["text"]
+
+
+def test_ten_year_tables_and_comparison_workbooks_are_guarded():
+    guarded = {source.path for source in schema_guard.SOURCES}
+    assert "data/raw/statcan/34100133-eng.zip" in guarded  # rents, downloaded every run
+    assert "data/raw/statcan/34100130-eng.zip" in guarded  # vacancy, downloaded every run
+    assert "data/raw/statcan/98100241-eng.zip" in guarded
+    assert "data/raw/cmhc/peer_rms_2025/rmr-london-2025-en.xlsx" in guarded
+    names = [source.name for source in schema_guard.SOURCES]
+    assert len(names) == len(set(names))  # each source keeps its own snapshot entry
+
+
+def test_downloads_happen_before_the_guard_and_not_again_after_it(refresh_env, monkeypatch):
+    """The ten-year tables are downloaded before the schema guard checks them;
+    the extract that reads them is told not to download them again."""
+    tmp_path, _ = refresh_env
+    events = []
+    monkeypatch.setattr(scheduled_refresh, "download_latest", lambda log: events.append("download"))
+    monkeypatch.setattr(schema_guard, "check", lambda: events.append("guard") or [])
+    monkeypatch.setattr(
+        scheduled_refresh,
+        "run_script",
+        lambda script, log, args=None: events.append((script, tuple(args or ()))) or True,
+    )
+
+    code = scheduled_refresh.run(download=True, log=FakeLog(tmp_path))
+
+    assert code == scheduled_refresh.EXIT_OK
+    assert events[:2] == ["download", "guard"]
+    assert ("extract_peer_cma_context.py", ("--no-download",)) in events
+
+
+def test_failed_download_stops_before_the_guard(refresh_env, monkeypatch):
+    tmp_path, ran = refresh_env
+
+    def fail(log):
+        raise requests.ConnectionError("StatCan unreachable")
+
+    monkeypatch.setattr(scheduled_refresh, "download_latest", fail)
+    monkeypatch.setattr(schema_guard, "check", lambda: pytest.fail("guard ran after a failed download"))
+
+    assert scheduled_refresh.run(download=True, log=FakeLog(tmp_path)) == scheduled_refresh.EXIT_DOWNLOAD
+    assert ran == []
+    assert "download of the latest StatCan tables failed" in (tmp_path / "alerts.log").read_text(encoding="utf-8")

@@ -65,6 +65,16 @@ SOURCES = [
         "data/raw/cmhc/quarterly-starts-completions-under-construction-06-26-en.xlsx",
         "xlsx",
     ),
+    # Story 4's ten-year rents and vacancy and Story 5's comparison cities
+    # (etl/extract_peer_cma_context.py). The two ten-year tables are
+    # downloaded on every scheduled run, before this check.
+    Source("statcan_rent_history", "data/raw/statcan/34100133-eng.zip", "zip_csv", "34100133.csv"),
+    Source("statcan_vacancy_history", "data/raw/statcan/34100130-eng.zip", "zip_csv", "34100130.csv"),
+    Source("statcan_housing_by_age", "data/raw/statcan/98100241-eng.zip", "zip_csv", "98100241.csv"),
+    *[
+        Source(f"cmhc_peer_rms_{city}_2025", f"data/raw/cmhc/peer_rms_2025/rmr-{city}-2025-en.xlsx", "xlsx")
+        for city in ("windsor", "london", "hamilton", "st-catharines-niagara", "kitchener-cambridge-waterloo")
+    ],
 ]
 
 
