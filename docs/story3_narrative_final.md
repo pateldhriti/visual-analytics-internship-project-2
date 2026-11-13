@@ -1,7 +1,7 @@
 # Story 3: Is Windsor Building Enough Housing? (Final Narrative)
 
 **Status:** final text for the React Story 3 page and the final report. Replaces the Ontario-based draft in `docs/story3_narrative_v1.md`; builds on `docs/story3_exploratory_findings.md`.
-**Source:** CMHC Starts and Completions Survey for Windsor CMA, published by Statistics Canada as Table 34-10-0154-01, January 2016 to September 2026. Figures come from `warehouse.v_story3_windsor_supply_annual` and `v_story3_windsor_supply_per_1000_households` and match the Story 3 Superset dashboard (id 7).
+**Source:** CMHC Starts and Completions Survey for Windsor CMA, published by Statistics Canada as Table 34-10-0154-01, January 2016 to September 2026. Figures come from `warehouse.v_story3_windsor_supply_annual` and `v_story3_windsor_supply_per_1000_households` and match the Story 3 Superset dashboard (slug `windsor-story-3`, locally and on the university's Superset).
 
 ---
 
