@@ -1,7 +1,7 @@
 # Story 4: How Does Windsor Compare with Similar Cities? (Final Narrative)
 
 **Status:** final text for the React Story 4 page and the final report. Builds on `docs/story4_exploratory_findings.md`.
-**Source:** CMHC Rental Market Survey data tables, Canada, October 2024 and October 2025. Apartments only (purpose-built, 3 or more units), because CMHC publishes the city-by-city comparison for apartments only. Figures come from `warehouse.v_story4_*` and `warehouse.v_dashboard1_cma_benchmark` and match the Story 4 Superset dashboard (id 6).
+**Source:** CMHC Rental Market Survey data tables, Canada, October 2024 and October 2025. Apartments only (purpose-built, 3 or more units), because CMHC publishes the city-by-city comparison for apartments only. The ten-year section uses CMHC's October survey as republished by Statistics Canada (tables 34-10-0133-01 and 34-10-0130-01, 2015 to 2025), which includes row houses. Figures come from `warehouse.v_story4_*` and `warehouse.v_dashboard1_cma_benchmark` and match the Story 4 Superset dashboard (slug `windsor-story-4`, locally and on the university's Superset).
 
 ---
 

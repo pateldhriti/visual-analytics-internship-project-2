@@ -75,7 +75,10 @@ const STEPS = [
 const YEARS = [
   ["Affordability (Story 1)", "2021 Census. Incomes are for 2020."],
   ["Rental market (Story 2)", "CMHC survey taken every October, 2020 to 2025."],
-  ["Comparison with other cities (Story 4)", "CMHC survey, October 2024 and October 2025."],
+  [
+    "Comparison with other cities (Story 4)",
+    "CMHC survey, October 2024 and October 2025; every October from 2015 to 2025 for the ten-year rents and vacancy.",
+  ],
   ["Housing supply (Story 3)", "Monthly, January 2016 to the latest month published."],
   [
     "Combined analysis (Story 5)",
@@ -110,7 +113,7 @@ const RULES = [
   },
   {
     term: "Apartments or apartments plus row houses",
-    text: "Windsor's own figures (Story 2) include apartments and row houses. The comparison with other cities (Story 4) uses apartments only, because that is what CMHC publishes for every city, so the two can differ slightly.",
+    text: "Windsor's own figures (Story 2) include apartments and row houses. The comparison with other cities (Story 4) uses apartments only, because that is what CMHC publishes for every city, so the two can differ slightly. Story 4's ten-year figures (from Statistics Canada's republication of the same survey) include row houses again, and are labelled so.",
   },
 ];
 

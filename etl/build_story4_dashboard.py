@@ -217,7 +217,7 @@ CHARTS = {
         "dataset_id": DATASET_HISTORY,
         **dict(zip(("viz_type", "params"), trendline_kpi(
             {"expressionType": "SQL", "sqlExpression": "AVG(average_rent_2br)", "label": "2-Bedroom Rent"},
-            "period_date", [market_filter_on("city")], "$,.0f", 10, " since 2015",
+            "period_date", [market_filter_on("city")], "$,.0f", 10, " since 2015 · apartments + row houses",
         ))),
     },
     "vacancy-by-market": {

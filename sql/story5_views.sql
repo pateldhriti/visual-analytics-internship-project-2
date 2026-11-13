@@ -454,8 +454,14 @@ JOIN warehouse.v_story5_supply_vs_demand d ON d.city = a.city;
 -- comparison row is 100 on every measure by definition.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE VIEW warehouse.v_story5_windsor_vs_peers AS
-WITH w AS (
-    SELECT * FROM warehouse.v_story5_city_profile WHERE is_windsor
+-- The city profile is computed once (MATERIALIZED): read twice, with the
+-- Windsor filter pushed into it, PostgreSQL planned it far slower (63 ms
+-- vs about 7 ms; docs/superset_performance.md).
+WITH p AS MATERIALIZED (
+    SELECT * FROM warehouse.v_story5_city_profile
+),
+w AS (
+    SELECT * FROM p WHERE is_windsor
 ),
 a AS (
     SELECT
@@ -467,7 +473,7 @@ a AS (
         AVG(vacancy_rate) AS vacancy,
         AVG(starts_per_1000_households) AS build_rate,
         AVG(pct_needed_homes_built) AS needed_built
-    FROM warehouse.v_story5_city_profile
+    FROM p
     WHERE NOT is_windsor
 )
 SELECT

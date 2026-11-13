@@ -90,7 +90,7 @@ const FILTERS = [
     label: "Period",
     value: `October ${LATEST}, and every October 2015-${LATEST} (Years filter)`,
   },
-  { label: "Unit scope", value: "Apartments only" },
+  { label: "Unit scope", value: "Apartments only; ten-year figures add row houses" },
 ];
 
 const KPIS = [
@@ -113,7 +113,7 @@ const KPIS = [
     trend: "up",
   },
   {
-    label: "Windsor 2-bedroom rent since 2015",
+    label: "Windsor 2-bedroom rent since 2015 (apartments + row houses)",
     value: `+${pct(S.rentChangeDecade, 0)}`,
     accent: "rose",
     trend: "up",

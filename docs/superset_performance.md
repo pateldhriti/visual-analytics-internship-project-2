@@ -65,3 +65,20 @@ docker exec windsor_housing_redis redis-cli -n 4 FLUSHDB
 # cache lifetime of a stored chart result
 docker exec windsor_housing_redis redis-cli -n 4 --scan | head -1   # then: redis-cli -n 4 TTL <key>
 ```
+
+## Re-check, 13 November 2026
+
+Since 6 November, several views were added: the ten-year Story 4 views, the period comparisons, the Overview trend and the Story 5 city profile and radar. All 37 views were timed again the same way (`EXPLAIN ANALYZE`, average of 3 runs after one warm-up).
+
+**Slowest view found:** `v_story5_windsor_vs_peers`, behind the Story 5 overview radar, took **63.0 ms**, more than six times the next slowest view. It reads `v_story5_city_profile` (6.9 ms) twice, once for Windsor and once for the comparison average. PostgreSQL pushed the Windsor filter into the profile and planned that copy far worse than the profile itself. The view now computes the profile once (`WITH p AS MATERIALIZED`) and reads both rows from it. It returns the same two rows, and now takes **about 6-9 ms** (runs of 9.6, 7.1, 15.5 and 6.1 ms).
+
+| View | Before | After |
+|---|---|---|
+| v_story5_windsor_vs_peers | 63.0 | ~7 (6.1-9.6, one run 15.5) |
+| v_story2_zone_bedroom_explanation | 9.7 | unchanged: builds comparison sentences for 35 zone × unit-size rows |
+| v_story5_city_profile | 6.9 | unchanged: joins five sources for five cities |
+| every other view (34) | 0.5-3.5 | unchanged |
+
+No new index is needed: the remaining views read small tables (at most about 2,400 rows) or use the indexes from 6 November.
+
+**Chart cache:** still 24 hours. After visiting the dashboards, Redis DB 4 held 325 cached chart results, and a sampled key had 86,007 seconds left.
