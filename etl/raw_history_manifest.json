@@ -1,0 +1,30 @@
+{
+  "cmhc/history/rmr-windsor-2019-en.xlsx": {
+    "sha256": "744a946c749ac107ce0083d085d368e641adad520c33c5ec2544b028cbacbac3",
+    "bytes": 61343
+  },
+  "cmhc/history/rmr-windsor-2020-en.xlsx": {
+    "sha256": "2f0e546190ac88d5c7bcb6160a87717f453651a6df7e5763685ad2263688780b",
+    "bytes": 89227
+  },
+  "cmhc/history/rmr-windsor-2021-en.xlsx": {
+    "sha256": "504ec09030817804a734d7cc24a127c60730eb9725d9ec5a36552acb2c9b370f",
+    "bytes": 87622
+  },
+  "cmhc/history/rmr-windsor-2022-en.xlsx": {
+    "sha256": "19eb36d3dabe1318e95a5aedd3a77ca71294c2c0802ffe2edf815a4db0a71333",
+    "bytes": 93861
+  },
+  "cmhc/history/rmr-windsor-2023-en.xlsx": {
+    "sha256": "5b83d94202a5ae23235fd00d594bec9ba53e1df3c8c72c5e23d548c1abc3368b",
+    "bytes": 95316
+  },
+  "cmhc/history/rmr-windsor-2024-en.xlsx": {
+    "sha256": "e571fe410aab391e838e7842b52dcc783fec8519f04dee99d3177d053ae82430",
+    "bytes": 96200
+  },
+  "cmhc/rmr-windsor-2025-en.xlsx": {
+    "sha256": "b8ef8ef9e518dbc8c3a8c12b2e7c82c70a8bc685897704c41ae4553deb581d37",
+    "bytes": 96317
+  }
+}
