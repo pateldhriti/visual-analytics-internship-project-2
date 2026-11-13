@@ -37,3 +37,21 @@ A KPI with the same name must show the same number. Where two figures legitimate
 ## How to re-check
 
 Open each dashboard at `http://localhost:8088/superset/dashboard/<id>/?standalone=2` (5, 3, 4, 7, 6, 8) and compare the cards with this table, or query the views named in the cards' descriptions.
+
+## Re-check, 13 November 2026
+
+Since the first check, several KPI cards were added: trendline tiles on the Overview, Story 2 and Story 4, Story 3's yearly cards, Story 5's overview cards, and the ten-year rents. Every big-number card on every tab of the six dashboards was read again as an anonymous visitor (30 cards), and the React pages were compared with `web/src/data/figures.json`, which the pages now read their figures from.
+
+| KPI | Where | Shows | Verdict |
+|---|---|---|---|
+| Renter / owner burden rate | Overview, Story 1 | 34.8% / 10.9% | Consistent (same chart objects) |
+| Households spending 30%+ | Story 1 | 28,740 | Consistent: the sum of owners and renters, labelled so; the overall count is 28,745 (StatCan rounding, explained on the page) |
+| Windsor average rent, vacancy, stock, turnover | Overview, Story 2 | $1,293, 3.6%, 19,883, 11.9% (rent +35.7% since Oct-20 on both) | Consistent |
+| Windsor 2-bedroom rent | Story 4 card | $1,454 (2-bedroom apartments, Oct-25) | Consistent with Story 5's city comparison and the Story 4 page |
+| Windsor 2-bedroom rent, 2015 to 2025 | Story 4 card, Story 4 page, Story 1 and 5 pages | **$1,451** (apartments **and row houses**) | **Fixed.** Shown beside the $1,454 card with no scope, it read as a different number for the same thing. The card's caption now says "since 2015 · apartments + row houses", and so do the Story 4 page's card and unit-scope label |
+| Windsor apartment vacancy | Story 4 | 3.7% (apartments only) | Consistent; differs from Story 2's 3.6% by scope, as labelled |
+| Homes started / completed / under construction | Story 3, Story 3 page | 1,262 / 1,671 / 1,635 (2025) | Consistent |
+| Starts per 1,000 households | Story 3 (7.6, selected year 2025), Story 5 (8.4, yearly average since 2016) | — | Consistent: different measures, each labelled with its period |
+| Renters who cannot afford a 2-bedroom, rent share of income, homes completed 2023-2025 | Story 5, Story 1 and 5 pages | 61%, 36%, 5,247 | Consistent |
+
+The Methodology page's note on apartments and row houses now also covers Story 4's ten-year figures.
