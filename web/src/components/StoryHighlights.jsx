@@ -753,11 +753,11 @@ function Finding({ number, title, children, chart, table, link, source, flip }) 
         {children}
         {link.to.startsWith("#") ? (
           <a className="hl-link" href={link.to}>
-            {link.label} &darr;
+            {link.label}&nbsp;&darr;
           </a>
         ) : (
           <Link className="hl-link" to={link.to}>
-            {link.label} &rarr;
+            {link.label}&nbsp;&rarr;
           </Link>
         )}
       </div>
