@@ -33,7 +33,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_ANNUAL = dataset_id("v_story3_windsor_supply_annual")
@@ -552,7 +552,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
 
 
 if __name__ == "__main__":
-    prefix_names(CHARTS)
+    match_bar_order(prefix_names(CHARTS))
     session, headers = get_session()
     print("Logged in to Superset.")
 

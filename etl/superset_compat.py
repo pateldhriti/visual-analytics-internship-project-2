@@ -47,6 +47,34 @@ def named(name: str) -> str:
     return name if name.startswith(NAME_PREFIX) else NAME_PREFIX + name
 
 
+def match_bar_order(charts: dict) -> dict:
+    """Superset 6 draws a horizontal bar chart's categories bottom-up where
+    3.1 draws them top-down, so on the shared server every horizontal bar
+    chart's sort is reversed: the bars then read in the same order as
+    locally (Zone 1 at the top; largest first where sorted by value)."""
+    if not SHARED:
+        return charts
+    for spec in charts.values():
+        params = spec.get("params", {})
+        if spec.get("viz_type") != "echarts_timeseries_bar" or params.get("orientation") != "horizontal":
+            continue
+        x = params["x_axis"]
+        x_label = x["label"] if isinstance(x, dict) else x
+        if params.get("x_axis_sort"):
+            params["x_axis_sort_asc"] = not params.get("x_axis_sort_asc", True)
+        else:  # unsorted: 3.1 shows the categories in ascending order, top-down
+            params["x_axis_sort"] = x_label
+            params["x_axis_sort_asc"] = False
+        if params.get("groupby"):
+            # With series (each zone or city is its own series, for
+            # cross-filtering and the Windsor colour) Superset 6 reads
+            # x_axis_sort as a sort type: by name, or by the bar's total.
+            params["x_axis_sort"] = "name" if params["x_axis_sort"] == x_label else "sum"
+        if params.get("stack") is True:  # Superset 6 stacks only on "Stack"
+            params["stack"] = "Stack"
+    return charts
+
+
 def prefix_names(charts: dict) -> dict:
     """Apply named() to every chart spec's slice_name (and legacy_names), in place."""
     for spec in charts.values():
@@ -267,9 +295,9 @@ def heatmap(x: str, y: str, metric: dict, filters: list, number_format: str) -> 
         "xscale_interval": -1,
         "yscale_interval": -1,
     }
-    if SHARED:  # heatmap_v2 (ECharts), Superset 4.1 and later
+    if SHARED:  # heatmap_v2 (ECharts), Superset 4.1 and later; a wider left margin for long row labels
         return "heatmap_v2", {**common, "x_axis": x, "groupby": [y], "show_percentage": False,
-                              "value_bounds": [None, None]}
+                              "value_bounds": [None, None], "left_margin": 170}
     return "heatmap", {**common, "all_columns_x": x, "all_columns_y": y, "show_perc": False,
                        "canvas_image_rendering": "pixelated", "left_margin": "auto", "bottom_margin": "auto"}
 

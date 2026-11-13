@@ -47,7 +47,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, named, prefix_names, radar, scatter, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, match_bar_order, named, prefix_names, radar, scatter, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_RENT_AFFORDABILITY = dataset_id("v_story5_rent_affordability")
@@ -1006,7 +1006,7 @@ def unlink_stale_charts(session, headers, dashboard_id: int, keep: set) -> list:
 
 
 if __name__ == "__main__":
-    prefix_names(CHARTS)
+    match_bar_order(prefix_names(CHARTS))
     session, headers = get_session()
     print("Logged in to Superset.")
 

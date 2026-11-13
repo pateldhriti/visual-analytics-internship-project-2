@@ -34,7 +34,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, named, prefix_names, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, trendline_kpi, upgrade_legacy_bars
 
 DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
 DATASET_RENT = dataset_id("v_story4_rent_comparison")
@@ -595,7 +595,7 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
 
 
 if __name__ == "__main__":
-    prefix_names(CHARTS)
+    match_bar_order(prefix_names(CHARTS))
     session, headers = get_session()
     print("Logged in to Superset.")
 
