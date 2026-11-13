@@ -183,7 +183,7 @@ export default function StoryPage({
               ))}
             </ul>
             <Link to="/stories/integrated-analysis" className="story-connections-link">
-              See the combined analysis in Story 5 →
+              See the combined analysis in Story 5&nbsp;→
             </Link>
           </motion.section>
         )}

@@ -1,8 +1,8 @@
 # Accessibility and Mobile Check
 
 **Date:** 2026-11-06
-**Scope:** the React site's eight pages (Home, Stories 1–5, Methodology, Sources) and the four
-embedded Superset dashboards.
+**Scope:** the React site's eight pages (Home, Stories 1–5, Methodology, Sources) and the
+embedded Superset dashboards (four at first; all five since Story 5 was embedded).
 **Standard:** WCAG 2.1 AA.
 
 ## How it was checked
@@ -67,6 +67,20 @@ The first check ran axe on each page as it loaded. Several sections only fade in
 | White numbers on coloured tiles, 3.6–4.2:1 | Story 3's definition cards ("01" to "04") | White badge with dark text; the tile colour is now its border |
 | Sideways-scrolling dashboard frame not reachable by keyboard | Every embedded dashboard, on phones | On phones the frame can be focused (labelled "…, scrolls sideways") and scrolled with the arrow keys |
 | New "How this connects" link at 4.47:1 | Stories 1–4 | Link text in dark ink, with the accent as a thick underline |
+
+## Re-check (2026-11-13)
+
+Since the first check, the site gained its own charts: "The story in four charts" on Home (a waffle, a rent-vs-income bar, a ten-year line and a homes-built chart) and key-finding charts on every story page, including Story 3's slope chart. Their figures now come from `web/src/data/figures.json`, and the embeds follow the height of the dashboard tab shown. The same checks were run again on all eight pages.
+
+| Check | Result |
+|---|---|
+| axe-core 4.10.2, WCAG 2.0/2.1 A and AA, after scrolling through each page | **0 violations** on all 8 pages at 1,440 px and at 375 px |
+| Page wider than the screen at 320, 375 and 414 px | None: no page scrolls sideways |
+| Text alternative for each chart | All 13 charts drawn by the site have a label (`role="img"` with `aria-label`), and each has a **Show the numbers** table |
+| Keyboard | Every chart's marks can be reached with Tab, and each announces its value (for example "Cannot afford it: 27,664 households"). Every tab stop on the site shows a focus outline; the only stops without one are inside the embedded Superset dashboards (see *Not covered*) |
+| Charts at 375 px | Readable: the ten-year line chart shortens city names and labels every other year, and the slope chart drops its long dwelling-type names |
+
+**One fix:** at phone width, the arrow at the end of long chart links ("Explore affordability by unit size (Story 5) →") wrapped onto a line of its own. The arrow is now joined to the last word with a non-breaking space (`web/src/components/StoryHighlights.jsx`, `StoryPage.jsx`).
 
 ## Not covered
 
