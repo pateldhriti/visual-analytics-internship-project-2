@@ -1,0 +1,26 @@
+{
+  "windsor_census_profile.csv": {
+    "sha256": "f7a48d49d9e9d72d4d314e52ec5ea53250e20bdcb64dec0ea2e73f140fb12a05",
+    "bytes": 121439
+  },
+  "windsor_shelter_cost.csv": {
+    "sha256": "f765e8eddffff3919514eb723a4c1f100abe1ca3270e487d22be49157372fd67",
+    "bytes": 772927
+  },
+  "windsor_rental_market.csv": {
+    "sha256": "eaf56384130f00207569e78155b7c70470ee7063af4a8e6b63a7a6ee95ae7630",
+    "bytes": 372462
+  },
+  "windsor_starts_completions.csv": {
+    "sha256": "236be4656e7d95721ad94da9ddbacb77b07dcceecd9da97f2e6657856eeba274",
+    "bytes": 2956
+  },
+  "canada_rental_market_comparison.csv": {
+    "sha256": "1e43c4e5834e32fbd5ff0498d818dc8639dea72c273b72e37dfdc34b65e40084",
+    "bytes": 35828
+  },
+  "windsor_rental_market_history.csv": {
+    "sha256": "2555d76235fd53ecc93cb22aa187d67c35d38e90d42ee32a759c44bf17985bd0",
+    "bytes": 6711
+  }
+}

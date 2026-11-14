@@ -1,0 +1,44 @@
+cmhc_centre_name,cma_dguid,statcan_geo_name,statcan_geo_level,alt_geo_code,match_rule,match_note,boundary_changed_flag,focus_peer,focus_peer_label,cmhc_table_1_0_editions,in_2021_table_5_0
+Abbotsford-Mission CMA,2021S0503932,Abbotsford - Mission,Census metropolitan area,932,explicit_lookup,hyphen spacing,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Barrie CMA,2021S0503568,Barrie,Census metropolitan area,568,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Belleville - Quinte West CMA,2021S0503522,Belleville - Quinte West,Census metropolitan area,522,explicit_lookup,exact name (2023+ editions),False,False,,2023;2024;2025,False
+Belleville CMA,2021S0503522,Belleville - Quinte West,Census metropolitan area,522,explicit_lookup,renamed and redefined (2016 -> 2021 census CMA),True,False,,2019;2020;2021;2022,True
+Brantford CMA,2021S0503543,Brantford,Census metropolitan area,543,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Calgary CMA,2021S0503825,Calgary,Census metropolitan area,825,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Chilliwack CMA,2021S0503930,Chilliwack,Census metropolitan area,930,exact_after_cma_suffix,,False,False,,2023;2024;2025,False
+Drummondville CMA,2021S0503447,Drummondville,Census metropolitan area,447,exact_after_cma_suffix,,False,False,,2023;2024;2025,False
+Edmonton CMA,2021S0503835,Edmonton,Census metropolitan area,835,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Fredericton CMA,2021S0503320,Fredericton,Census metropolitan area,320,exact_after_cma_suffix,,False,False,,2023;2024;2025,False
+Greater Sudbury/Grand Sudbury CMA,2021S0503580,Greater Sudbury / Grand Sudbury,Census metropolitan area,580,explicit_lookup,slash spacing,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Guelph CMA,2021S0503550,Guelph,Census metropolitan area,550,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Halifax CMA,2021S0503205,Halifax,Census metropolitan area,205,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Hamilton CMA,2021S0503537,Hamilton,Census metropolitan area,537,exact_after_cma_suffix,,False,True,Hamilton,2019;2020;2021;2022;2023;2024;2025,True
+Kamloops CMA,2021S0503925,Kamloops,Census metropolitan area,925,exact_after_cma_suffix,,False,False,,2023;2024;2025,False
+Kelowna CMA,2021S0503915,Kelowna,Census metropolitan area,915,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Kingston CMA,2021S0503521,Kingston,Census metropolitan area,521,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Kitchener-Cambridge-Waterloo CMA,2021S0503541,Kitchener - Cambridge - Waterloo,Census metropolitan area,541,explicit_lookup,hyphen spacing,False,True,Kitchener-Cambridge-Waterloo,2019;2020;2021;2022;2023;2024;2025,True
+Lethbridge CMA,2021S0503810,Lethbridge,Census metropolitan area,810,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+London CMA,2021S0503555,London,Census metropolitan area,555,exact_after_cma_suffix,,False,True,London,2019;2020;2021;2022;2023;2024;2025,True
+Moncton CMA,2021S0503305,Moncton,Census metropolitan area,305,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Montréal CMA,2021S0503462,Montréal,Census metropolitan area,462,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Nanaimo CMA,2021S0503938,Nanaimo,Census metropolitan area,938,exact_after_cma_suffix,,False,False,,2023;2024;2025,False
+Oshawa CMA,2021S0503532,Oshawa,Census metropolitan area,532,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Ottawa-Gatineau CMA (Ont. part),2021S050535505,Ottawa - Gatineau (Ontario part),Census metropolitan area part,35505,explicit_lookup,CMA part; abbreviation,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Ottawa-Gatineau CMA (Qué. part),2021S050524505,Ottawa - Gatineau (Quebec part),Census metropolitan area part,24505,explicit_lookup,CMA part; abbreviation,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Peterborough CMA,2021S0503529,Peterborough,Census metropolitan area,529,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Québec CMA,2021S0503421,Québec,Census metropolitan area,421,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Red Deer CMA,2021S0503830,Red Deer,Census metropolitan area,830,exact_after_cma_suffix,,False,False,,2023;2024;2025,False
+Regina CMA,2021S0503705,Regina,Census metropolitan area,705,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Saguenay CMA,2021S0503408,Saguenay,Census metropolitan area,408,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Saint John CMA,2021S0503310,Saint John,Census metropolitan area,310,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Saskatoon CMA,2021S0503725,Saskatoon,Census metropolitan area,725,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Sherbrooke CMA,2021S0503433,Sherbrooke,Census metropolitan area,433,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+St. Catharines-Niagara CMA,2021S0503539,St. Catharines - Niagara,Census metropolitan area,539,explicit_lookup,hyphen spacing,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+St. John's CMA,2021S0503001,St. John's,Census metropolitan area,001,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Thunder Bay CMA,2021S0503595,Thunder Bay,Census metropolitan area,595,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Toronto CMA,2021S0503535,Toronto,Census metropolitan area,535,exact_after_cma_suffix,,False,True,Toronto,2019;2020;2021;2022;2023;2024;2025,True
+Trois-Rivières CMA,2021S0503442,Trois-Rivières,Census metropolitan area,442,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Vancouver CMA,2021S0503933,Vancouver,Census metropolitan area,933,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Victoria CMA,2021S0503935,Victoria,Census metropolitan area,935,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True
+Windsor CMA,2021S0503559,Windsor,Census metropolitan area,559,exact_after_cma_suffix,,False,True,Windsor,2019;2020;2021;2022;2023;2024;2025,True
+Winnipeg CMA,2021S0503602,Winnipeg,Census metropolitan area,602,exact_after_cma_suffix,,False,False,,2019;2020;2021;2022;2023;2024;2025,True

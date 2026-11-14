@@ -1,0 +1,26 @@
+{
+  "cmhc/canada_history/rmr-canada-2019-en.xlsx": {
+    "sha256": "8389cae5200639cfb966ff7bbe9d65ae723e335bf1d6179abbe004e7731a6274",
+    "bytes": 21703
+  },
+  "cmhc/canada_history/rmr-canada-2020-en.xlsx": {
+    "sha256": "5cb1a4ab7cb6b5652531e6282ff148ea81a0010909e87354b86c7c48756b6104",
+    "bytes": 40150
+  },
+  "cmhc/canada_history/rmr-canada-2021-en.xlsx": {
+    "sha256": "e8a02c437480ea47ccd9ad07e9aad3c874546ed37edb059f3c3d1b0624d08f49",
+    "bytes": 40261
+  },
+  "cmhc/canada_history/rmr-canada-2022-en.xlsx": {
+    "sha256": "2f5a8a47c1ae07bd4c58b396eb57777408156db0c7e8e6c9adcef311d9356a08",
+    "bytes": 59474
+  },
+  "cmhc/canada_history/rmr-canada-2023-en.xlsx": {
+    "sha256": "c8bc5f6c1e43ab8d2bcb227c94336f7bc8e6b9fd35e40c089d30cc2cf14f2b68",
+    "bytes": 56647
+  },
+  "cmhc/canada_history/rmr-canada-2024-en.xlsx": {
+    "sha256": "9585b923ece39c0847a8fd1de4a57579c099b08ef2a836c8e811ff808efb0a1f",
+    "bytes": 61775
+  }
+}
