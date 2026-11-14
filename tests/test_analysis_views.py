@@ -37,17 +37,17 @@ class TestSqlFiles:
     def test_files_run_in_story_order(self):
         assert list(ALL_SQL) == ["00_analysis_schema.sql", "01_story1_affordability.sql",
                                  "02_story2_rental_market.sql", "03_story3_housing_supply.sql",
-                                 "04_story4_cma_comparison.sql"]
+                                 "04_story4_cma_comparison.sql", "05_story2_rental_history.sql"]
 
     def test_declared_views_match_validator_list(self):
         declared = set()
         for code in ALL_SQL.values():
-            declared |= set(re.findall(r"CREATE VIEW analysis\.(\w+)", code))
+            declared |= set(re.findall(r"CREATE (?:OR REPLACE )?VIEW analysis\.(\w+)", code))
         assert declared == vav.EXPECTED_VIEWS
 
     def test_every_view_has_a_comment(self):
         for name, code in ALL_SQL.items():
-            views = set(re.findall(r"CREATE VIEW analysis\.(\w+)", code))
+            views = set(re.findall(r"CREATE (?:OR REPLACE )?VIEW analysis\.(\w+)", code))
             commented = set(re.findall(r"COMMENT ON VIEW analysis\.(\w+)", code))
             assert views == commented, name
 

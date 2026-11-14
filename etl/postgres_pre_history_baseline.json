@@ -1,0 +1,939 @@
+{
+  "clean_tables": {
+    "census_profile": {
+      "columns": [
+        [
+          "census_year",
+          "integer",
+          "NO"
+        ],
+        [
+          "geography",
+          "text",
+          "NO"
+        ],
+        [
+          "dguid",
+          "text",
+          "NO"
+        ],
+        [
+          "alt_geo_code",
+          "integer",
+          "NO"
+        ],
+        [
+          "geo_level",
+          "text",
+          "NO"
+        ],
+        [
+          "tnr_sf",
+          "numeric",
+          "NO"
+        ],
+        [
+          "tnr_lf",
+          "numeric",
+          "NO"
+        ],
+        [
+          "data_quality_flag",
+          "integer",
+          "NO"
+        ],
+        [
+          "topic",
+          "text",
+          "NO"
+        ],
+        [
+          "characteristic_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "characteristic_name",
+          "text",
+          "NO"
+        ],
+        [
+          "characteristic_indent_level",
+          "integer",
+          "NO"
+        ],
+        [
+          "characteristic_note",
+          "integer",
+          "YES"
+        ],
+        [
+          "unit_marker",
+          "text",
+          "YES"
+        ],
+        [
+          "count_total",
+          "numeric",
+          "YES"
+        ],
+        [
+          "count_total_status",
+          "text",
+          "NO"
+        ],
+        [
+          "count_men",
+          "numeric",
+          "YES"
+        ],
+        [
+          "count_men_status",
+          "text",
+          "NO"
+        ],
+        [
+          "count_women",
+          "numeric",
+          "YES"
+        ],
+        [
+          "count_women_status",
+          "text",
+          "NO"
+        ],
+        [
+          "rate_total",
+          "numeric",
+          "YES"
+        ],
+        [
+          "rate_total_status",
+          "text",
+          "NO"
+        ],
+        [
+          "rate_men",
+          "numeric",
+          "YES"
+        ],
+        [
+          "rate_men_status",
+          "text",
+          "NO"
+        ],
+        [
+          "rate_women",
+          "numeric",
+          "YES"
+        ],
+        [
+          "rate_women_status",
+          "text",
+          "NO"
+        ]
+      ],
+      "rows": 514,
+      "content_md5": "8839b01f2c77f57511b77e20ed108e0c",
+      "constraints": [
+        [
+          "census_profile_census_year_check",
+          "CHECK ((census_year = 2021))"
+        ],
+        [
+          "census_profile_characteristic_indent_level_check",
+          "CHECK ((characteristic_indent_level >= 0))"
+        ],
+        [
+          "census_profile_dguid_check",
+          "CHECK ((dguid = '2021S0503559'::text))"
+        ],
+        [
+          "census_profile_geo_level_check",
+          "CHECK ((geo_level = 'Census metropolitan area'::text))"
+        ],
+        [
+          "census_profile_geography_check",
+          "CHECK ((geography = 'Windsor CMA'::text))"
+        ],
+        [
+          "census_profile_null_matches_status",
+          "CHECK ((((count_total IS NULL) = (count_total_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text]))) AND ((count_men IS NULL) = (count_men_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text]))) AND ((count_women IS NULL) = (count_women_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text]))) AND ((rate_total IS NULL) = (rate_total_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text]))) AND ((rate_men IS NULL) = (rate_men_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text]))) AND ((rate_women IS NULL) = (rate_women_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text])))))"
+        ],
+        [
+          "census_profile_pkey",
+          "PRIMARY KEY (characteristic_id)"
+        ],
+        [
+          "census_profile_status_codes",
+          "CHECK (((count_total_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text])) AND (count_men_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text])) AND (count_women_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text])) AND (rate_total_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text])) AND (rate_men_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text])) AND (rate_women_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text]))))"
+        ],
+        [
+          "census_profile_topic_check",
+          "CHECK ((topic = ANY (ARRAY['population'::text, 'dwellings_housing'::text, 'household'::text, 'income'::text, 'labour_employment'::text])))"
+        ],
+        [
+          "census_profile_unit_marker_check",
+          "CHECK ((unit_marker = ANY (ARRAY['$'::text, '%'::text])))"
+        ]
+      ],
+      "indexes": [
+        [
+          "census_profile_geography_year_idx",
+          "CREATE INDEX census_profile_geography_year_idx ON clean.census_profile USING btree (geography, census_year)"
+        ],
+        [
+          "census_profile_pkey",
+          "CREATE UNIQUE INDEX census_profile_pkey ON clean.census_profile USING btree (characteristic_id)"
+        ],
+        [
+          "census_profile_topic_idx",
+          "CREATE INDEX census_profile_topic_idx ON clean.census_profile USING btree (topic)"
+        ]
+      ]
+    },
+    "shelter_cost": {
+      "columns": [
+        [
+          "ref_year",
+          "integer",
+          "NO"
+        ],
+        [
+          "geography",
+          "text",
+          "NO"
+        ],
+        [
+          "source_geography_label",
+          "text",
+          "NO"
+        ],
+        [
+          "dguid",
+          "text",
+          "NO"
+        ],
+        [
+          "income_group",
+          "text",
+          "NO"
+        ],
+        [
+          "income_group_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "household_type",
+          "text",
+          "NO"
+        ],
+        [
+          "household_type_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "housing_suitability",
+          "text",
+          "NO"
+        ],
+        [
+          "housing_suitability_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "dwelling_condition",
+          "text",
+          "NO"
+        ],
+        [
+          "dwelling_condition_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "statistic",
+          "text",
+          "NO"
+        ],
+        [
+          "statistic_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "shelter_cost_ratio",
+          "text",
+          "NO"
+        ],
+        [
+          "shelter_cost_ratio_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "tenure",
+          "text",
+          "NO"
+        ],
+        [
+          "tenure_member_id",
+          "integer",
+          "NO"
+        ],
+        [
+          "coordinate",
+          "text",
+          "NO"
+        ],
+        [
+          "measure_kind",
+          "text",
+          "NO"
+        ],
+        [
+          "value",
+          "numeric",
+          "YES"
+        ],
+        [
+          "raw_value",
+          "text",
+          "YES"
+        ],
+        [
+          "status_code",
+          "text",
+          "YES"
+        ],
+        [
+          "value_status",
+          "text",
+          "NO"
+        ]
+      ],
+      "rows": 2389,
+      "content_md5": "7ce68682dc44de99e350abd6484cb69e",
+      "constraints": [
+        [
+          "shelter_cost_counts_non_negative",
+          "CHECK (((measure_kind <> 'household_count'::text) OR (value IS NULL) OR (value >= (0)::numeric)))"
+        ],
+        [
+          "shelter_cost_dguid_check",
+          "CHECK ((dguid = '2021S0503559'::text))"
+        ],
+        [
+          "shelter_cost_dwelling_condition_member_id_check",
+          "CHECK ((dwelling_condition_member_id > 0))"
+        ],
+        [
+          "shelter_cost_geography_check",
+          "CHECK ((geography = 'Windsor CMA'::text))"
+        ],
+        [
+          "shelter_cost_household_type_member_id_check",
+          "CHECK ((household_type_member_id > 0))"
+        ],
+        [
+          "shelter_cost_housing_suitability_member_id_check",
+          "CHECK ((housing_suitability_member_id > 0))"
+        ],
+        [
+          "shelter_cost_income_group_member_id_check",
+          "CHECK ((income_group_member_id > 0))"
+        ],
+        [
+          "shelter_cost_measure_kind_check",
+          "CHECK ((measure_kind = ANY (ARRAY['household_count'::text, 'dollars'::text])))"
+        ],
+        [
+          "shelter_cost_member_ids_unique",
+          "UNIQUE (income_group_member_id, household_type_member_id, housing_suitability_member_id, dwelling_condition_member_id, statistic_member_id, shelter_cost_ratio_member_id, tenure_member_id)"
+        ],
+        [
+          "shelter_cost_null_matches_status",
+          "CHECK (((value IS NULL) = (value_status <> ALL (ARRAY['published'::text, 'use_with_caution'::text, 'revised'::text]))))"
+        ],
+        [
+          "shelter_cost_pkey",
+          "PRIMARY KEY (coordinate)"
+        ],
+        [
+          "shelter_cost_ref_year_check",
+          "CHECK ((ref_year = 2021))"
+        ],
+        [
+          "shelter_cost_shelter_cost_ratio_member_id_check",
+          "CHECK ((shelter_cost_ratio_member_id > 0))"
+        ],
+        [
+          "shelter_cost_source_geography_label_check",
+          "CHECK ((source_geography_label = 'Windsor (CMA), Ont.'::text))"
+        ],
+        [
+          "shelter_cost_statistic_member_id_check",
+          "CHECK ((statistic_member_id > 0))"
+        ],
+        [
+          "shelter_cost_tenure_check",
+          "CHECK ((tenure = ANY (ARRAY['Total - Tenure'::text, 'Owner'::text, 'Renter'::text])))"
+        ],
+        [
+          "shelter_cost_tenure_member_id_check",
+          "CHECK ((tenure_member_id > 0))"
+        ],
+        [
+          "shelter_cost_value_status_check",
+          "CHECK ((value_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'not_applicable'::text, 'not_available'::text, 'too_unreliable'::text, 'use_with_caution'::text, 'revised'::text])))"
+        ]
+      ],
+      "indexes": [
+        [
+          "shelter_cost_geography_year_idx",
+          "CREATE INDEX shelter_cost_geography_year_idx ON clean.shelter_cost USING btree (geography, ref_year)"
+        ],
+        [
+          "shelter_cost_household_type_idx",
+          "CREATE INDEX shelter_cost_household_type_idx ON clean.shelter_cost USING btree (household_type)"
+        ],
+        [
+          "shelter_cost_income_group_idx",
+          "CREATE INDEX shelter_cost_income_group_idx ON clean.shelter_cost USING btree (income_group)"
+        ],
+        [
+          "shelter_cost_measure_kind_idx",
+          "CREATE INDEX shelter_cost_measure_kind_idx ON clean.shelter_cost USING btree (measure_kind)"
+        ],
+        [
+          "shelter_cost_member_ids_unique",
+          "CREATE UNIQUE INDEX shelter_cost_member_ids_unique ON clean.shelter_cost USING btree (income_group_member_id, household_type_member_id, housing_suitability_member_id, dwelling_condition_member_id, statistic_member_id, shelter_cost_ratio_member_id, tenure_member_id)"
+        ],
+        [
+          "shelter_cost_pkey",
+          "CREATE UNIQUE INDEX shelter_cost_pkey ON clean.shelter_cost USING btree (coordinate)"
+        ],
+        [
+          "shelter_cost_ratio_idx",
+          "CREATE INDEX shelter_cost_ratio_idx ON clean.shelter_cost USING btree (shelter_cost_ratio)"
+        ],
+        [
+          "shelter_cost_tenure_idx",
+          "CREATE INDEX shelter_cost_tenure_idx ON clean.shelter_cost USING btree (tenure)"
+        ]
+      ]
+    },
+    "rental_market_windsor": {
+      "columns": [
+        [
+          "source_table",
+          "text",
+          "NO"
+        ],
+        [
+          "dwelling_scope",
+          "text",
+          "NO"
+        ],
+        [
+          "geography",
+          "text",
+          "NO"
+        ],
+        [
+          "zone",
+          "text",
+          "NO"
+        ],
+        [
+          "zone_level",
+          "text",
+          "NO"
+        ],
+        [
+          "bedroom_type",
+          "text",
+          "NO"
+        ],
+        [
+          "metric",
+          "text",
+          "NO"
+        ],
+        [
+          "unit",
+          "text",
+          "NO"
+        ],
+        [
+          "period_label",
+          "text",
+          "NO"
+        ],
+        [
+          "value",
+          "numeric",
+          "YES"
+        ],
+        [
+          "raw_value",
+          "text",
+          "NO"
+        ],
+        [
+          "value_status",
+          "text",
+          "NO"
+        ],
+        [
+          "reliability_code",
+          "text",
+          "YES"
+        ],
+        [
+          "yoy_trend",
+          "text",
+          "YES"
+        ],
+        [
+          "vacant_rent_higher_flag",
+          "text",
+          "YES"
+        ],
+        [
+          "income_quintile",
+          "text",
+          "YES"
+        ],
+        [
+          "renter_income_range",
+          "text",
+          "YES"
+        ],
+        [
+          "affordable_rent_range",
+          "text",
+          "YES"
+        ],
+        [
+          "source_cell",
+          "text",
+          "NO"
+        ]
+      ],
+      "rows": 2385,
+      "content_md5": "217f7d42668d3901a379dca288d23d79",
+      "constraints": [
+        [
+          "rental_market_windsor_dwelling_scope_check",
+          "CHECK ((dwelling_scope = ANY (ARRAY['apartment'::text, 'row_townhouse'::text, 'row_and_apartment'::text])))"
+        ],
+        [
+          "rental_market_windsor_geography_check",
+          "CHECK ((geography = 'Windsor CMA'::text))"
+        ],
+        [
+          "rental_market_windsor_natural_key",
+          "UNIQUE NULLS NOT DISTINCT (source_table, zone, bedroom_type, metric, period_label, income_quintile)"
+        ],
+        [
+          "rental_market_windsor_null_matches_status",
+          "CHECK (((value IS NULL) = (value_status <> 'published'::text)))"
+        ],
+        [
+          "rental_market_windsor_percent_range",
+          "CHECK (((unit <> 'percent'::text) OR (value IS NULL) OR ((metric ~~ '%pct_change'::text) AND ((value >= ('-100'::integer)::numeric) AND (value <= (100)::numeric))) OR ((metric !~~ '%pct_change'::text) AND ((value >= (0)::numeric) AND (value <= (100)::numeric)))))"
+        ],
+        [
+          "rental_market_windsor_period_label_check",
+          "CHECK ((period_label = ANY (ARRAY['Oct-24'::text, 'Oct-25'::text, 'Oct-23 to Oct-24'::text, 'Oct-24 to Oct-25'::text])))"
+        ],
+        [
+          "rental_market_windsor_pkey",
+          "PRIMARY KEY (source_cell)"
+        ],
+        [
+          "rental_market_windsor_reliability_code_check",
+          "CHECK ((reliability_code = ANY (ARRAY['a'::text, 'b'::text, 'c'::text, 'd'::text])))"
+        ],
+        [
+          "rental_market_windsor_rent_positive",
+          "CHECK (((unit <> 'dollars'::text) OR (value IS NULL) OR (value > (0)::numeric)))"
+        ],
+        [
+          "rental_market_windsor_unit_check",
+          "CHECK ((unit = ANY (ARRAY['percent'::text, 'dollars'::text, 'units'::text])))"
+        ],
+        [
+          "rental_market_windsor_units_non_negative",
+          "CHECK (((unit <> 'units'::text) OR (value IS NULL) OR (value >= (0)::numeric)))"
+        ],
+        [
+          "rental_market_windsor_vacant_rent_higher_flag_check",
+          "CHECK ((vacant_rent_higher_flag = ANY (ARRAY['Y'::text, 'N'::text, 'suppressed'::text])))"
+        ],
+        [
+          "rental_market_windsor_value_status_check",
+          "CHECK ((value_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'change_not_significant'::text])))"
+        ],
+        [
+          "rental_market_windsor_yoy_trend_check",
+          "CHECK ((yoy_trend = ANY (ARRAY['significant_increase'::text, 'significant_decrease'::text, 'not_significant'::text])))"
+        ],
+        [
+          "rental_market_windsor_zone_level_check",
+          "CHECK ((zone_level = ANY (ARRAY['zone'::text, 'city_subtotal'::text, 'cma_total'::text])))"
+        ]
+      ],
+      "indexes": [
+        [
+          "rental_market_windsor_bedroom_type_idx",
+          "CREATE INDEX rental_market_windsor_bedroom_type_idx ON clean.rental_market_windsor USING btree (bedroom_type)"
+        ],
+        [
+          "rental_market_windsor_dwelling_scope_idx",
+          "CREATE INDEX rental_market_windsor_dwelling_scope_idx ON clean.rental_market_windsor USING btree (dwelling_scope)"
+        ],
+        [
+          "rental_market_windsor_geography_period_idx",
+          "CREATE INDEX rental_market_windsor_geography_period_idx ON clean.rental_market_windsor USING btree (geography, period_label)"
+        ],
+        [
+          "rental_market_windsor_metric_idx",
+          "CREATE INDEX rental_market_windsor_metric_idx ON clean.rental_market_windsor USING btree (metric)"
+        ],
+        [
+          "rental_market_windsor_natural_key",
+          "CREATE UNIQUE INDEX rental_market_windsor_natural_key ON clean.rental_market_windsor USING btree (source_table, zone, bedroom_type, metric, period_label, income_quintile) NULLS NOT DISTINCT"
+        ],
+        [
+          "rental_market_windsor_pkey",
+          "CREATE UNIQUE INDEX rental_market_windsor_pkey ON clean.rental_market_windsor USING btree (source_cell)"
+        ],
+        [
+          "rental_market_windsor_source_table_idx",
+          "CREATE INDEX rental_market_windsor_source_table_idx ON clean.rental_market_windsor USING btree (source_table)"
+        ],
+        [
+          "rental_market_windsor_zone_idx",
+          "CREATE INDEX rental_market_windsor_zone_idx ON clean.rental_market_windsor USING btree (zone)"
+        ]
+      ]
+    },
+    "starts_completions_windsor": {
+      "columns": [
+        [
+          "geography",
+          "text",
+          "NO"
+        ],
+        [
+          "source_geography_label",
+          "text",
+          "NO"
+        ],
+        [
+          "source_table",
+          "text",
+          "NO"
+        ],
+        [
+          "activity",
+          "text",
+          "NO"
+        ],
+        [
+          "dwelling_type",
+          "text",
+          "NO"
+        ],
+        [
+          "period_label",
+          "text",
+          "NO"
+        ],
+        [
+          "period_type",
+          "text",
+          "NO"
+        ],
+        [
+          "units",
+          "integer",
+          "YES"
+        ],
+        [
+          "raw_value",
+          "text",
+          "NO"
+        ],
+        [
+          "value_flag",
+          "text",
+          "NO"
+        ],
+        [
+          "source_cell",
+          "text",
+          "NO"
+        ]
+      ],
+      "rows": 25,
+      "content_md5": "ddc901e177ece83ec357a4a25b13acc6",
+      "constraints": [
+        [
+          "starts_completions_windsor_activity_check",
+          "CHECK ((activity = ANY (ARRAY['Starts'::text, 'Completions'::text, 'Under Construction'::text])))"
+        ],
+        [
+          "starts_completions_windsor_dwelling_type_check",
+          "CHECK ((dwelling_type = ANY (ARRAY['Singles'::text, 'Semis'::text, 'Row'::text, 'Apt. and Other'::text, 'Total'::text])))"
+        ],
+        [
+          "starts_completions_windsor_geography_check",
+          "CHECK ((geography = 'Windsor CMA'::text))"
+        ],
+        [
+          "starts_completions_windsor_natural_key",
+          "UNIQUE (source_table, activity, dwelling_type)"
+        ],
+        [
+          "starts_completions_windsor_nil_is_zero",
+          "CHECK (((value_flag <> 'nil_or_zero'::text) OR (units = 0)))"
+        ],
+        [
+          "starts_completions_windsor_null_matches_flag",
+          "CHECK (((units IS NULL) = (value_flag <> ALL (ARRAY['published'::text, 'nil_or_zero'::text]))))"
+        ],
+        [
+          "starts_completions_windsor_period_label_check",
+          "CHECK ((period_label = ANY (ARRAY['August 2026'::text, 'January to August 2026'::text])))"
+        ],
+        [
+          "starts_completions_windsor_period_type_check",
+          "CHECK ((period_type = ANY (ARRAY['month'::text, 'year_to_date'::text, 'stock_at_month_end'::text])))"
+        ],
+        [
+          "starts_completions_windsor_pkey",
+          "PRIMARY KEY (source_cell)"
+        ],
+        [
+          "starts_completions_windsor_source_geography_label_check",
+          "CHECK ((source_geography_label = 'Windsor'::text))"
+        ],
+        [
+          "starts_completions_windsor_units_check",
+          "CHECK ((units >= 0))"
+        ],
+        [
+          "starts_completions_windsor_value_flag_check",
+          "CHECK ((value_flag = ANY (ARRAY['published'::text, 'nil_or_zero'::text, 'not_available'::text, 'infinity'::text, 'too_small_to_express'::text])))"
+        ]
+      ],
+      "indexes": [
+        [
+          "starts_completions_windsor_activity_idx",
+          "CREATE INDEX starts_completions_windsor_activity_idx ON clean.starts_completions_windsor USING btree (activity)"
+        ],
+        [
+          "starts_completions_windsor_dwelling_type_idx",
+          "CREATE INDEX starts_completions_windsor_dwelling_type_idx ON clean.starts_completions_windsor USING btree (dwelling_type)"
+        ],
+        [
+          "starts_completions_windsor_geography_period_idx",
+          "CREATE INDEX starts_completions_windsor_geography_period_idx ON clean.starts_completions_windsor USING btree (geography, period_label)"
+        ],
+        [
+          "starts_completions_windsor_natural_key",
+          "CREATE UNIQUE INDEX starts_completions_windsor_natural_key ON clean.starts_completions_windsor USING btree (source_table, activity, dwelling_type)"
+        ],
+        [
+          "starts_completions_windsor_pkey",
+          "CREATE UNIQUE INDEX starts_completions_windsor_pkey ON clean.starts_completions_windsor USING btree (source_cell)"
+        ]
+      ]
+    },
+    "rental_market_canada": {
+      "columns": [
+        [
+          "source_table",
+          "text",
+          "NO"
+        ],
+        [
+          "centre",
+          "text",
+          "NO"
+        ],
+        [
+          "geography_level",
+          "text",
+          "NO"
+        ],
+        [
+          "metric",
+          "text",
+          "NO"
+        ],
+        [
+          "unit",
+          "text",
+          "NO"
+        ],
+        [
+          "period_label",
+          "text",
+          "NO"
+        ],
+        [
+          "value",
+          "numeric",
+          "YES"
+        ],
+        [
+          "raw_value",
+          "text",
+          "NO"
+        ],
+        [
+          "value_status",
+          "text",
+          "NO"
+        ],
+        [
+          "reliability_code",
+          "text",
+          "YES"
+        ],
+        [
+          "yoy_trend",
+          "text",
+          "YES"
+        ],
+        [
+          "source_cell",
+          "text",
+          "NO"
+        ]
+      ],
+      "rows": 336,
+      "content_md5": "457813c41c3e6b96f7148ba182e6efa3",
+      "constraints": [
+        [
+          "rental_market_canada_centre_check",
+          "CHECK ((centre ~ '\\mCMA\\M'::text))"
+        ],
+        [
+          "rental_market_canada_geography_level_check",
+          "CHECK ((geography_level = 'cma'::text))"
+        ],
+        [
+          "rental_market_canada_metric_check",
+          "CHECK ((metric = ANY (ARRAY['vacancy_rate'::text, 'turnover_rate'::text, 'average_rent_2br'::text, 'rent_pct_change_2br'::text])))"
+        ],
+        [
+          "rental_market_canada_natural_key",
+          "UNIQUE (centre, metric, period_label)"
+        ],
+        [
+          "rental_market_canada_null_matches_status",
+          "CHECK (((value IS NULL) = (value_status <> 'published'::text)))"
+        ],
+        [
+          "rental_market_canada_percent_range",
+          "CHECK (((unit <> 'percent'::text) OR (value IS NULL) OR ((metric = 'rent_pct_change_2br'::text) AND ((value >= ('-100'::integer)::numeric) AND (value <= (100)::numeric))) OR ((metric <> 'rent_pct_change_2br'::text) AND ((value >= (0)::numeric) AND (value <= (100)::numeric)))))"
+        ],
+        [
+          "rental_market_canada_period_label_check",
+          "CHECK ((period_label = ANY (ARRAY['Oct-24'::text, 'Oct-25'::text, 'Oct-23 to Oct-24'::text, 'Oct-24 to Oct-25'::text])))"
+        ],
+        [
+          "rental_market_canada_pkey",
+          "PRIMARY KEY (source_cell)"
+        ],
+        [
+          "rental_market_canada_reliability_code_check",
+          "CHECK ((reliability_code = ANY (ARRAY['a'::text, 'b'::text, 'c'::text, 'd'::text])))"
+        ],
+        [
+          "rental_market_canada_rent_positive",
+          "CHECK (((unit <> 'dollars'::text) OR (value IS NULL) OR (value > (0)::numeric)))"
+        ],
+        [
+          "rental_market_canada_source_table_check",
+          "CHECK ((source_table = 'Table 1.0'::text))"
+        ],
+        [
+          "rental_market_canada_unit_check",
+          "CHECK ((unit = ANY (ARRAY['percent'::text, 'dollars'::text])))"
+        ],
+        [
+          "rental_market_canada_value_status_check",
+          "CHECK ((value_status = ANY (ARRAY['published'::text, 'suppressed'::text, 'change_not_significant'::text])))"
+        ],
+        [
+          "rental_market_canada_yoy_trend_check",
+          "CHECK ((yoy_trend = ANY (ARRAY['significant_increase'::text, 'significant_decrease'::text, 'not_significant'::text])))"
+        ]
+      ],
+      "indexes": [
+        [
+          "rental_market_canada_centre_idx",
+          "CREATE INDEX rental_market_canada_centre_idx ON clean.rental_market_canada USING btree (centre)"
+        ],
+        [
+          "rental_market_canada_metric_idx",
+          "CREATE INDEX rental_market_canada_metric_idx ON clean.rental_market_canada USING btree (metric)"
+        ],
+        [
+          "rental_market_canada_natural_key",
+          "CREATE UNIQUE INDEX rental_market_canada_natural_key ON clean.rental_market_canada USING btree (centre, metric, period_label)"
+        ],
+        [
+          "rental_market_canada_period_idx",
+          "CREATE INDEX rental_market_canada_period_idx ON clean.rental_market_canada USING btree (period_label)"
+        ],
+        [
+          "rental_market_canada_pkey",
+          "CREATE UNIQUE INDEX rental_market_canada_pkey ON clean.rental_market_canada USING btree (source_cell)"
+        ]
+      ]
+    }
+  },
+  "analysis_views": {
+    "story1_affordability_by_household_type": "db080c1814b8fc85beeacb0da6665dcc",
+    "story1_affordability_by_income_group": "9566b6d6bdeff4e6a23a4ead0bdeef39",
+    "story1_affordability_by_tenure": "b2e3bbab535c1d769a000b526c914105",
+    "story1_burden_severity_by_tenure": "4a9c650163deee8eb3c8227c13fdcfa8",
+    "story1_burden_vs_census_published": "5c1debb7f72af011e8192251c1da1396",
+    "story1_shelter_cost_burden": "08bc7106f15314ca9740b33b7ad90f90",
+    "story1_tenure_burden_gap": "11aeeb8ea83e6ac37c4834041c9fd900",
+    "story2_income_quintile_rental_stock": "eeb9218b38d60f5945f4e0d28991c459",
+    "story2_latest_cma_kpis": "e012bac5f70e361d88a78973cd59666b",
+    "story2_new_rental_stock": "c59c9b6e26e5ec603f1d20cddae51be1",
+    "story2_period_change": "67f8db17810d4afdd5eda52955897d55",
+    "story2_rent_by_bedroom": "b2fe23d191b684b8aab7bb6becabc0b2",
+    "story2_rental_universe": "202033f661cee0ac398dacd4e2342faa",
+    "story2_same_sample_rent_change": "b95b84909f475508c08991f02f59fe4f",
+    "story2_survey_periods": "d3e0c89e0709728b2fa3bb6fba3d45fb",
+    "story2_turnover_by_bedroom": "c8353768ec1435aaeed5c902440c246e",
+    "story2_vacancy_by_bedroom": "125e3c6060807bdbee7aa35cbaea690f",
+    "story2_vacant_vs_occupied_rent": "1c0e3d359fa09bb0463c1e999a7569da",
+    "story2_zone_comparison": "3849ce0e4311884489e89e7ccbdc7895",
+    "story3_completions_by_dwelling_type": "5ea2476cf35560c8a844f268180d6705",
+    "story3_starts_by_dwelling_type": "463644e9d33705f0a1821305ac94c6af",
+    "story3_supply_by_dwelling_type": "e298883b0efc7b7c1f09e285619d6866",
+    "story3_supply_totals": "756c6ceca5041426ab122c2092656908",
+    "story3_under_construction_by_dwelling_type": "8fc1f7d6559afd92083a3f0e7a584a17",
+    "story3_ytd_starts_completions": "2b25a5f1692c72e8bd317ddfea819bf2",
+    "story4_cma_metric_ranking": "80c4a8e4de776746575a07dc8f91ea73",
+    "story4_cma_rent_2br_comparison": "0df4e8d4f40a672d045ee784df04a335",
+    "story4_cma_rent_growth_comparison": "b19a91275157870e8029e36f1ded508f",
+    "story4_cma_turnover_comparison": "e4e0847b7a472a0a5d5443918795259a",
+    "story4_cma_vacancy_comparison": "d8527787b00ec033573f62f6acccab60",
+    "story4_windsor_position": "d98bac53e0176d99ad6023e42a0d5c98"
+  }
+}

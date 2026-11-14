@@ -46,6 +46,13 @@ EXPECTED_VIEWS = {
     "story4_cma_metric_ranking", "story4_cma_vacancy_comparison", "story4_cma_rent_2br_comparison",
     "story4_cma_turnover_comparison", "story4_cma_rent_growth_comparison", "story4_windsor_position",
 }
+# Additive Story 2 history views (sql/analysis/05_story2_rental_history.sql), also
+# validated in depth by etl/validate_rental_history_postgres.py.
+HISTORY_VIEWS = {
+    "story2_historical_series", "story2_historical_rent", "story2_historical_vacancy", "story2_historical_turnover",
+    "story2_historical_rental_universe", "story2_historical_period_summary",
+}
+EXPECTED_VIEWS |= HISTORY_VIEWS
 # analytical key per view: must be unique
 VIEW_KEYS = {
     "story1_shelter_cost_burden": ["income_group_member_id", "household_type_member_id", "tenure_member_id"],
@@ -70,6 +77,12 @@ VIEW_KEYS = {
     "story3_ytd_starts_completions": ["dwelling_type"],
     "story4_cma_metric_ranking": ["centre", "metric"],
     "story4_windsor_position": ["metric"],
+    "story2_historical_series": ["year", "metric", "geography_basis"],
+    "story2_historical_rent": ["year"],
+    "story2_historical_vacancy": ["year"],
+    "story2_historical_turnover": ["year"],
+    "story2_historical_rental_universe": ["year", "geography_basis"],
+    "story2_historical_period_summary": ["metric", "era"],
 }
 SCOPES = {"apartment", "row_townhouse", "row_and_apartment"}
 RMS_PERIODS = {"Oct-24", "Oct-25", "Oct-23 to Oct-24", "Oct-24 to Oct-25"}

@@ -54,6 +54,10 @@ PRIMARY_KEYS = {
     "starts_completions_windsor": ["source_cell"],
     "rental_market_canada": ["source_cell"],
 }
+# Documented additive extensions that may also live in `clean` (validated by their own
+# script, etl/validate_rental_history_postgres.py); any other extra table fails.
+ADDITIVE_TABLES = {"rental_market_windsor_history"}
+BASE_TABLES_CHECK = "the 5 expected base tables exist (other tables only documented additive extensions)"
 WINDSOR_TABLES = ["census_profile", "shelter_cost", "rental_market_windsor", "starts_completions_windsor"]
 # (value column, status column, statuses that carry a number)
 VALUE_STATUS = {
@@ -105,9 +109,11 @@ def structure_checks(cur, csvs: dict[str, pd.DataFrame]) -> list[Check]:
                 (SCHEMA,))
     present = {r[0] for r in cur.fetchall()}
     expected = set(TABLES.values())
-    checks.append(Check(SCHEMA, "exactly the 5 expected base tables exist", present == expected,
+    extra_ok = present - expected <= ADDITIVE_TABLES
+    checks.append(Check(SCHEMA, BASE_TABLES_CHECK, expected <= present and extra_ok,
                         f"present: {sorted(present)}" + (f"; missing: {sorted(expected - present)}" if expected - present else "")
-                        + (f"; unexpected: {sorted(present - expected)}" if present - expected else "")))
+                        + (f"; unexpected: {sorted(present - expected - ADDITIVE_TABLES)}" if not extra_ok else "")
+                        + (f"; additive extensions: {sorted(present & ADDITIVE_TABLES)}" if present & ADDITIVE_TABLES else "")))
     cur.execute("SELECT count(*) FROM information_schema.views WHERE table_schema = %s", (SCHEMA,))
     views = cur.fetchone()[0]
     checks.append(Check(SCHEMA, "no views in the schema (no analytical views yet)", views == 0, f"{views} views"))
@@ -252,7 +258,7 @@ def run_checks(conn, staging_dir: Path = STAGING_DIR) -> list[Check]:
     csvs = {key: read_staging(staging_dir / OUTPUT_FILES[key]) for key in TABLES}
     with conn.cursor() as cur:
         checks = structure_checks(cur, csvs)
-        if not all(c.passed for c in checks if c.name == "exactly the 5 expected base tables exist"):
+        if not all(c.passed for c in checks if c.name == BASE_TABLES_CHECK):
             return checks
         checks += quality_checks(cur, csvs)
         checks += reconciliation_checks(cur, csvs)
