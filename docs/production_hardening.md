@@ -156,7 +156,7 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Check: `curl -I http://whva.cs.uwindsor.ca` returns `301` to `https://`, and the browser shows a valid certificate. Before 1 February 2027, confirm with IT that the renewed certificate is placed at the same paths, then `sudo systemctl reload nginx`.
+Then copy the built site to `/var/www/whva` and make it readable by nginx (`sudo chmod -R a+rX /var/www/whva`; `docs/deploy_university.md`, part 3). Check: `curl -I http://whva.cs.uwindsor.ca` returns `301` to `https://`, and the browser shows a valid certificate. **Installed 18 November 2026**; both checks pass, and the four security headers are present. Before 1 February 2027, confirm with IT that the renewed certificate is placed at the same paths, then `sudo systemctl reload nginx`.
 
 ### 6.2 Secrets
 
