@@ -3769,3 +3769,37 @@ rect.hl-fill-empty:hover {
     padding: 0 16px;
   }
 }
+
+/* Team names: a byline under the Home headline, and under the site name
+   at the top of the sidebar on every page. */
+.hero-team {
+  margin: -6px 0 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.sidebar-team {
+  margin: 0 10px 14px;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: #6a6470;
+}
+
+/* Link mode (VITE_EMBED_MODE=link): the dashboard as a card that opens it
+   on the Superset server. */
+.dashboard-link-card {
+  padding: 28px 24px 32px;
+}
+
+.dashboard-link-card-title {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.dashboard-link-card-text {
+  max-width: 62ch;
+  margin: 0 0 20px;
+  color: var(--ink-muted);
+}
