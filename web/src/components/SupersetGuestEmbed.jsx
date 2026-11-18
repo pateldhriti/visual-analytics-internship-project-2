@@ -3,7 +3,7 @@ import { embedDashboard } from "@superset-ui/embedded-sdk";
 import SupersetEmbed from "./SupersetEmbed.jsx";
 import useNarrowScreen from "../lib/useNarrowScreen.js";
 import { EmbedError, EmbedLoading, NarrowHint } from "./EmbedStatus.jsx";
-import { LOAD_TIMEOUT_MS, dashboardUrl } from "../lib/embedConfig.js";
+import { EMBED_MODE, LOAD_TIMEOUT_MS, dashboardUrl } from "../lib/embedConfig.js";
 
 // Embeds a Superset dashboard with the Embedded SDK and a short-lived guest
 // token from our own backend (api/guest_token_server.py, proxied at /api by
@@ -40,12 +40,45 @@ async function requestGuestToken(dashboard) {
 // page jump by more than the difference between tabs.
 const RESIZE_INTERVAL_MS = 1500;
 
-export default function SupersetGuestEmbed({
-  dashboard,
-  fallbackDashboardId,
-  title,
-  height = 1100,
-}) {
+// Link mode (EMBED_MODE "link"): a card that opens the dashboard on the
+// Superset server, for a server that does not allow embedding.
+function DashboardLinkCard({ title, openUrl }) {
+  return (
+    <div className="superset-embed card">
+      <div className="superset-embed-header">
+        <span className="superset-embed-badge">Interactive dashboard</span>
+      </div>
+      <div className="dashboard-link-card">
+        <p className="dashboard-link-card-title">{title.replace(/ \(Superset dashboard\)$/, "")}</p>
+        <p className="dashboard-link-card-text">
+          The interactive dashboard opens on the University of Windsor&rsquo;s Superset server
+          (UWindsor login, on campus or through the VPN). Every figure on this page is also given in
+          the text and charts above.
+        </p>
+        {openUrl && (
+          <a className="embed-button" href={openUrl} target="_blank" rel="noreferrer">
+            Open the dashboard ↗
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function SupersetGuestEmbed(props) {
+  if (EMBED_MODE === "link") {
+    const { fallbackDashboardId, title } = props;
+    return (
+      <DashboardLinkCard
+        title={title}
+        openUrl={fallbackDashboardId ? dashboardUrl(fallbackDashboardId) : null}
+      />
+    );
+  }
+  return <GuestEmbed {...props} />;
+}
+
+function GuestEmbed({ dashboard, fallbackDashboardId, title, height = 1100 }) {
   const narrow = useNarrowScreen();
   const mountRef = useRef(null);
   const [status, setStatus] = useState("loading");

@@ -6,6 +6,7 @@ import KpiRow from "../components/KpiRow.jsx";
 import StoryHighlights from "../components/StoryHighlights.jsx";
 import { F, money, num, ordinal, pct } from "../lib/figures.js";
 import { staggerParent, fadeUp, fadeIn } from "../lib/motion.js";
+import { teamNames } from "../lib/team.js";
 
 const MotionLink = motion(Link);
 
@@ -220,6 +221,9 @@ export default function Home() {
                 <motion.h1 variants={fadeUp} className="hero-headline">
                   Understanding housing in <em>Windsor</em> and beyond.
                 </motion.h1>
+                <motion.p variants={fadeUp} className="hero-team">
+                  By {teamNames()}
+                </motion.p>
                 <motion.p variants={fadeUp} className="hero-lede">
                   An integrated analysis of housing affordability, rental market, supply, and
                   comparison conditions in the Windsor Census Metropolitan Area &mdash; built

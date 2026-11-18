@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { TEAM } from "../lib/team.js";
 
 // Small inline icon set -- one glyph per nav item, no icon-library
 // dependency. Each is a plain 20x20 stroke icon so they read at the same
@@ -138,6 +139,10 @@ export default function Sidebar() {
             Analytics
           </span>
         </NavLink>
+        <p className="sidebar-team">
+          <span className="visually-hidden">Team: </span>
+          {TEAM.join(" · ")}
+        </p>
 
         <nav className="sidebar-nav">
           {NAV_SECTIONS.map((section, i) => (
