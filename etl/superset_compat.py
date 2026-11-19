@@ -83,19 +83,35 @@ def prefix_names(charts: dict) -> dict:
             spec["legacy_names"] = [named(n) for n in spec["legacy_names"]]
     return charts
 
+# Superset's default palette ("supersetColors"), which the team's reference
+# screenshots of Stories 1-4 use; the series below take their colours from it.
+SUPERSET_BLUE, SUPERSET_GREEN = "#1FA8C9", "#5AC189"
+
 # Series that appear on several dashboards keep one colour everywhere.
 PROJECT_LABEL_COLORS = {
-    "Starts": PALETTE[0],
-    "Starts per 1,000 Households": PALETTE[0],
-    "Completions": PALETTE[1],
-    "Completions per 1,000 Households": PALETTE[1],
-    "Under Construction": PALETTE[2],
-    "Owner": PALETTE[0],
-    "Renter": PALETTE[1],
-    # Story 1 severity bands: distinct from the tenure colours above.
-    "Under 30%": PALETTE[2],
-    "30% to under 100%": PALETTE[3],
-    "100% or more": "#b03a2e",
+    "Starts": SUPERSET_BLUE,
+    "Starts per 1,000 Households": SUPERSET_BLUE,
+    "Completions": SUPERSET_GREEN,
+    "Completions per 1,000 Households": SUPERSET_GREEN,
+    "Under Construction": "#A1A6BD",
+    # Story 3 pipeline stages (orange, purple, lavender), as on the reference.
+    "Starts so far": "#FF7F44",
+    "Completions so far": "#A868B7",
+    "Under construction": "#A1A6BD",
+    # Story 3 dwelling types (the mix chart's colours on the reference).
+    "Apartment and Other": "#454E7C",
+    "Row": "#3CCCCB",
+    "Semis": "#FCC700",
+    "Singles": "#666666",
+    "Owner": SUPERSET_GREEN,
+    "Renter": SUPERSET_BLUE,
+    # Story 1 severity bands (orange, purple, brown, as on the reference).
+    "Under 30%": "#FF7F44",
+    "30% to under 100%": "#A868B7",
+    "100% or more": "#A38F79",
+    "<30%": "#FF7F44",
+    "30%-99%": "#A868B7",
+    "100%+": "#A38F79",
     # Story 5 "Windsor 2030" scenarios: the central case in the project blue,
     # weaker income growth orange, stronger green, slower rents grey.
     "Rents 2020-2025 pace, incomes +3%": PALETTE[0],

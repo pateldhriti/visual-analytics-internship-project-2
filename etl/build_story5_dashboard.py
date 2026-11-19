@@ -432,7 +432,7 @@ CHARTS = {
             "median_renter_income",
             {"expressionType": "SQL", "sqlExpression": "MAX(average_rent_2br)", "label": "2-bedroom rent"},
             "city_short", [], "Median renter household income (2020)", "Average 2-bedroom rent (Oct-25)",
-            "$,.0f", "$,.0f", x_bounds=(45000, 62000), y_bounds=(1300, 1950),
+            "$,.0f", "$,.0f", x_bounds=(45000, 63000), y_bounds=(1300, 2000),
         ))),
     },
     # --- 3. Story 3 x Story 2 ------------------------------------------------
@@ -891,16 +891,16 @@ LAYOUT = [
     ("chart-row", "ROW-demand", [("demand-ratio", 7, 50)], ("MARKDOWN-demand", NOTES["demand"], 5, 50)),
     ("chart-row", "ROW-demand-built", [("demand-gauge", 4, 42), ("demand-needed-built", 8, 42)]),
     ("header", "HEADER-young", "6. Can young renters and students afford to rent? (Census renters by age + Story 1 + Story 4)"),
-    ("chart-row", "ROW-young", [("young-vs-all", 12, 42)]),
-    ("chart-row", "ROW-young-age", [("windsor-by-age", 12, 40)]),
-    ("markdown-row", "ROW-young-note", [("MARKDOWN-young", NOTES["young"], 12, 34)]),
+    ("chart-row", "ROW-young", [("young-vs-all", 12, 36)]),
+    ("chart-row", "ROW-young-age", [("windsor-by-age", 12, 34)]),
+    ("markdown-row", "ROW-young-note", [("MARKDOWN-young", NOTES["young"], 12, 29)]),
     ("header", "HEADER-stock", "7. How big is the rental market? (Story 2 + Story 4 + Census renters)"),
-    ("chart-row", "ROW-stock", [("rental-stock", 6, 58)], ("MARKDOWN-stock", NOTES["stock"], 6, 58)),
-    ("chart-row", "ROW-profile", [("city-profile", 12, 44)]),
+    ("chart-row", "ROW-stock", [("rental-stock", 6, 50)], ("MARKDOWN-stock", NOTES["stock"], 6, 50)),
+    ("chart-row", "ROW-profile", [("city-profile", 12, 35)]),
     ("header", "HEADER-outlook", "8. Windsor 2030: how many renters could be priced out? (Story 1 + Story 2 + Story 4)"),
-    ("chart-row", "ROW-outlook", [("outlook-kpi", 3, 50), ("outlook-windsor", 9, 50)]),
-    ("chart-row", "ROW-outlook-cities", [("outlook-cities", 6, 52)], ("MARKDOWN-outlook", NOTES["outlook"], 6, 52)),
-    ("chart-row", "ROW-outlook-table", [("outlook-scenarios", 12, 38)]),
+    ("chart-row", "ROW-outlook", [("outlook-kpi", 3, 45), ("outlook-windsor", 9, 45)]),
+    ("chart-row", "ROW-outlook-cities", [("outlook-cities", 6, 46)], ("MARKDOWN-outlook", NOTES["outlook"], 6, 46)),
+    ("chart-row", "ROW-outlook-table", [("outlook-scenarios", 12, 32)]),
 ]
 
 # Card titles shown on this dashboard: the chart names keep their "Story 5:"

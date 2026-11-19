@@ -264,7 +264,10 @@ NEW_CHARTS = {
 }
 
 # The legacy dist_bar charts are drawn with the ECharts bar chart (superset_compat).
-upgrade_legacy_bars(NEW_CHARTS)
+upgrade_legacy_bars(NEW_CHARTS, {
+    "supply-by-dwelling-type": {"xAxisLabelRotation": 30},  # all four dwelling types labelled
+    "supply-snapshot": {"y_axis_title_margin": 70},  # axis title clear of the 150,000 labels
+})
 
 
 def ensure_chart(session, headers, spec: dict) -> int:
@@ -297,7 +300,7 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
 # Both tables on this dashboard have 4 rows -- at 55 (the bar-chart
 # height) each left a large blank area under its last row. 40 matches the
 # zone snapshot table on Dashboard 3 (etl/build_story2_dashboard.py).
-TABLE_HEIGHT = 40
+TABLE_HEIGHT = 28  # four rows each: 40 left a large blank area and pushed the tab past one screen
 
 
 def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 32) -> dict:
@@ -370,7 +373,7 @@ def build_position_json(chart_ids: dict) -> dict:
         "ROW-affordability", ["CHART-tenure-bar", "CHART-kpi-renter-a", "CHART-kpi-owner-a"]
     )
     position["CHART-tenure-bar"] = chart_node(
-        "CHART-tenure-bar", "ROW-affordability", chart_ids["tenure-bar"], 6, 55
+        "CHART-tenure-bar", "ROW-affordability", chart_ids["tenure-bar"], 6, 45
     )
     position["CHART-kpi-renter-a"] = chart_node(
         "CHART-kpi-renter-a", "ROW-affordability", chart_ids["kpi-renter"], 3
@@ -404,10 +407,10 @@ def build_position_json(chart_ids: dict) -> dict:
         "ROW-supply", ["CHART-supply-snapshot", "CHART-supply-by-dwelling-type"]
     )
     position["CHART-supply-snapshot"] = chart_node(
-        "CHART-supply-snapshot", "ROW-supply", chart_ids["supply-snapshot"], 6, 55
+        "CHART-supply-snapshot", "ROW-supply", chart_ids["supply-snapshot"], 6, 45
     )
     position["CHART-supply-by-dwelling-type"] = chart_node(
-        "CHART-supply-by-dwelling-type", "ROW-supply", chart_ids["supply-by-dwelling-type"], 6, 55
+        "CHART-supply-by-dwelling-type", "ROW-supply", chart_ids["supply-by-dwelling-type"], 6, 45
     )
 
     position["HEADER-cma"] = header_node("HEADER-cma", "Windsor vs Canadian CMAs")

@@ -175,15 +175,19 @@ def gap_tile(slice_name, sql, label, number_format, subheader):
 
 SHARE_30 = {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct) / 100.0",
             "label": "Share spending 30%+ on shelter"}
+# As on the team's reference screenshots: the rate as a plain number of
+# percent (e.g. 97.95), not formatted as a percentage.
+SHARE_30_PCT = {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct)",
+                "label": "Share spending 30%+ on shelter (%)"}
 
 SECTION_CHARTS = {
     "kpi-gap": gap_tile(
         "Renter-Owner Burden Gap", "MAX(renter_owner_gap_pts)", "Burden gap", ",.1f",
-        "percentage points: renter burden minus owner burden",
+        "Renter burden minus owner burden",
     ),
     "kpi-ratio": gap_tile(
         "Renter-Owner Burden Ratio", "MAX(renter_owner_ratio)", "Burden ratio", ",.2f",
-        "times: renter burden relative to owner burden",
+        "Renter burden relative to owner burden",
     ),
     "income-tenure": {
         "slice_name": "Burden by Income Group and Tenure",
@@ -200,7 +204,7 @@ SECTION_CHARTS = {
             # categories sort from the highest income to the lowest.
             "x_axis": {"expressionType": "SQL", "label": "Household income (2020)",
                        "sqlExpression": "REPEAT(CHR(8203), 12 - income_band_sort_order) || income_band"},
-            "metrics": [SHARE_30],
+            "metrics": [SHARE_30_PCT],
             "groupby": ["tenure"],
             "adhoc_filters": [],
             "row_limit": 50,
@@ -209,12 +213,12 @@ SECTION_CHARTS = {
             "show_legend": True,
             "legendOrientation": "top",
             "rich_tooltip": True,
-            "y_axis_format": ".1%",
+            "y_axis_format": "~g",
             "x_axis_title": "",
-            "y_axis_title": "Households spending 30%+ of income",
+            "y_axis_title": "Households spending 30%+ of income (%)",
             "y_axis_title_margin": 40,
             "truncateYAxis": True,
-            "y_axis_bounds": [0, 1],
+            "y_axis_bounds": [0, 100],
         },
     },
     "household-tenure": {
@@ -228,25 +232,23 @@ SECTION_CHARTS = {
         "dataset_id": DATASET_HOUSEHOLD_TENURE,
         "viz_type": "echarts_timeseries_bar",
         "params": {
-            # Short labels so both fit under their bars.
             "x_axis": {"expressionType": "SQL", "label": "Household type",
-                       "sqlExpression": "CASE household_type WHEN 'Census-family households' "
-                                        "THEN 'Families' ELSE 'Non-families' END"},
-            "metrics": [SHARE_30],
+                       "sqlExpression": "REPLACE(household_type, ' household', E'\\nhousehold')"},
+            "metrics": [SHARE_30_PCT],
             "groupby": ["tenure"],
             "adhoc_filters": [{"clause": "WHERE", "expressionType": "SQL",
                                "sqlExpression": "parent_member_id = 1"}],
             "row_limit": 50,
             "color_scheme": COLOR_SCHEME,
-            "show_value": True,
+            "show_value": False,
             "show_legend": True,
             "legendOrientation": "top",
             "rich_tooltip": True,
-            "y_axis_format": ".1%",
+            "y_axis_format": "~g",
             "x_axis_title": "",
             "y_axis_title": "",
             "truncateYAxis": True,
-            "y_axis_bounds": [0, 0.5],
+            "y_axis_bounds": [0, 50],
         },
     },
     "severity-tenure": {
@@ -266,9 +268,9 @@ SECTION_CHARTS = {
             "metrics": [
                 {"expressionType": "SQL", "label": label,
                  "sqlExpression": f"MAX(CASE WHEN category = '{category}' THEN pct_of_households END) / 100.0"}
-                for category, label in [("Under 30%", "Under 30%"),
-                                        ("30% to under 100%", "30% to under 100%"),
-                                        ("100% or more", "100% or more")]
+                for category, label in [("Under 30%", "<30%"),
+                                        ("30% to under 100%", "30%-99%"),
+                                        ("100% or more", "100%+")]
             ],
             "groupby": [],
             "adhoc_filters": [],
@@ -300,9 +302,9 @@ SECTION_CHARTS = {
             "query_mode": "aggregate",
             "groupby": [{"expressionType": "SQL", "sqlExpression": "tenure", "label": "Tenure"}],
             "metrics": [
-                {"expressionType": "SQL", "sqlExpression": "MAX(calculated_rate_pct)", "label": "Calculated burden (%)"},
-                {"expressionType": "SQL", "sqlExpression": "MAX(published_rate_pct)", "label": "Census published (%)"},
-                {"expressionType": "SQL", "sqlExpression": "MAX(difference_pts)", "label": "Difference (points)"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(calculated_rate_pct)", "label": "Calculated Burden (%)"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(published_rate_pct)", "label": "Census Published (%)"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(difference_pts)", "label": "Difference (pp)"},
             ],
             "all_columns": [],
             "adhoc_filters": [],
@@ -601,9 +603,9 @@ TABS = [
 LAYOUT_ROWS = [
     ("ROW-intro", [("MARKDOWN-intro", None, INTRO_MARKDOWN, 12, 16)]),
     ("HEADER-gap", "Affordability Gap: Renters vs Owners"),
-    ("ROW-gap", [("CHART-kpi-gap", "kpi-gap", None, 4, 50), ("CHART-kpi-ratio", "kpi-ratio", None, 4, 50),
-                 ("MARKDOWN-q-gap", None, QUESTIONS["gap"], 4, 50)]),
-    ("ROW-tenure-bar", [("CHART-tenure-bar", "tenure-bar", None, 12, 50)]),
+    ("ROW-gap", [("CHART-kpi-gap", "kpi-gap", None, 4, 38), ("CHART-kpi-ratio", "kpi-ratio", None, 4, 38),
+                 ("MARKDOWN-q-gap", None, QUESTIONS["gap"], 4, 38)]),
+    ("ROW-tenure-bar", [("CHART-tenure-bar", "tenure-bar", None, 12, 44)]),
     ("HEADER-income", "Who Faces the Greatest Housing Cost Burden?"),
     ("ROW-income-question", [("MARKDOWN-q-income", None, QUESTIONS["income"], 12, 10)]),
     ("ROW-income", [("CHART-income-tenure", "income-tenure", None, 12, 80)]),

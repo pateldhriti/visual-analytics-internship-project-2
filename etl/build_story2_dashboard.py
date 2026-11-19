@@ -64,7 +64,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, match_bar_order, named, prefix_names, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, match_bar_order, named, prefix_names, scatter, trendline_kpi, upgrade_legacy_bars
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
@@ -155,7 +155,23 @@ ZONES = [
     "Zone 6 - North Essex County",
     "Zone 7 - South Essex County",
 ]
-ZONE_COLORS = dict(zip(ZONES, COLOR_DOMAIN))
+# Zone colours, series colours and number formats follow the team's
+# reference screenshots of this dashboard (Superset's default palette).
+ZONE_COLORS = dict(zip(ZONES, ["#454E7C", "#FCC700", "#3CCCCB", "#666666", "#8FD3E4", "#ACE1C4", "#B2B2B2"]))
+STORY2_COLORS = {
+    "Rental units": "#A38F79",
+    "Vacancy Rate (%)": "#9EE5E5",
+    "Average 2-Bedroom Rent ($)": "#FDE380",
+    "Vacant Units": "#FEC0A1",
+    "Occupied Units": "#D3B3DA",
+    "Affordable Stock Share (%)": "#D1C6BC",
+    "1 Bedroom": "#FF7F44",
+    "2 Bedroom": "#A868B7",
+    "Studio": "#A1A6BD",
+    "3 Bedroom +": "#EFA1AA",
+    "Oct-24": "#1FA8C9",
+    "Oct-25": "#5AC189",
+}
 
 
 def zone_bar_params(sql: str, label: str, number_format: str) -> dict:
@@ -450,13 +466,27 @@ CHARTS = {
     "zone-stock": {
         "slice_name": "Rental Stock by Zone (Oct-25)",
         "description": (
-            "Purpose-built rental units in each zone, October 2025, apartments and row houses. "
-            "Shows where Windsor's rental housing is. Click a bar to explore that zone. "
-            "The 7 zones sum to the Windsor CMA total (19,883) -- warehouse.v_story2_zone_snapshot."
+            "Purpose-built rental units in each zone, October 2025, apartments (CMHC Table 1.1.3). "
+            "Shows where Windsor's rental housing is. The 7 zones sum to the Windsor CMA total "
+            "(19,042) -- warehouse.v_story2_zone_snapshot."
         ),
         "dataset_id": DATASET_ZONE_SNAPSHOT,
         "viz_type": "echarts_timeseries_bar",
-        "params": zone_bar_params("SUM(rental_universe)", "Rental units", ",.0f"),
+        # One series ("Rental units", brown) rather than one per zone, as on
+        # the reference dashboard; the zone table and rent bars stay clickable.
+        "params": {
+            **zone_bar_params("SUM(rental_universe)", "Rental units", "SMART_NUMBER"),
+            "groupby": [],
+            "stack": False,
+            "show_legend": True,
+            "legendOrientation": "top",
+            # No axis title: the zone names say what the axis is, and a title clear of
+            # those long names took the space the bars need.
+            "x_axis_title": "",
+            "y_axis_bounds": [0, 6000],  # room for the 5.44k label, ending on a round tick
+            "y_axis_title": "Rental units",
+            "y_axis_title_margin": 30,
+        },
     },
     "zone-vacancy": {
         "slice_name": "Vacancy Rate by Zone (Oct-25)",
@@ -519,7 +549,7 @@ CHARTS = {
             "row_limit": 10,
             "server_pagination": False,
             "include_search": False,
-            "show_cell_bars": True,
+            "show_cell_bars": False,  # plain numbers; the rent bars sit below the table
             "color_pn": False,
             "allow_rearrange_columns": False,
             "column_config": {
@@ -583,16 +613,17 @@ CHARTS = {
     "turnover": {
         "slice_name": "Turnover Rate by Bedroom Type (Oct-25)",
         "description": (
-            "Share of units in each size whose tenant changed in the past year, October 2025. Small "
-            "units turn over most; households in 3-bedroom+ units stay longest -- "
-            "warehouse.v_story2_turnover_by_bedroom."
+            "Share of apartments in each size whose tenant changed in the past year, October 2025 "
+            "(CMHC Table 1.1.6, the scope of the turnover-change table below). Small units turn over "
+            "most; households in 3-bedroom+ units stay longest -- warehouse.v_story2_turnover_by_bedroom."
         ),
         "dataset_id": DATASET_TURNOVER,
         "viz_type": "echarts_timeseries_bar",
         "params": {
             **echarts_params(
                 "bar", "bedroom_type_label", "AVG(turnover_rate_pct) / 100.0", "Turnover rate", ".1%",
-                filters=[combined_filter(), EXCLUDE_TOTAL_BEDROOM, period_filter("Oct-25")],
+                filters=[{**combined_filter(), "comparator": "Apartment"}, EXCLUDE_TOTAL_BEDROOM,
+                         period_filter("Oct-25")],
             ),
             "show_value": True,
             # Highest turnover first, instead of alphabetical (Studio last).
@@ -679,8 +710,8 @@ DATA_NOTES_MARKDOWN = """**About the data**
   of Windsor-wide rent and vacancy, see Story 4's **Ten Years** tab.
 - **Coverage:** purpose-built rental buildings with 3 or more units. Rented condos,
   basements and houses are not included.
-- **"Combined"** means apartments and row houses together. Most charts use it because
-  CMHC suppresses most row-house-only figures in Windsor.
+- **"Combined"** means apartments and row houses together: the benchmark cards and the
+  Rent and Vacancy tabs. The zone, turnover, market-trend and prices charts are apartments only.
 - **Rent** is the average monthly rent of all surveyed units, occupied and vacant,
   not the asking rent for a vacant unit.
 - **Reliability letters** are CMHC's grades: a excellent, b very good, c good, d fair
@@ -699,6 +730,286 @@ DATA_NOTES_MARKDOWN = """**About the data**
 # full width rather than side by side: each draws 4 bedroom types x 6
 # periods = 24 bars, which crowds badly in a half-width cell once the
 # dashboard is embedded in the React story page's narrower iframe.
+
+# --- Tabs "Market Trends" and "Income and New Supply" -----------------------
+DATASET_MARKET_HISTORY = dataset_id("v_story2_market_history")
+DATASET_VACANT_OCCUPIED = dataset_id("v_story2_rent_vacant_occupied")
+DATASET_STOCK_BY_SIZE = dataset_id("v_story2_stock_by_unit_size")
+DATASET_QUINTILES = dataset_id("v_story2_income_quintiles")
+DATASET_NEW_STOCK = dataset_id("v_story2_new_stock")
+DATASET_TURNOVER_CHANGE = dataset_id("v_story2_turnover_change")
+
+YEAR_AXIS = {"expressionType": "SQL", "sqlExpression": "CAST(period_year AS TEXT)", "label": "Year"}
+
+
+def simple_chart(viz: str, x_axis, metrics: list, number_format: str, y_bounds=(None, None), **extra) -> dict:
+    """Line or bar with one series per metric, every point labelled."""
+    params = {
+        "x_axis": x_axis,
+        "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label} for sql, label in metrics],
+        "groupby": [],
+        "adhoc_filters": [],
+        "row_limit": 50,
+        "color_scheme": COLOR_SCHEME,
+        "show_legend": len(metrics) > 1,
+        "legendOrientation": "top",
+        "rich_tooltip": True,
+        "show_value": True,
+        "y_axis_format": number_format,
+        "x_axis_title": "",
+        "y_axis_title": "",
+        "truncateYAxis": True,
+        "y_axis_bounds": list(y_bounds),
+        **extra,
+    }
+    if viz == "line":
+        params.update({"markerEnabled": True, "markerSize": 6, "seriesType": "line"})
+    return params
+
+
+MORE_CHARTS = {
+    "history-vacancy": {
+        "slice_name": "Vacancy Rate Trend, 2019-2025",
+        "description": (
+            "Windsor's October vacancy rate, apartment structures of three units and over, 2019 to "
+            "2025: CMHC Rental Market Survey, Canada, Table 1.0 (one workbook per year), the same "
+            "scope as the rent line beside it -- warehouse.v_story2_market_history."
+        ),
+        "dataset_id": DATASET_MARKET_HISTORY,
+        "viz_type": "echarts_timeseries_line",
+        "params": simple_chart("line", YEAR_AXIS, [("MAX(vacancy_rate_pct)", "Vacancy Rate (%)")], "~g",
+                               (0, None), area=True, opacity=0.2, show_legend=True,
+                               x_axis_title="Year", y_axis_title="Vacancy Rate (%)",
+                               x_axis_title_margin=30, y_axis_title_margin=30),
+    },
+    "history-rent": {
+        "slice_name": "2-Bedroom Apartment Rent Trend, 2019-2025",
+        "description": (
+            "Windsor's October average 2-bedroom rent, apartments only, 2019 to 2025: CMHC Rental "
+            "Market Survey, Canada, Table 1.0, the latest figure CMHC published for each October "
+            "(2022 as revised after the boundary change) -- warehouse.v_story2_market_history."
+        ),
+        "dataset_id": DATASET_MARKET_HISTORY,
+        "viz_type": "echarts_timeseries_line",
+        "params": simple_chart("line", YEAR_AXIS, [("MAX(rent_2br_apartments)", "Average 2-Bedroom Rent ($)")],
+                               "$,.2f", (0, None), show_legend=True, x_axis_title="Year",
+                               y_axis_title="Average 2-Bedroom Rent ($)", x_axis_title_margin=30,
+                               y_axis_title_margin=80),
+    },
+    "rent-vacant-occupied": {
+        "slice_name": "Rent of Vacant vs Occupied Units (Oct-25)",
+        "description": (
+            "Average monthly rent of units that were vacant (roughly what a new tenant pays) and of "
+            "occupied units, by unit size, October 2025, apartments (CMHC Table 1.1.9). CMHC does not "
+            "publish the 3-bedroom rents -- warehouse.v_story2_rent_vacant_occupied."
+        ),
+        "dataset_id": DATASET_VACANT_OCCUPIED,
+        "viz_type": "echarts_timeseries_bar",
+        "params": simple_chart("bar", "unit_size", [("MAX(rent_vacant_units)", "Vacant Units"),
+                                                    ("MAX(rent_occupied_units)", "Occupied Units")], "$,.2f",
+                               (0, None), x_axis_title="Bedroom Type", y_axis_title="Average monthly rent ($)",
+                               x_axis_title_margin=30, y_axis_title_margin=80),
+    },
+    "stock-by-size": {
+        "slice_name": "Rental Stock by Unit Size (Oct-25)",
+        "description": (
+            "Windsor's 19,042 purpose-built apartment units by unit size, October 2025 (CMHC Table "
+            "1.1.3) -- warehouse.v_story2_stock_by_unit_size."
+        ),
+        "dataset_id": DATASET_STOCK_BY_SIZE,
+        "viz_type": "pie",
+        "params": {
+            "groupby": ["unit_size"],
+            "metric": {"expressionType": "SQL", "sqlExpression": "SUM(units)", "label": "Rental units"},
+            "adhoc_filters": [],
+            "row_limit": 10,
+            "sort_by_metric": True,
+            "color_scheme": COLOR_SCHEME,
+            "donut": True,
+            "innerRadius": 45,
+            "outerRadius": 75,
+            "show_labels": True,
+            "labels_outside": True,
+            "label_line": True,
+            "label_type": "key_percent",
+            "number_format": ",d",
+            "show_legend": True,
+            "legendType": "scroll",
+            "legendOrientation": "top",
+        },
+    },
+    "quintile-stock": {
+        "slice_name": "Rental Units Affordable to Each Renter Income Quintile (Oct-25)",
+        "description": (
+            "Share of Windsor's rental units each renter income quintile can afford, meaning rent of "
+            "at most 30% of the quintile's upper income (CMHC Table 3.1.8, October 2025). Q1 is the "
+            "lowest-income fifth of renters. Q5 has no upper income, so CMHC publishes no count for "
+            "it -- warehouse.v_story2_income_quintiles."
+        ),
+        "dataset_id": DATASET_QUINTILES,
+        "viz_type": "echarts_timeseries_bar",
+        "params": simple_chart("bar", "income_quintile", [("MAX(pct_of_rental_stock)", "Affordable Stock Share (%)")],
+                               "~g", (0, None), show_legend=True, x_axis_title="Renter Income Quintile",
+                               y_axis_title="Share of Rental Stock (%)", x_axis_title_margin=30,
+                               y_axis_title_margin=30),
+    },
+    "quintile-vacancy": {
+        "slice_name": "Vacancy Rate of Units Affordable to Each Income Quintile (Oct-25)",
+        "description": (
+            "Vacancy rate among the rental units each renter income quintile can afford (CMHC Table "
+            "3.1.8, October 2025): the cheapest units, affordable to Q1, are the hardest to find "
+            "-- warehouse.v_story2_income_quintiles."
+        ),
+        "dataset_id": DATASET_QUINTILES,
+        "viz_type": "echarts_timeseries_line",
+        "params": simple_chart("line", "income_quintile", [("MAX(vacancy_rate_pct)", "Vacancy Rate (%)")],
+                               "~g", (0, None), show_legend=True, x_axis_title="Renter Income Quintile",
+                               y_axis_title="Vacancy Rate (%)", x_axis_title_margin=30, y_axis_title_margin=30),
+    },
+    "new-stock": {
+        "slice_name": "New Rental Stock by Zone and Unit Size (Oct-25)",
+        "description": (
+            "Rental units added to CMHC's survey universe in the year to October 2025, by zone (rows) "
+            "and unit size (columns), apartments and row houses -- warehouse.v_story2_new_stock."
+        ),
+        "dataset_id": DATASET_NEW_STOCK,
+        **dict(zip(("viz_type", "params"), heatmap(
+            "unit_size", "zone_label",
+            {"expressionType": "SQL", "sqlExpression": "SUM(new_units)", "label": "New units"},
+            [], ",d",
+        ))),
+    },
+    "zone-rent-vacancy": {
+        "slice_name": "Zone Rent vs Vacancy (Oct-25)",
+        "description": (
+            "Each zone's average monthly rent (across) against its vacancy rate (up), October 2025, "
+            "apartments: the cheaper city zones have the most vacancy -- "
+            "warehouse.v_story2_zone_snapshot."
+        ),
+        "dataset_id": DATASET_ZONE_SNAPSHOT,
+        **dict(zip(("viz_type", "params"), scatter(
+            "average_rent",
+            {"expressionType": "SQL", "sqlExpression": "MAX(vacancy_rate_pct)", "label": "Vacancy rate (%)"},
+            "zone_label", [], "Average monthly rent ($)", "Vacancy rate (%)", "~g", "~g", (None, None), (0, None),
+        ))),
+    },
+    "turnover-change": {
+        "slice_name": "Turnover Change by Unit Size (Oct-24 to Oct-25)",
+        "description": (
+            "Share of units that changed tenants in the last two surveys, the change in percentage "
+            "points and CMHC's own test of whether the change is statistically significant. Studio "
+            "turnover was not published for Oct-24 -- warehouse.v_story2_turnover_change."
+        ),
+        "dataset_id": DATASET_TURNOVER_CHANGE,
+        "viz_type": "table",
+        "params": {
+            "query_mode": "raw",
+            "all_columns": ["unit_size", "turnover_oct24", "turnover_oct25", "change_pts", "cmhc_trend"],
+            "order_by_cols": ['["unit_size_sort_order", true]'],
+            "adhoc_filters": [],
+            "row_limit": 10,
+            "include_search": False,
+            "show_cell_bars": False,
+            "color_scheme": COLOR_SCHEME,
+        },
+    },
+}
+MORE_CHARTS["zone-rent-vacancy"]["params"].update({"legendType": "scroll", "legendOrientation": "top",
+                                                   "markerSize": 10})
+# The new-stock heatmap's yellow-green-blue scale and the turnover table's
+# grey cell bars, as on the reference dashboard.
+MORE_CHARTS["new-stock"]["params"]["linear_color_scheme"] = "schemeYlGnBu"
+MORE_CHARTS["turnover-change"]["params"].update({
+    "show_cell_bars": True,
+    "adhoc_filters": [{"clause": "WHERE", "expressionType": "SQL", "sqlExpression": "unit_size <> 'Total'"}],
+})
+
+# --- Tab "Prices and Availability" ------------------------------------------
+# Rent and vacancy by unit size in the last two surveys, apartments.
+DATASET_BEDROOM_OCT = dataset_id("v_story2_bedroom_oct")
+PRICE_CHARTS = {
+    "bedroom-rent": {
+        "slice_name": "Rent by Bedroom Type (Oct-24 vs Oct-25)",
+        "description": (
+            "Windsor's average monthly apartment rent by unit size, October 2024 and October 2025 "
+            "(CMHC Table 1.1.2). CMHC did not publish the 3-bedroom rent for Oct-25 -- "
+            "warehouse.v_story2_bedroom_oct."
+        ),
+        "dataset_id": DATASET_BEDROOM_OCT,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            **echarts_params("bar", "unit_size", "MAX(average_rent)", "Average monthly rent ($)", "~s",
+                             groupby=["period_label"]),
+            "legendType": "plain",
+            "x_axis_title": "Bedroom Type",
+            "y_axis_title": "Average monthly rent ($)",
+            "x_axis_title_margin": 30,
+            "y_axis_title_margin": 50,
+        },
+    },
+    "bedroom-vacancy": {
+        "slice_name": "Vacancy by Bedroom Type (Oct-24 vs Oct-25)",
+        "description": (
+            "Windsor's apartment vacancy rate by unit size, October 2024 and October 2025 (CMHC "
+            "Table 1.1.1). CMHC suppresses estimates too unreliable to publish -- "
+            "warehouse.v_story2_bedroom_oct."
+        ),
+        "dataset_id": DATASET_BEDROOM_OCT,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            **echarts_params("bar", "unit_size", "MAX(vacancy_rate_pct)", "Vacancy rate (%)", ",.1f",
+                             groupby=["period_label"]),
+            "orientation": "horizontal",
+            "show_value": True,
+            "legendType": "plain",
+            "x_axis_title": "Bedroom Type",
+            "y_axis_title": "Vacancy rate (%)",
+            "x_axis_title_margin": 90,  # clears the unit-size names
+            "y_axis_title_margin": 30,
+        },
+    },
+}
+MORE_CHARTS.update(PRICE_CHARTS)
+PRICES_NOTE = """**What it shows.** Apartment rents rose for every unit size from October 2024 to October 2025:
+a 1-bedroom from **$1,116 to $1,192** and a 2-bedroom from **$1,387 to $1,454**. Vacancy went up for
+1-bedrooms (**2.5% to 3.8%**) and down for 2-bedrooms (**4.2% to 3.2%**); studios were the easiest to
+find (**5.9%** vacant). *Apartments only (CMHC Tables 1.1.1 and 1.1.2); a missing bar is a figure CMHC
+did not publish.*
+"""
+
+MARKET_NOTE = """**What it shows.** Apartment vacancy went from **2.9%** in 2019 down to **1.8%** in 2022 and
+up to **3.7%** by 2025, but the 2-bedroom apartment rent kept rising: **$949** in 2019 to **$1,454** in
+2025 (+53%). New tenants pay more than sitting ones: a vacant 2-bedroom rented for **$1,643** in October
+2025 against **$1,447** for an occupied one (+$196). Most apartments are 1- and 2-bedrooms (47% and 43%);
+3-bedroom units are under 3%. *Apartments only (CMHC Rental Market Survey).*
+"""
+INCOME_NOTE = """**What it shows.** Renters in the lowest-income fifth (**Q1**) can afford only **22.5%** of
+Windsor's rental units, and those are the hardest to find: **2.3%** vacant, against 5.3% for the units
+Q3 renters can afford. Q5 has no upper income, so CMHC publishes no count for it. New units went
+mostly to **Zone 3 - East Outer (568)** and **Zone 6 - North Essex County (443)**, mostly 2-bedrooms.
+"""
+
+TURNOVER_CHANGE_LABELS = {
+    "unit_size": "Unit size",
+    "turnover_oct24": "Oct-24 turnover (%)",
+    "turnover_oct25": "Oct-25 turnover (%)",
+    "change_pts": "Change (points)",
+    "cmhc_trend": "CMHC trend",
+}
+
+CHARTS.update(MORE_CHARTS)
+
+CHARTS["zone-rent"] = {
+    "slice_name": "Average Rent by Zone (Oct-25)",
+    "description": (
+        "Average monthly rent by zone, October 2025, apartments and row houses, all unit sizes. "
+        "Click a zone to filter the dashboard to it -- warehouse.v_story2_zone_snapshot."
+    ),
+    "dataset_id": DATASET_ZONE_SNAPSHOT,
+    "viz_type": "echarts_timeseries_bar",
+    "params": zone_bar_params("MAX(average_rent)", "Average monthly rent", "$,.0f"),
+}
+
 LAYOUT = [
     ("HEADER-kpi", "Windsor CMA Benchmarks (Oct-25): Fixed Totals, All Zones, Apartments + Row Houses"),
     ("ROW-howto", [("md:howto", 12)]),
@@ -716,12 +1027,27 @@ LAYOUT = [
     ("ROW-dwelling", [("vacancy-dwelling", 12)]),
     ("HEADER-notes", "How to Read This Dashboard"),
     ("ROW-notes", [("md:guide", 6), ("md:notes", 6)]),
+    ("HEADER-market", "Market Trends: Vacancy and Rent Since 2019, New-Tenant Rents, Unit Sizes"),
+    ("ROW-history", [("history-vacancy", 6), ("history-rent", 6)]),
+    ("ROW-rent-mix", [("rent-vacant-occupied", 7), ("stock-by-size", 5)]),
+    ("ROW-market-note", [("md:market-note", 12)]),
+    ("HEADER-income", "Income and New Supply: What Each Income Can Afford, Where New Units Are"),
+    ("ROW-quintiles", [("quintile-stock", 6), ("quintile-vacancy", 6)]),
+    ("ROW-supply", [("new-stock", 5), ("zone-rent-vacancy", 7)]),
+    ("ROW-income-note", [("md:income-note", 12)]),
+    ("ROW-turnover-change", [("turnover-change", 12)]),
+    ("HEADER-prices", "Rental Prices and Availability by Bedroom Type, Oct-24 vs Oct-25 (Apartments)"),
+    ("ROW-prices", [("bedroom-rent", 6), ("bedroom-vacancy", 6)]),
+    ("ROW-prices-note", [("md:prices-note", 12)]),
 ]
 
 MARKDOWN = {
-    "md:notes": (DATA_NOTES_MARKDOWN, 60),
-    "md:guide": (CHART_GUIDE_MARKDOWN, 60),
-    "md:howto": (HOW_TO_MARKDOWN, 14),
+    "md:notes": (DATA_NOTES_MARKDOWN, 48),  # 48, not 60, so the Overview tab fits one screen
+    "md:guide": (CHART_GUIDE_MARKDOWN, 48),
+    "md:howto": (HOW_TO_MARKDOWN, 13),
+    "md:market-note": (MARKET_NOTE, 14),
+    "md:income-note": (INCOME_NOTE, 14),
+    "md:prices-note": (PRICES_NOTE, 14),
 }
 
 # Charts whose datasets have a zone_label column. Cross-filters on a zone
@@ -733,7 +1059,8 @@ MARKDOWN = {
 # so it stays out of the Bedroom Type filter and its cross-filters.
 PANEL_BY_UNIT_SIZE = [] if SHARED else ["zone-explain"]
 
-ZONE_CHART_KEYS = ["zone-table", "zone-explain", "zone-stock", "zone-vacancy", "rent-zone", "zone-vacancy-trend"]
+ZONE_CHART_KEYS = ["zone-table", "zone-explain", "zone-stock", "zone-vacancy", "rent-zone", "zone-vacancy-trend",
+                   "zone-rent"]
 # Cross-filter groups. A chart's click filters on the column it groups by
 # (zone for the zone charts; unit size for the rent/vacancy/turnover by
 # bedroom charts), so each group only reaches charts whose dataset has that
@@ -743,7 +1070,7 @@ ZONE_CHART_KEYS = ["zone-table", "zone-explain", "zone-stock", "zone-vacancy", "
 # stored one makes it try to save (see build_cross_filter_config).
 CROSS_FILTER_GROUPS = {
     "zone": {
-        "emitters": ["zone-table", "zone-stock", "zone-vacancy"],  # the heatmap cannot emit
+        "emitters": ["zone-table", "zone-vacancy", "zone-rent"],  # the heatmap and stock bars cannot emit
         "receivers": ZONE_CHART_KEYS,
     },
     "bedroom": {
@@ -754,20 +1081,34 @@ CROSS_FILTER_GROUPS = {
 # Clickable charts whose clicks should filter nothing: the dwelling-type
 # chart's column only exists in one other dataset, where it is fixed to
 # "Combined", so a dwelling cross-filter could only empty that chart.
-NO_CROSS_FILTER_KEYS = ["vacancy-dwelling"]
+NO_CROSS_FILTER_KEYS = ["vacancy-dwelling", *MORE_CHARTS]
 
 # Chart heights in Superset grid units (8px each). KPI tiles stay
 # compact; the zone table only has 7 rows, so 55 would leave a large
 # blank area under it.
-KPI_HEIGHT = 32  # room for the trendline under the rent and vacancy tiles
+KPI_HEIGHT = 28  # room for the trendline under the rent and vacancy tiles
 TABLE_HEIGHT = 40
 CHART_HEIGHT = 55
 
 
+# The two added tabs fit one screen: two rows each.
+MORE_HEIGHTS = {"history-vacancy": 36, "history-rent": 36, "rent-vacant-occupied": 38, "stock-by-size": 38,
+                "quintile-stock": 42, "quintile-vacancy": 42, "new-stock": 44, "zone-rent-vacancy": 44,
+                "turnover-change": 30, "bedroom-rent": 62, "bedroom-vacancy": 62}
+
+
 def chart_height(key: str) -> int:
+    if key in MORE_HEIGHTS:
+        return MORE_HEIGHTS[key]
     if key.startswith("kpi"):
         return KPI_HEIGHT
-    if key in ("zone-table", "zone-explain"):
+    # Stacked in one column, together the panel's height (84); the table
+    # needs room for zone names that wrap onto two lines.
+    if key == "zone-table":
+        return 50
+    if key == "zone-rent":
+        return 34
+    if key == "zone-explain":
         # Tall enough for the longest panel content (a zone with a
         # reliability note, measured at 582px) so the panel never scrolls
         # inside its card.
@@ -807,7 +1148,10 @@ TABS = [
     ("TAB-zones", "Zones Compared", ["ROW-zone-bars", "ROW-zone-trend"]),
     ("TAB-rent", "Rent", ["ROW-rent-trend", "ROW-zone"]),
     ("TAB-vacancy", "Vacancy", ["ROW-vacancy-trend", "ROW-dwelling"]),
-    ("TAB-turnover", "Turnover", ["ROW-turnover"]),
+    ("TAB-turnover", "Turnover", ["ROW-turnover", "ROW-turnover-change"]),
+    ("TAB-market", "Market Trends", ["HEADER-market", "ROW-history", "ROW-rent-mix", "ROW-market-note"]),
+    ("TAB-income", "Income and New Supply", ["HEADER-income", "ROW-quintiles", "ROW-supply", "ROW-income-note"]),
+    ("TAB-prices", "Prices and Availability", ["HEADER-prices", "ROW-prices", "ROW-prices-note"]),
 ]
 
 
@@ -875,6 +1219,25 @@ def build_position_json(chart_ids: dict) -> dict:
                 },
             }
 
+    # Left column of the zone row: the table with the rent bars under it.
+    column = "COLUMN-zone-left"
+    position["ROW-zone-table"]["children"] = [column, "CHART-zone-explain"]
+    position[column] = {
+        "type": "COLUMN",
+        "id": column,
+        "children": ["CHART-zone-table", "CHART-zone-rent"],
+        "parents": ["ROOT_ID", "GRID_ID", "ROW-zone-table"],
+        "meta": {"width": 7, "background": "BACKGROUND_TRANSPARENT"},
+    }
+    position["CHART-zone-table"]["parents"] = ["ROOT_ID", "GRID_ID", "ROW-zone-table", column]
+    position["CHART-zone-rent"] = {
+        "type": "CHART",
+        "id": "CHART-zone-rent",
+        "children": [],
+        "parents": ["ROOT_ID", "GRID_ID", "ROW-zone-table", column],
+        "meta": {"chartId": chart_ids["zone-rent"], "width": 7, "height": chart_height("zone-rent"),
+                 "uuid": str(uuid.uuid4())},
+    }
     return add_tabs(position, TABS)
 
 
@@ -1119,7 +1482,7 @@ def ensure_dashboard(session, headers, position_json: dict, native_filters: list
     # One fixed palette colour per zone, so each zone has the same colour
     # in the zone bars and the zone trend lines, and no two zones share one
     # (Superset otherwise assigns colours by label and repeated a green).
-    metadata["label_colors"] = ZONE_COLORS
+    metadata["label_colors"] = {**ZONE_COLORS, **STORY2_COLORS}
     for key, default in (
         ("shared_label_colors", {}),
         ("timed_refresh_immune_slices", []),
@@ -1154,6 +1517,7 @@ if __name__ == "__main__":
     # Pick up columns added to v_story2_zone_explanation (the panel reads them).
     session.put(f"{SUPERSET_URL}/api/v1/dataset/{DATASET_ZONE_EXPLANATION}/refresh", headers=headers).raise_for_status()
     set_column_labels(session, headers, DATASET_ZONE_SNAPSHOT, ZONE_SNAPSHOT_LABELS)
+    set_column_labels(session, headers, DATASET_TURNOVER_CHANGE, TURNOVER_CHANGE_LABELS)
     # Cross-filter tags and tooltips show these labels instead of raw
     # column names such as "zone_label".
     for dataset_id in (DATASET_RENT_ZONE, DATASET_ZONE_VACANCY, DATASET_ZONE_EXPLANATION,
