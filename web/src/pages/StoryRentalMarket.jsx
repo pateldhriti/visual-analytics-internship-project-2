@@ -39,6 +39,12 @@ const NARRATIVE = [
     "units, where households, often families, stay longer. At 30% of income, Story 1's median " +
     `renter income of ${money(F.s5.medianIncome)} affords about ${money(F.s5.affordableRent)} a ` +
     `month, already below the ${S.latestYear} average rent.`,
+  "New tenants pay more, and the cheapest units are the hardest to find. A vacant 2-bedroom " +
+    `rented for ${money(S.vacantTwoBed)} in October ${S.latestYear}, ` +
+    `${money(S.vacantTwoBed - S.occupiedTwoBed)} more than an occupied one ` +
+    `(${money(S.occupiedTwoBed)}). Renters in the lowest-income fifth can afford only ` +
+    `${pct(S.q1SharePct, 0)} of Windsor's rental units, and only ${pct(S.q1VacancyPct)} of those ` +
+    "were vacant.",
 ];
 
 const DEFINITIONS = [

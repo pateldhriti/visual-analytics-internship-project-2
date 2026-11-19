@@ -34,7 +34,8 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, trendline_kpi, upgrade_legacy_bars
+from superset_compat import (COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, scatter,
+                             trendline_kpi, upgrade_legacy_bars)
 
 DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
 DATASET_RENT = dataset_id("v_story4_rent_comparison")
@@ -82,13 +83,17 @@ MARKET_COLORS = {m: (ACCENT if m == "Windsor CMA" else PEER_GREY) for m in MARKE
 # The ten-year lines need each city told apart, so they use the short names
 # (v_story4_rent_history.city_short) in the windsor_housing scheme's slot
 # order for the five markets (docker/superset_config.py): Windsor keeps blue.
+# Colours of the team's reference screenshots (Superset's default palette).
 CITY_LINE_COLORS = {
-    "Windsor": "#2a78d6",
-    "Hamilton": "#eb6834",
-    "Kitchener-Waterloo": "#1baf7a",
-    "London": "#eda100",
-    "St. Catharines": "#e87ba4",
+    "Windsor": "#5AC189",
+    "Hamilton": "#FCC700",
+    "Kitchener-Waterloo": "#1FA8C9",
+    "London": "#A868B7",
+    "St. Catharines": "#E04355",
 }
+SUPERSET_PALETTE = ["#1FA8C9", "#454E7C", "#5AC189", "#FF7F44", "#666666", "#E04355", "#FCC700", "#A868B7",
+                    "#3CCCCB", "#A38F79", "#8FD3E4", "#A1A6BD", "#ACE1C4", "#FEC0A1", "#B2B2B2", "#EFA1AA",
+                    "#FDE380", "#D3B3DA", "#9EE5E5", "#D1C6BC"]
 BEFORE, FROM_PANDEMIC = "2015 to 2020", "2020 to 2025"
 PERIOD_COLORS = {BEFORE: PEER_GREY, FROM_PANDEMIC: ACCENT}
 PEER_AVERAGE = "Average of the other 4 cities"
@@ -354,6 +359,248 @@ project does not estimate it.
 """
 
 
+# --- Tab "All Canadian Cities, 2021" ----------------------------------------
+# Windsor against every Canadian CMA: renter cost burden (Census 2021) against
+# the October 2021 2-bedroom apartment rent and vacancy rate. Windsor blue,
+# the four comparison cities dark grey, the other cities light grey. The
+# note's figures are read from the warehouse when the dashboard is built.
+DATASET_CANADA = dataset_id("v_story4_cma_canada")
+
+
+def _canada() -> list[dict]:
+    from sqlalchemy import text
+
+    from apply_sql_views import get_engine
+
+    with get_engine().connect() as conn:
+        return [dict(r) for r in conn.execute(text("SELECT * FROM warehouse.v_story4_cma_canada")).mappings()]
+
+
+CANADA = _canada()
+# One colour per city, as on the reference: the five cities of the 2019 lines
+# keep their line colours; the others take Superset's palette in turn.
+_FIXED = {"Windsor": CITY_LINE_COLORS["Windsor"], "London": CITY_LINE_COLORS["London"],
+          "Hamilton": CITY_LINE_COLORS["Hamilton"], "Toronto": "#8FD3E4",
+          "Kitchener-Cambridge-Waterloo": CITY_LINE_COLORS["Kitchener-Waterloo"],
+          "St. Catharines-Niagara": CITY_LINE_COLORS["St. Catharines"]}
+_others = [c["city"] for c in sorted(CANADA, key=lambda c: c["city"]) if c["city"] not in _FIXED]
+_free = [c for c in SUPERSET_PALETTE if c not in _FIXED.values()]
+CANADA_COLORS = {**{city: _free[i % len(_free)] for i, city in enumerate(_others)},
+                 **{city: color for city, color in _FIXED.items() if any(c["city"] == city for c in CANADA)}}
+LABEL_COLORS.update(CANADA_COLORS)
+_W = next(c for c in CANADA if c["is_windsor"])
+_cheaper = sum(c["rent_2br_apartments"] > _W["rent_2br_apartments"] for c in CANADA)
+_lower_burden = sum(c["renter_burden_pct"] > _W["renter_burden_pct"] for c in CANADA)
+
+
+def canada_scatter(x_column: str, x_label: str, x_format: str, x_bounds) -> dict:
+    viz, params = scatter(
+        x_column,
+        {"expressionType": "SQL", "sqlExpression": "MAX(renter_burden_pct)",
+         "label": "Renter Households Spending 30%+ (%)"},
+        "city", [], x_label, "Renter Households Spending 30%+ (%)", x_format, "~g", x_bounds, (0, 50),
+    )
+    # As on the reference: every city its own colour, the legend paging along the top.
+    params.update({"legendType": "scroll", "legendOrientation": "top", "markerSize": 10})
+    return {"viz_type": viz, "params": params}
+
+
+CANADA_CHARTS = {
+    "canada-rent-burden": {
+        "slice_name": "Rent vs Renter Cost Burden, Canadian Cities, 2021",
+        "description": (
+            f"Each of {len(CANADA)} Canadian census metropolitan areas: October 2021 average 2-bedroom "
+            "apartment rent (CMHC Rental Market Survey, Canada, Table 1.0, across) against the share of "
+            "renter households spending 30% or more of income on shelter (Census 2021, up) -- "
+            "warehouse.v_story4_cma_canada."
+        ),
+        "dataset_id": DATASET_CANADA,
+        **canada_scatter("rent_2br_apartments", "Average 2-Bedroom Rent ($)", "d", (None, None)),
+    },
+    "canada-vacancy-burden": {
+        "slice_name": "Vacancy vs Renter Cost Burden, Canadian Cities, 2021",
+        "description": (
+            f"Each of {len(CANADA)} Canadian census metropolitan areas: October 2021 apartment vacancy "
+            "rate (CMHC Rental Market Survey, Canada, Table 1.0, across) against the share of renter "
+            "households spending 30% or more of income on shelter (Census 2021, up) -- "
+            "warehouse.v_story4_cma_canada."
+        ),
+        "dataset_id": DATASET_CANADA,
+        **canada_scatter("vacancy_rate_pct", "Vacancy Rate (%)", "~g", (None, None)),
+    },
+}
+CHARTS.update(CANADA_CHARTS)
+
+# --- Tabs "Windsor in 2021" and "Since 2019, with Toronto" -------------------
+DATASET_WINDSOR_2021 = dataset_id("v_story4_windsor_2021")
+DATASET_SUPPLY_2021 = dataset_id("v_story4_rental_supply_2021")
+DATASET_CITY_HISTORY = dataset_id("v_story4_city_history")
+TORONTO_COLOR = "#8FD3E4"
+LABEL_COLORS["Toronto"] = TORONTO_COLOR
+
+
+def _since_2019() -> list[dict]:
+    from sqlalchemy import text
+
+    from apply_sql_views import get_engine
+
+    with get_engine().connect() as conn:
+        return [dict(r) for r in conn.execute(text(
+            "SELECT city, rent_index_2019 FROM warehouse.v_story4_city_history "
+            "WHERE period_year = (SELECT MAX(period_year) FROM warehouse.v_story4_city_history)")).mappings()]
+
+
+SINCE_2019 = sorted(_since_2019(), key=lambda r: -r["rent_index_2019"])
+
+
+def windsor_2021_tile(slice_name: str, sql: str, label: str, number_format: str, subheader: str) -> dict:
+    return {
+        "slice_name": slice_name,
+        "description": (
+            "Windsor CMA, 2021: CMHC Rental Market Survey (October 2021) and Census 2021 -- "
+            "warehouse.v_story4_windsor_2021."
+        ),
+        "dataset_id": DATASET_WINDSOR_2021,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {"expressionType": "SQL", "sqlExpression": sql, "label": label},
+            "adhoc_filters": [],
+            "y_axis_format": number_format,
+            "header_font_size": 0.4,
+            "subheader_font_size": 0.15,
+            "subheader": subheader,
+            "subtitle": subheader,
+            "color_scheme": COLOR_SCHEME,
+        },
+    }
+
+
+def city_lines(sql: str, label: str, number_format: str, y_bounds) -> dict:
+    return {
+        **history_line_params(sql, label, number_format),
+        "x_axis": YEAR_AXIS,
+        "groupby": ["city"],
+        "y_axis_bounds": list(y_bounds),
+        "truncateYAxis": True,
+        "legendType": "scroll",
+        "legendOrientation": "top",
+        "x_axis_title": "Year",
+        "x_axis_title_margin": 30,
+        "y_axis_title": label,
+        "y_axis_title_margin": 40,
+        "y_axis_title_position": "Left",
+    }
+
+
+# The tiles' titles on the dashboard, as on the reference.
+W21_TITLES = {"w21-rent": "Windsor 2-Bedroom Rent", "w21-burden": "Windsor Renter Cost Burden (%)",
+              "w21-vacancy": "Windsor Vacancy Rate (%)", "w21-units": "Rental Units per 1,000 Renters"}
+
+WINDSOR_2021_CHARTS = {
+    "w21-rent": windsor_2021_tile("Windsor 2-Bedroom Rent, Oct 2021", "MAX(rent_2br_apartments)",
+                                  "2-bedroom rent", "$d", "CMHC \u2014 Oct 2021"),
+    "w21-burden": windsor_2021_tile("Windsor Renter Cost Burden, 2021", "MAX(renter_burden_pct)",
+                                    "Renter cost burden (%)", "~g", "Renters spending 30%+ of income"),
+    "w21-vacancy": windsor_2021_tile("Windsor Vacancy Rate, Oct 2021", "MAX(vacancy_rate_apartments_pct)",
+                                     "Vacancy rate (%)", "~g", "CMHC \u2014 Oct 2021"),
+    "w21-units": windsor_2021_tile("Windsor Rental Units per 1,000 Renters, 2021", "MAX(units_per_1000_renters)",
+                                   "Units per 1,000 renters", ",.1f", "Interpret with boundary caution"),
+    "supply-2021": {
+        "slice_name": "Rental Supply Relative to Renter Households, 2021",
+        "description": (
+            "Purpose-built rental units (CMHC rental universe, row and apartment structures, October 2021, "
+            "Table 5.0) per 1,000 renter households (Census 2021) for Windsor, London, Hamilton, "
+            "Kitchener-Cambridge-Waterloo and Toronto -- warehouse.v_story4_rental_supply_2021."
+        ),
+        "dataset_id": DATASET_SUPPLY_2021,
+        "viz_type": "table",
+        "params": {
+            "query_mode": "aggregate",
+            "groupby": [{"expressionType": "SQL", "sqlExpression": "city", "label": "CMA"}],
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(rental_universe)", "label": "Rental Universe"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(renter_households)", "label": "Renter Households"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(units_per_1000_renters)",
+                 "label": "Units per 1,000 renter households"},
+            ],
+            "all_columns": [],
+            "adhoc_filters": [],
+            "row_limit": 10,
+            # In CMA-code order (Toronto first), as on the reference.
+            "timeseries_limit_metric": {"expressionType": "SQL", "sqlExpression": "MIN(cma_code)",
+                                        "label": "CMA code"},
+            "order_desc": False,
+            "include_search": False,
+            "show_cell_bars": False,
+            "column_config": {
+                "Rental Universe": {"d3NumberFormat": "d"},
+                "Renter Households": {"d3NumberFormat": "d"},
+                "Units per 1,000 renter households": {"d3NumberFormat": ",.1f"},
+            },
+            "color_scheme": COLOR_SCHEME,
+        },
+    },
+    "since2019-rent": {
+        "slice_name": "Rent Growth Index by City, 2019-2025 (2019 = 100)",
+        "description": (
+            "Each city's October 2-bedroom apartment rent as a % of its own 2019 rent (CMHC Rental "
+            "Market Survey, Canada, Table 1.0; 2022 as revised), Windsor, London, Hamilton, "
+            "Kitchener-Waterloo and Toronto -- "
+            "warehouse.v_story4_city_history."
+        ),
+        "dataset_id": DATASET_CITY_HISTORY,
+        "viz_type": "echarts_timeseries_line",
+        "params": city_lines("MAX(rent_index_2019)", "Rent Index (2019 = 100)", ",.0f", (100, 160)),
+    },
+    "since2019-vacancy": {
+        "slice_name": "Vacancy Rate by City, 2019-2025",
+        "description": (
+            "October vacancy rate, apartment structures of three units and over (CMHC Rental Market "
+            "Survey, Canada, Table 1.0), Windsor, London, Hamilton, Kitchener-Waterloo and Toronto -- "
+            "warehouse.v_story4_city_history."
+        ),
+        "dataset_id": DATASET_CITY_HISTORY,
+        "viz_type": "echarts_timeseries_line",
+        "params": city_lines("MAX(vacancy_rate_pct)", "Vacancy Rate (%)", "~g", (0, 5)),
+    },
+}
+CHARTS.update(WINDSOR_2021_CHARTS)
+
+SOURCES_2021_MARKDOWN = (
+    "**Sources:** Statistics Canada 2021 Census Profile and CMHC Rental Market Survey, 2019-2025. "
+    "**Scope:** Windsor compared with Canadian CMAs, with a focus on London, Hamilton, "
+    "Kitchener-Cambridge-Waterloo and Toronto. Cross-dataset comparisons "
+    "are descriptive.\n"
+)
+BOUNDARY_MARKDOWN = (
+    "**Boundary note:** CMHC's 2021 survey uses older CMA boundaries than the 2021 Census. "
+    "Comparisons should be interpreted cautiously; Windsor's ratio is likely understated because "
+    "its CMA boundary expanded.\n"
+)
+_top = SINCE_2019[0]
+_windsor = next(r for r in SINCE_2019 if r["city"] == "Windsor")
+_toronto = next(r for r in SINCE_2019 if r["city"] == "Toronto")
+SINCE_2019_MARKDOWN = (
+    f"**What it shows.** Since 2019, Windsor's 2-bedroom apartment rent rose "
+    f"**{_windsor['rent_index_2019'] - 100:.0f}%**"
+    + (", the most of the five cities" if _top["city"] == "Windsor" else f" ({_top['city']} the most)")
+    + f"; Toronto's rose {_toronto['rent_index_2019'] - 100:.0f}%. Every city's vacancy hit its lowest "
+    "between 2021 and 2023 and was higher again by 2025. *CMHC adopted 2021 Census CMA boundaries from the 2022 survey, so "
+    "read the 2021-2022 change with caution.*\n"
+)
+
+
+CANADA_MARKDOWN = (
+    f"**What it shows.** Across {len(CANADA)} Canadian cities in 2021, renters were more likely to spend "
+    f"30% or more of income on shelter where rents were higher. Windsor (green) was cheaper than "
+    f"**{_cheaper} of the other {len(CANADA) - 1}** (2-bedroom apartment **${_W['rent_2br_apartments']:,.0f}**), and "
+    f"fewer of its renters were over the 30% line than in **{_lower_burden}** of them "
+    f"(**{_W['renter_burden_pct']:.1f}%**). Vacancy shows no clear pattern with burden. "
+    "*Census incomes are for 2020 and rents for October 2021; CMHC's survey covers purpose-built "
+    "rentals while the Census covers every renter household, so the comparison is descriptive.*\n"
+)
+
+
 def ensure_chart(session, headers, spec: dict) -> int:
     body = {
         "slice_name": spec["slice_name"],
@@ -427,6 +674,10 @@ TABS = [
     ("TAB-growth", "Rent Growth", ["HEADER-rent-growth", "ROW-rent-growth", "ROW-note"]),
     ("TAB-history", "Ten Years", ["HEADER-history", "ROW-rent-history", "ROW-vacancy-history"]),
     ("TAB-periods", "Before vs From the Pandemic", ["ROW-periods"]),
+    ("TAB-windsor-2021", "Windsor in 2021",
+     ["ROW-sources-2021", "HEADER-w21", "ROW-w21-kpi", "ROW-supply-2021"]),
+    ("TAB-canada", "All Canadian Cities, 2021", ["HEADER-canada", "ROW-canada", "ROW-canada-note"]),
+    ("TAB-since-2019", "Since 2019, with Toronto", ["HEADER-since2019", "ROW-since2019", "ROW-since2019-note"]),
 ]
 
 
@@ -451,6 +702,16 @@ def build_position_json(chart_ids: dict) -> dict:
                 "ROW-vacancy-history",
                 "ROW-periods",
                 "ROW-note",
+                "ROW-sources-2021",
+                "HEADER-w21",
+                "ROW-w21-kpi",
+                "ROW-supply-2021",
+                "HEADER-canada",
+                "ROW-canada",
+                "ROW-canada-note",
+                "HEADER-since2019",
+                "ROW-since2019",
+                "ROW-since2019-note",
             ],
             "parents": ["ROOT_ID"],
         },
@@ -472,13 +733,13 @@ def build_position_json(chart_ids: dict) -> dict:
     position["HEADER-vacancy"] = header_node("HEADER-vacancy", "Vacancy: How Easy Is It to Find an Apartment?")
     position["ROW-vacancy"] = row_node("ROW-vacancy", ["CHART-vacancy-by-market"])
     position["CHART-vacancy-by-market"] = chart_node(
-        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 33
+        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 24
     )
 
     position["HEADER-rent"] = header_node("HEADER-rent", "Rent: What a 2-Bedroom Apartment Costs")
     position["ROW-rent"] = row_node("ROW-rent", ["CHART-rent-by-market"])
     position["CHART-rent-by-market"] = chart_node(
-        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 33
+        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 24
     )
 
     position["HEADER-rent-growth"] = header_node("HEADER-rent-growth", "Rent Growth: How Fast Rents Rose (Oct-24 to Oct-25)")
@@ -509,11 +770,53 @@ def build_position_json(chart_ids: dict) -> dict:
         "MARKDOWN-affordability-gap", "ROW-note", AFFORDABILITY_GAP_MARKDOWN, height=26
     )
 
+    position["HEADER-canada"] = header_node(
+        "HEADER-canada", "Windsor Among Canada's Cities: Rent, Vacancy and Renter Cost Burden, 2021"
+    )
+    position["ROW-canada"] = row_node("ROW-canada", ["CHART-canada-rent-burden", "CHART-canada-vacancy-burden"])
+    position["CHART-canada-rent-burden"] = chart_node(
+        "CHART-canada-rent-burden", "ROW-canada", chart_ids["canada-rent-burden"], 6, 62
+    )
+    position["CHART-canada-vacancy-burden"] = chart_node(
+        "CHART-canada-vacancy-burden", "ROW-canada", chart_ids["canada-vacancy-burden"], 6, 62
+    )
+    position["ROW-sources-2021"] = row_node("ROW-sources-2021", ["MARKDOWN-sources-2021"])
+    position["MARKDOWN-sources-2021"] = markdown_node(
+        "MARKDOWN-sources-2021", "ROW-sources-2021", SOURCES_2021_MARKDOWN, height=14
+    )
+    position["HEADER-w21"] = header_node("HEADER-w21", "Windsor 2021 Snapshot")
+    w21 = ["w21-rent", "w21-burden", "w21-vacancy", "w21-units"]
+    position["ROW-w21-kpi"] = row_node("ROW-w21-kpi", [f"CHART-{k}" for k in w21])
+    for k in w21:
+        position[f"CHART-{k}"] = chart_node(f"CHART-{k}", "ROW-w21-kpi", chart_ids[k], 3, 30)
+        position[f"CHART-{k}"]["meta"]["sliceNameOverride"] = W21_TITLES[k]
+    position["ROW-supply-2021"] = row_node("ROW-supply-2021", ["CHART-supply-2021", "MARKDOWN-boundary"])
+    position["CHART-supply-2021"] = chart_node("CHART-supply-2021", "ROW-supply-2021", chart_ids["supply-2021"], 8, 40)
+    position["MARKDOWN-boundary"] = markdown_node("MARKDOWN-boundary", "ROW-supply-2021", BOUNDARY_MARKDOWN, 4, 40)
+
+    position["HEADER-since2019"] = header_node(
+        "HEADER-since2019", "Historical City Comparison, 2019-2025: Windsor, the Comparison Cities and Toronto"
+    )
+    position["ROW-since2019"] = row_node("ROW-since2019", ["CHART-since2019-rent", "CHART-since2019-vacancy"])
+    position["CHART-since2019-rent"] = chart_node(
+        "CHART-since2019-rent", "ROW-since2019", chart_ids["since2019-rent"], 6, 60
+    )
+    position["CHART-since2019-vacancy"] = chart_node(
+        "CHART-since2019-vacancy", "ROW-since2019", chart_ids["since2019-vacancy"], 6, 60
+    )
+    position["ROW-since2019-note"] = row_node("ROW-since2019-note", ["MARKDOWN-since2019"])
+    position["MARKDOWN-since2019"] = markdown_node("MARKDOWN-since2019", "ROW-since2019-note", SINCE_2019_MARKDOWN,
+                                                   height=16)
+
+    position["ROW-canada-note"] = row_node("ROW-canada-note", ["MARKDOWN-canada"])
+    position["MARKDOWN-canada"] = markdown_node("MARKDOWN-canada", "ROW-canada-note", CANADA_MARKDOWN, height=20)
+
     return add_tabs(position, TABS)
 
 
 INTERACTIVE_KEYS = [
     "vacancy-by-market", "rent-by-market", "rent-growth-by-market", "rent-history", "vacancy-history", "period-growth",
+    "canada-rent-burden", "canada-vacancy-burden", "since2019-rent", "since2019-vacancy", "supply-2021",
 ]
 YEAR_FILTER_KEYS = ["rent-history", "vacancy-history"]
 
@@ -537,7 +840,24 @@ def build_native_filters(chart_ids: dict) -> list:
             "chartsInScope": in_scope,
             "tabsInScope": [],
             "controlValues": {"enableEmptyFilter": False},
-        }
+        },
+        {
+            "id": "NATIVE_FILTER-story4-cities",
+            "name": "Peer CMA",
+            "filterType": "filter_select",
+            "targets": [{"datasetId": DATASET_CITY_HISTORY, "column": {"name": "city"}}],
+            "defaultDataMask": {"extraFormData": {}, "filterState": {}, "ownState": {}},
+            "cascadeParentIds": [],
+            "scope": {"rootPath": ["ROOT_ID"],
+                      "excluded": sorted(c for k, c in chart_ids.items()
+                                         if k not in ("since2019-rent", "since2019-vacancy"))},
+            "type": "NATIVE_FILTER",
+            "description": "Choose which cities the 2019-2025 rent index and vacancy lines show.",
+            "chartsInScope": sorted(chart_ids[k] for k in ("since2019-rent", "since2019-vacancy")),
+            "tabsInScope": [],
+            "controlValues": {"enableEmptyFilter": False, "defaultToFirstItem": False, "multiSelect": True,
+                              "searchAllOptions": False, "inverseSelection": False},
+        },
     ]
 
 

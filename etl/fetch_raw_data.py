@@ -59,6 +59,8 @@ SOURCES = [
              note=f"Windsor rental market, October {y}") for y in range(2021, 2026)],
     Source("cmhc/rmr-canada-2025-en.xlsx", CMHC_RMS.format(year=2025, name="rmr-canada"),
            note="city comparison, October 2025"),
+    *[Source(f"cmhc/rmr-canada-{y}-en.xlsx", CMHC_RMS.format(year=y, name="rmr-canada"),
+             note=f"every city's apartment vacancy, October {y} (Stories 2 and 4)") for y in range(2019, 2025)],
     *[Source(f"cmhc/peer_rms_2025/rmr-{c}-2025-en.xlsx", CMHC_RMS.format(year=2025, name=f"rmr-{c}"),
              note="comparison-city rental units, October 2025")
       for c in ("windsor", "london", "hamilton", "st-catharines-niagara", "kitchener-cambridge-waterloo")],
@@ -67,6 +69,13 @@ SOURCES = [
            page="https://www12.statcan.gc.ca/census-recensement/2021/dp-pd/prof/details/download-telecharger.cfm?Lang=E",
            note="2021 Census Profile, comprehensive file for Canada, provinces, territories, CMAs and CAs "
                 "(98-401-X2021002), CSV; save the zip as data/raw/statcan/98-401-X2021002_eng_CSV.zip"),
+    Source("cmhc/windsor-starts-intended-market.csv", page="https://www03.cmhc-schl.gc.ca/hmip-pimh/en",
+           note="Windsor (CMA) > New Housing Construction > Starts (Actual) > Intended Markets, "
+                "Historical Time Periods, Annual; export CSV and save TableExport.csv under this name"),
+    *[Source(f"cmhc/windsor-{a}-intended-market-ytd.csv", page="https://www03.cmhc-schl.gc.ca/hmip-pimh/en",
+             note=f"Windsor (CMA) > New Housing Construction > {t} > Intended Markets, Survey Zones, "
+                  "Monthly + Cumulative to the latest month; export CSV and save it under this name")
+      for a, t in (("starts", "Starts (Actual)"), ("completions", "Completions"))],
     Source("cmhc/quarterly-starts-completions-under-construction-06-26-en.xlsx",
            page="https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/housing-data/"
                 "data-tables/housing-market-data/starts-completions-units-under-construction-geography",

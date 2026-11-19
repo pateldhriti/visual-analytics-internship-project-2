@@ -129,9 +129,11 @@ GROUP BY f.period_year, c.months_covered, c.last_month, f.activity, f.dwelling_t
 -- households figure this project has, applied to every year. That makes
 -- this a rate against a fixed 2021 base, not against each year's own
 -- household count (no annual household estimate exists in this project's
--- data); data_note states this on every row. Partial years are left out:
--- 9 months of starts against a full household base would read as a
--- slowdown that isn't real.
+-- data); data_note states this on every row. The current partial year is
+-- included, flagged by is_partial_year, so the At a Glance tile has a value
+-- when that year is picked in the Year filter; the yearly chart leaves it
+-- out, since 9 months of starts against a full household base would read
+-- as a slowdown that isn't real.
 -- ============================================================
 CREATE OR REPLACE VIEW warehouse.v_story3_windsor_supply_per_1000_households AS
 WITH households AS (
@@ -147,10 +149,10 @@ annual AS (
         period_year,
         year_label,
         SUM(units) FILTER (WHERE activity = 'Starts') AS starts_total,
-        SUM(units) FILTER (WHERE activity = 'Completions') AS completions_total
+        SUM(units) FILTER (WHERE activity = 'Completions') AS completions_total,
+        BOOL_OR(is_partial_year) AS is_partial_year
     FROM warehouse.v_story3_windsor_supply_annual
     WHERE dwelling_type = 'Total'
-      AND NOT is_partial_year
     GROUP BY period_year, year_label
 )
 SELECT
@@ -163,7 +165,8 @@ SELECT
     ROUND(1000.0 * a.completions_total / NULLIF(h.households_2021, 0), 2)
         AS completions_per_1000_households,
     'Rate uses the 2021 Census private-household count (165,665) for every year -- '
-        || 'no annual household estimate exists in this project''s data.' AS data_note
+        || 'no annual household estimate exists in this project''s data.' AS data_note,
+    a.is_partial_year
 FROM annual a
 CROSS JOIN households h;
 
@@ -209,3 +212,147 @@ FROM averaged a
 JOIN averaged t
   ON t.period = a.period AND t.activity = a.activity AND t.dwelling_type = 'Total'
 WHERE a.n_years = 5;
+
+
+-- ---------------------------------------------------------------------------
+-- Story 3 tabs "This Year So Far" and "This Year's Mix": the latest year's
+-- months so far (January to the latest month StatCan has published),
+-- compared with the same months of earlier years. Windsor CMA, StatCan
+-- 34-10-0154-01 (CMHC Starts and Completions Survey). As of January 2023 CMHC
+-- uses 2021 Census geography for Windsor, so 2021-2022 and 2023 onward are
+-- not strictly like for like.
+-- ---------------------------------------------------------------------------
+
+-- v_story3_ytd_by_year: starts and completions from January to the latest
+-- published month, for every year since 2021, by dwelling type, with the
+-- multi-unit share (everything but single-detached houses).
+CREATE OR REPLACE VIEW warehouse.v_story3_ytd_by_year AS
+WITH latest AS (
+    SELECT MAX(period_year) AS year,
+           MAX(period_month) FILTER (WHERE period_year = (SELECT MAX(period_year)
+                                                         FROM warehouse.fact_windsor_starts_completions)) AS month
+    FROM warehouse.fact_windsor_starts_completions
+),
+ytd AS (
+    SELECT f.period_year, f.activity, f.dwelling_type, SUM(f.units) AS units
+    FROM warehouse.fact_windsor_starts_completions f, latest l
+    WHERE f.activity IN ('Starts', 'Completions') AND f.period_year >= 2021 AND f.period_month <= l.month
+    GROUP BY f.period_year, f.activity, f.dwelling_type
+)
+SELECT
+    y.period_year,
+    y.activity,
+    y.dwelling_type,
+    y.units AS ytd_units,
+    l.month AS through_month,
+    TO_CHAR(MAKE_DATE(2000, l.month, 1), 'Mon') AS through_month_name,
+    ROUND(100.0 * (t.units - s.units) / NULLIF(t.units, 0), 1) AS multi_unit_share_pct,
+    (y.period_year = l.year) AS is_latest_year
+FROM ytd y
+CROSS JOIN latest l
+JOIN ytd t ON t.period_year = y.period_year AND t.activity = y.activity AND t.dwelling_type = 'Total'
+JOIN ytd s ON s.period_year = y.period_year AND s.activity = y.activity AND s.dwelling_type = 'Singles';
+
+-- v_story3_ytd_shortfall: how far the latest year's starts and completions
+-- so far are below the same months of each of the three previous years
+-- (positive = behind).
+CREATE OR REPLACE VIEW warehouse.v_story3_ytd_shortfall AS
+SELECT
+    p.period_year AS comparison_year,
+    p.activity,
+    c.ytd_units AS latest_ytd_units,
+    p.ytd_units AS comparison_ytd_units,
+    ROUND(100.0 * (p.ytd_units - c.ytd_units) / NULLIF(p.ytd_units, 0), 1) AS shortfall_pct
+FROM warehouse.v_story3_ytd_by_year p
+JOIN warehouse.v_story3_ytd_by_year c
+  ON c.activity = p.activity AND c.dwelling_type = 'Total' AND c.is_latest_year
+WHERE p.dwelling_type = 'Total' AND NOT p.is_latest_year
+  AND p.period_year >= c.period_year - 3;
+
+-- v_story3_pipeline: the latest year's starts and completions so far and the
+-- homes under construction at the end of the latest month, by dwelling type,
+-- with each type's share of that stage's total.
+CREATE OR REPLACE VIEW warehouse.v_story3_pipeline AS
+WITH latest AS (
+    SELECT period_year AS year, MAX(period_month) AS month
+    FROM warehouse.fact_windsor_starts_completions
+    WHERE period_year = (SELECT MAX(period_year) FROM warehouse.fact_windsor_starts_completions)
+    GROUP BY period_year
+),
+stages AS (
+    SELECT 'Starts so far' AS stage, 1 AS stage_sort_order, dwelling_type, ytd_units AS units
+    FROM warehouse.v_story3_ytd_by_year WHERE is_latest_year AND activity = 'Starts'
+    UNION ALL
+    SELECT 'Completions so far', 2, dwelling_type, ytd_units
+    FROM warehouse.v_story3_ytd_by_year WHERE is_latest_year AND activity = 'Completions'
+    UNION ALL
+    SELECT 'Under construction', 3, f.dwelling_type, f.units
+    FROM warehouse.fact_windsor_starts_completions f
+    JOIN latest l ON f.period_year = l.year AND f.period_month = l.month
+    WHERE f.activity = 'Under Construction'
+)
+SELECT
+    s.stage,
+    s.stage_sort_order,
+    s.dwelling_type,
+    s.units,
+    ROUND(100.0 * s.units / NULLIF(t.units, 0), 1) AS pct_of_stage
+FROM stages s
+JOIN stages t ON t.stage = s.stage AND t.dwelling_type = 'Total'
+WHERE s.dwelling_type <> 'Total';
+
+-- v_story3_latest_month: the headline figures for the latest year so far and
+-- the latest month, with readable labels ("Jan-Sep 2026", "Sep 2026").
+CREATE OR REPLACE VIEW warehouse.v_story3_latest_month AS
+WITH latest AS (
+    SELECT period_year AS year, MAX(period_month) AS month
+    FROM warehouse.fact_windsor_starts_completions
+    WHERE period_year = (SELECT MAX(period_year) FROM warehouse.fact_windsor_starts_completions)
+    GROUP BY period_year
+)
+SELECT
+    l.year,
+    l.month,
+    'Jan-' || TO_CHAR(MAKE_DATE(l.year, l.month, 1), 'Mon YYYY') AS ytd_label,
+    TO_CHAR(MAKE_DATE(l.year, l.month, 1), 'Mon YYYY') AS month_label,
+    SUM(f.units) FILTER (WHERE f.activity = 'Starts') AS ytd_starts,
+    SUM(f.units) FILTER (WHERE f.activity = 'Completions') AS ytd_completions,
+    SUM(f.units) FILTER (WHERE f.activity = 'Starts' AND f.period_month = l.month) AS month_starts,
+    SUM(f.units) FILTER (WHERE f.activity = 'Completions' AND f.period_month = l.month) AS month_completions,
+    SUM(f.units) FILTER (WHERE f.activity = 'Under Construction' AND f.period_month = l.month) AS under_construction,
+    SUM(f.units) FILTER (WHERE f.activity = 'Under Construction' AND f.period_month = l.month - 1)
+        AS under_construction_previous_month
+FROM warehouse.fact_windsor_starts_completions f
+JOIN latest l ON f.period_year = l.year
+WHERE f.dwelling_type = 'Total' AND f.period_month <= l.month
+GROUP BY l.year, l.month;
+
+-- ---------------------------------------------------------------------------
+-- v_story3_intended_market: Windsor housing starts and completions by the
+-- market they are built for (CMHC Housing Market Information Portal), each
+-- full year and the current year so far (is_ytd), with each market's share
+-- of the period's total. market_label uses the portal's display names
+-- (Homeownership, Co-op, Not Available) in its order (market_sort_order).
+-- ---------------------------------------------------------------------------
+DROP VIEW IF EXISTS warehouse.v_story3_intended_market;
+CREATE VIEW warehouse.v_story3_intended_market AS
+WITH totals AS (
+    SELECT period_label, activity, units AS total_units
+    FROM warehouse.fact_windsor_intended_market
+    WHERE intended_market = 'All'
+)
+SELECT
+    f.period_label,
+    f.is_ytd,
+    f.activity,
+    f.intended_market,
+    CASE f.intended_market WHEN 'Homeowner' THEN 'Homeownership' WHEN 'Co-Op' THEN 'Co-op'
+                           WHEN 'Unknown' THEN 'Not Available' ELSE f.intended_market END AS market_label,
+    CASE f.intended_market WHEN 'Homeowner' THEN 1 WHEN 'Rental' THEN 2 WHEN 'Co-Op' THEN 3
+                           WHEN 'Condo' THEN 4 ELSE 5 END AS market_sort_order,
+    f.units,
+    t.total_units,
+    ROUND(100.0 * f.units / NULLIF(t.total_units, 0), 1) AS share_pct
+FROM warehouse.fact_windsor_intended_market f
+JOIN totals t ON t.period_label = f.period_label AND t.activity = f.activity
+WHERE f.intended_market <> 'All';

@@ -322,12 +322,20 @@ def _read_table(path: Path) -> pd.DataFrame:
     return df[df["code"].notna() & (df["year"] >= FIRST_HISTORY_YEAR) & df["value"].notna()]
 
 
+# Apartments only (no row houses): the scope CMHC uses for its own
+# 2-bedroom apartment rent, kept as a second indicator for Story 2's
+# 2019-2025 trend.
+APARTMENT_STRUCTURE = "Apartment structures of three units and over"
+
+
 def extract_rent_history(path: Path = RENT_HISTORY_ZIP) -> list[dict]:
     df = _read_table(path)
-    df = df[(df["Type of structure"] == RENT_STRUCTURE) & df["Type of unit"].isin(UNIT_SIZES)]
+    df = df[df["Type of unit"].isin(UNIT_SIZES)]
+    indicators = {RENT_STRUCTURE: "average_rent", APARTMENT_STRUCTURE: "average_rent_apartments"}
+    df = df[df["Type of structure"].isin(indicators)]
     return [
-        _row(r["code"], "34-10-0133-01", "average_rent", None, UNIT_SIZES[r["Type of unit"]], int(r["year"]),
-             float(r["value"]))
+        _row(r["code"], "34-10-0133-01", indicators[r["Type of structure"]], None, UNIT_SIZES[r["Type of unit"]],
+             int(r["year"]), float(r["value"]))
         for _, r in df.iterrows()
     ]
 

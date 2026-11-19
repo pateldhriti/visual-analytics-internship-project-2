@@ -29,11 +29,13 @@ Run from the project virtual environment:
 """
 
 import json
+from datetime import datetime
 import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, upgrade_legacy_bars
+from superset_compat import (PROJECT_LABEL_COLORS, COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names,
+                             upgrade_legacy_bars)
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_ANNUAL = dataset_id("v_story3_windsor_supply_annual")
@@ -129,7 +131,7 @@ CHARTS = {
             },
             "adhoc_filters": [],
             "y_axis_format": ".1f",
-            "subheader": "starts per 1,000 households (2021 Census base), full years only",
+            "subheader": "starts per 1,000 households (2021 Census base); a partial year counts its months so far",
         },
     },
     "by-dwelling": {
@@ -245,6 +247,7 @@ CHARTS = {
                     "label": "Completions per 1,000 Households",
                 },
             ],
+            "adhoc_filters": [FULL_YEARS],  # the view now also has the partial year, for the KPI tile
             "row_limit": 50,
             "color_scheme": COLOR_SCHEME,
             "show_legend": True,
@@ -305,6 +308,275 @@ available, so read it as a trend against a fixed base. The current year is
 partial and is labelled with the months it covers.
 """
 
+
+
+# --- Tabs "This Year So Far" and "This Year's Mix" --------------------------
+# January to the latest month StatCan has published, against the same months
+# of earlier years. The period labels and the notes' figures are read from
+# the warehouse when the dashboard is built, so a rebuild after a data
+# refresh keeps them current.
+DATASET_LATEST = dataset_id("v_story3_latest_month")
+DATASET_YTD = dataset_id("v_story3_ytd_by_year")
+DATASET_SHORTFALL = dataset_id("v_story3_ytd_shortfall")
+DATASET_PIPELINE = dataset_id("v_story3_pipeline")
+DATASET_MARKET = dataset_id("v_story3_intended_market")
+
+
+def _ytd_facts() -> dict:
+    from sqlalchemy import text
+
+    from apply_sql_views import get_engine
+
+    with get_engine().connect() as conn:
+        latest = dict(conn.execute(text("SELECT * FROM warehouse.v_story3_latest_month")).mappings().one())
+        behind = {(r["comparison_year"], r["activity"]): r["shortfall_pct"] for r in conn.execute(
+            text("SELECT * FROM warehouse.v_story3_ytd_shortfall")).mappings()}
+        apt = {r["stage"]: r["pct_of_stage"] for r in conn.execute(text(
+            "SELECT stage, pct_of_stage FROM warehouse.v_story3_pipeline "
+            "WHERE dwelling_type = 'Apartment and Other'")).mappings()}
+        market = {(r["period_label"], r["activity"], r["intended_market"]): r for r in conn.execute(
+            text("SELECT * FROM warehouse.v_story3_intended_market")).mappings()}
+    return {"latest": latest, "behind": behind, "apt": apt, "market": market}
+
+
+YTD = _ytd_facts()
+YTD_LABEL = YTD["latest"]["ytd_label"]  # e.g. "Jan-Sep 2026"
+MONTH_LABEL = YTD["latest"]["month_label"]  # e.g. "Sep 2026"
+MONTH_FULL = datetime.strptime(MONTH_LABEL, "%b %Y").strftime("%B %Y")  # e.g. "September 2026"
+LATEST_YEAR = YTD["latest"]["year"]
+
+
+def ytd_tile(slice_name: str, sql: str, label: str, subheader: str) -> dict:
+    return {
+        "slice_name": slice_name,
+        "description": (
+            f"Windsor CMA, {YTD_LABEL} (StatCan 34-10-0154-01, monthly) -- warehouse.v_story3_latest_month."
+        ),
+        "dataset_id": DATASET_LATEST,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {"expressionType": "SQL", "sqlExpression": sql, "label": label},
+            "adhoc_filters": [],
+            "y_axis_format": ",d",
+            "subheader": subheader,
+            "subtitle": subheader,
+        },
+    }
+
+
+def grouped_bars(x_axis, groupby: str, sql: str, label: str, number_format: str, filters=None,
+                 y_bounds=(0, None), rotate: int = 0) -> dict:
+    return {
+        "x_axis": x_axis,
+        "metrics": [{"expressionType": "SQL", "sqlExpression": sql, "label": label}],
+        "groupby": [groupby],
+        "adhoc_filters": filters or [],
+        "row_limit": 100,
+        "color_scheme": COLOR_SCHEME,
+        "show_legend": True,
+        "legendOrientation": "top",
+        "rich_tooltip": True,
+        "show_value": True,
+        "y_axis_format": number_format,
+        "x_axis_title": "",
+        "y_axis_title": "",
+        "xAxisLabelRotation": rotate,
+        "truncateYAxis": True,
+        "y_axis_bounds": list(y_bounds),
+        # Series in name order (Superset otherwise puts the largest first): the
+        # zero-width-space prefixes and the reference dashboard set the order.
+        "sort_series_type": "name",
+        "sort_series_ascending": True,
+    }
+
+
+YEAR_TEXT = {"expressionType": "SQL", "sqlExpression": "CAST(comparison_year AS TEXT)", "label": "Year"}
+DWELLING_SHORT = {"expressionType": "SQL", "label": "Dwelling type",
+                  "sqlExpression": "CASE dwelling_type WHEN 'Apartment and Other' THEN 'Apartments' "
+                                   "ELSE dwelling_type END"}
+# Stages in pipeline order (started, completed, under construction): the
+# invisible zero-width spaces in front make them sort that way (here the
+# reference dashboard's order: under construction, completions, starts).
+STAGE_AXIS = {"expressionType": "SQL", "label": "Stage",
+              "sqlExpression": "REPEAT(CHR(8203), 4 - stage_sort_order) || CASE stage "
+                               "WHEN 'Starts so far' THEN 'YTD Starts' WHEN 'Completions so far' "
+                               "THEN 'YTD Completions' ELSE 'Under Construction' END"}
+# The pipeline chart's series, named and ordered as on the reference
+# dashboard (starts, completions, then units under construction).
+_STAGE_NAMES = {"Starts so far": f"{YTD_LABEL[:7]} Starts", "Completions so far": f"{YTD_LABEL[:7]} Completions",
+                "Under construction": f"End-{MONTH_LABEL[:3]} Under Construction"}
+PIPELINE_SERIES = {"expressionType": "SQL", "label": "Stage",
+                   "sqlExpression": "REPEAT(CHR(8203), stage_sort_order) || CASE stage "
+                                    + " ".join(f"WHEN '{k}' THEN '{v}'" for k, v in _STAGE_NAMES.items())
+                                    + " END"}
+# SQL-expression series get no colour from finish_dashboard: name them here
+# (the zero-width spaces are part of the series name).
+PROJECT_LABEL_COLORS.update({"\u200b" * order + name: PROJECT_LABEL_COLORS[stage]
+                             for order, (stage, name) in enumerate(_STAGE_NAMES.items(), start=1)})
+PROJECT_LABEL_COLORS.update({"Homeowner": "#1FA8C9", "Rental": "#5AC189", "Condo": "#FF7F44"})
+
+
+def AXIS_TITLES(x: str, y: str) -> dict:  # noqa: N802 -- reads like a constant at the call sites
+    return {"x_axis_title": x, "y_axis_title": y, "x_axis_title_margin": 30, "y_axis_title_margin": 40,
+            "y_axis_title_position": "Left"}
+
+
+YTD_CHARTS = {
+    "ytd-starts": ytd_tile(f"Windsor Housing Starts, {YTD_LABEL}", "MAX(ytd_starts)", "Starts",
+                           "New housing units started"),
+    "ytd-completions": ytd_tile(f"Windsor Housing Completions, {YTD_LABEL}", "MAX(ytd_completions)",
+                                "Completions", "New housing units completed"),
+    "ytd-under-construction": ytd_tile(f"Windsor Units Under Construction, {MONTH_LABEL}",
+                                       "MAX(under_construction)", "Under construction",
+                                       "Published end-of-month stock"),
+    "month-starts": ytd_tile(f"Windsor Housing Starts, {MONTH_LABEL}", "MAX(month_starts)", "Starts",
+                             "Monthly housing starts"),
+    "month-completions": ytd_tile(f"Windsor Housing Completions, {MONTH_LABEL}", "MAX(month_completions)",
+                                  "Completions", "Monthly housing completions"),
+    "ytd-shortfall": {
+        "slice_name": f"How Far Behind Is {YTD_LABEL}?",
+        "description": (
+            f"How far Windsor's starts and completions in {YTD_LABEL} are below the same months of each "
+            "of the three previous years (positive = behind) -- warehouse.v_story3_ytd_shortfall."
+        ),
+        "dataset_id": DATASET_SHORTFALL,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {**grouped_bars(YEAR_TEXT, "activity", "MAX(shortfall_pct)", "Behind by (%)", ",.1f"),
+                   **AXIS_TITLES("Comparison year", f"{LATEST_YEAR} shortfall (%)"),
+                   "sort_series_ascending": False},  # starts first, as on the reference
+    },
+    "ytd-pipeline": {
+        "slice_name": f"Construction Pipeline by Dwelling Type, {YTD_LABEL}",
+        "description": (
+            f"Units started and completed in {YTD_LABEL}, and under construction at the end of "
+            f"{MONTH_LABEL}, by dwelling type, Windsor CMA -- warehouse.v_story3_pipeline."
+        ),
+        "dataset_id": DATASET_PIPELINE,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {**grouped_bars("dwelling_type", PIPELINE_SERIES, "SUM(units)", "Housing units", ",d", rotate=30),
+                   **AXIS_TITLES("Dwelling type", "Housing units")},
+    },
+    "ytd-mix": {
+        "slice_name": f"Dwelling-Type Mix Across the {LATEST_YEAR} Pipeline",
+        "description": (
+            f"Each stage's units by dwelling type, as a share of that stage: starts and completions in "
+            f"{YTD_LABEL}, and units under construction at the end of {MONTH_LABEL} -- "
+            "warehouse.v_story3_pipeline."
+        ),
+        "dataset_id": DATASET_PIPELINE,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {**grouped_bars(STAGE_AXIS, "dwelling_type", "MAX(pct_of_stage)", "Share of the stage (%)",
+                                  ",.1f", y_bounds=(0, 80), rotate=20),  # tilted so all three stages show
+                   **AXIS_TITLES("Construction stage", "Share of housing units (%)")},
+    },
+    "ytd-multi-unit": {
+        "slice_name": f"Multi-Unit Share of Housing Activity, {YTD_LABEL[:7]} {2021}-{LATEST_YEAR}",
+        "description": (
+            "Share of the starts and completions in the same months of each year that are anything but "
+            "single-detached houses (semis, row houses, apartments). Windsor's CMHC geography changed "
+            "in January 2023 -- warehouse.v_story3_ytd_by_year."
+        ),
+        "dataset_id": DATASET_YTD,
+        "viz_type": "echarts_timeseries_line",
+        "params": {
+            **grouped_bars({"expressionType": "SQL", "sqlExpression": "CAST(period_year AS TEXT)", "label": "Year"},
+                           "activity", "MAX(multi_unit_share_pct)", "Multi-unit share (%)", ",.1f",
+                           filters=[eq_filter("dwelling_type", "Total")], y_bounds=(0, 100)),
+            **AXIS_TITLES("Year", "Multi-unit share (%)"),
+            "sort_series_ascending": False,  # starts first, as on the reference
+            "seriesType": "line",
+            "markerEnabled": True,
+            "markerSize": 6,
+        },
+    },
+}
+YTD_CHARTS["ytd-full-year"] = {
+    "slice_name": f"Full-Year Housing Starts vs Completions, {LATEST_YEAR - 5}-{LATEST_YEAR - 1}",
+    "description": (
+        "Windsor CMA housing starts and completions in each of the last five full years, all "
+        "dwelling types -- warehouse.v_story3_windsor_supply_annual."
+    ),
+    "dataset_id": DATASET_ANNUAL,
+    "viz_type": "echarts_timeseries_bar",
+    "params": {
+        **grouped_bars("year_label", "activity", "SUM(units)", "Housing units", ",d",
+                       filters=[FLOWS, TOTAL_ONLY, FULL_YEARS,
+                                {"clause": "WHERE", "expressionType": "SQL",
+                                 "sqlExpression": f"year_label >= '{LATEST_YEAR - 5}'"}]),
+        **AXIS_TITLES("Year", "Housing units"),
+        "sort_series_ascending": False,  # starts first, as on the reference
+    },
+}
+CHARTS.update(YTD_CHARTS)
+
+# --- Tab "Pipeline and Intended Market" -------------------------------------
+# This year's starts and completions so far by the market they are built for
+# (CMHC Housing Market Information Portal), as on the reference dashboard:
+# the markets across, in the portal's order, starts and completions as bars.
+_M = YTD["market"]
+MARKET_YTD = next(p for (p, _a, _m), r in _M.items() if r["is_ytd"])  # e.g. "Jan-Sep 2026"
+MARKET_AXIS = {"expressionType": "SQL", "label": "Intended market",
+               "sqlExpression": "REPEAT(CHR(8203), market_sort_order) || market_label"}
+MARKET_CHARTS = {
+    "market-units": {
+        "slice_name": f"Intended Market of {MARKET_YTD} Housing Supply",
+        "description": (
+            f"Windsor CMA housing starts and completions in {MARKET_YTD} by the market they are built "
+            "for: homeownership (freehold houses), rental, co-op and condominium (CMHC Starts and "
+            "Completions Survey, Housing Market Information Portal) -- warehouse.v_story3_intended_market."
+        ),
+        "dataset_id": DATASET_MARKET,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            **grouped_bars(MARKET_AXIS, "activity", "SUM(units)", "Housing units", ",d", rotate=30,
+                           filters=[{"clause": "WHERE", "expressionType": "SQL", "sqlExpression": "is_ytd"}]),
+            **AXIS_TITLES("Intended market", f"{MARKET_YTD[:7]} housing units"),
+            "sort_series_ascending": False,  # starts first, as on the reference
+        },
+    },
+}
+CHARTS.update(MARKET_CHARTS)
+
+
+def _units(activity: str, market: str) -> float:
+    return _M[(MARKET_YTD, activity, market)]["units"]
+
+
+def _share(activity: str, market: str) -> float:
+    return _M[(MARKET_YTD, activity, market)]["share_pct"]
+
+
+MARKET_NOTE = (
+    f"**Pipeline.** {YTD['latest']['under_construction']:,} units were under construction at the end of "
+    f"{MONTH_LABEL[:3]}, down from {YTD['latest']['under_construction_previous_month']:,} a month earlier. "
+    f"**Intended market.** From January to {MONTH_LABEL}, **{_units('Completions', 'Rental'):,.0f} rental "
+    f"homes** were completed (**{_share('Completions', 'Rental'):.0f}%** of completions) but only "
+    f"{_units('Starts', 'Rental'):,.0f} started; **{_units('Starts', 'Homeowner'):,.0f}** of the "
+    f"{_units('Starts', 'Homeowner') + _units('Starts', 'Rental'):,.0f} starts are for homeownership. "
+    f"{_units('Completions', 'Condo'):,.0f} condos were completed and none started. *CMHC reports \"-\" as nil; "
+    "co-op and not-available markets recorded no starts or completions. Source: CMHC Starts and "
+    "Completions Survey (Housing Market Information Portal), Windsor CMA.*\n"
+)
+
+_L, _B = YTD["latest"], YTD["behind"]
+_prev = LATEST_YEAR - 1
+YTD_NOTE = (
+    f"**What it shows.** From January to {MONTH_LABEL}, Windsor started **{_L['ytd_starts']:,}** homes and "
+    f"completed **{_L['ytd_completions']:,}**; **{_L['under_construction']:,}** were under construction at the "
+    f"end of {MONTH_LABEL[:3]}, down from {_L['under_construction_previous_month']:,} a month earlier. "
+    f"Starts are **{_B[(_prev, 'Starts')]:.0f}% behind** the same months of {_prev} and "
+    f"{_B[(_prev - 1, 'Starts')]:.0f}% behind {_prev - 1}, when the 2024 surge began; completions are "
+    f"{_B[(_prev, 'Completions')]:.0f}% behind {_prev}.\n"
+)
+MIX_NOTE = (
+    f"**What it shows.** Apartments are **{YTD['apt']['Under construction']:.0f}%** of what is under "
+    f"construction and **{YTD['apt']['Completions so far']:.0f}%** of this year's completions, but only "
+    f"**{YTD['apt']['Starts so far']:.0f}%** of this year's starts: the apartment wave of 2023-2025 is "
+    "being finished, and fewer new ones are starting. *CMHC adopted 2021 Census geography for Windsor in "
+    "January 2023, so compare 2021-2022 with 2023 onward with caution; CMHC reports \"-\" as nil.*\n"
+)
+
+
 DASHBOARD_TITLE = named("Story 3: Is Windsor building enough housing?")
 # A fixed URL name: the website, the token API and the embedding script
 # use it instead of the dashboard id, which differs on every Superset.
@@ -329,6 +601,17 @@ LAYOUT = [
     ("HEADER-periods", "Before vs From 2020: Five Years Each"),
     ("ROW-periods", [("period-totals", 6), ("period-mix", 6)]),
     ("MARKDOWN-periods", PERIODS_MARKDOWN),
+    ("HEADER-ytd", f"{YTD_LABEL} So Far: Windsor's Housing Activity This Year"),
+    ("ROW-ytd-kpi", [("ytd-starts", 2), ("ytd-completions", 3), ("ytd-under-construction", 3),
+                     ("month-starts", 2), ("month-completions", 2)]),
+    ("ROW-ytd", [("ytd-full-year", 6), ("ytd-shortfall", 6)]),
+    ("MARKDOWN-ytd", (YTD_NOTE, 14)),
+    ("HEADER-ytd-mix", f"Housing Mix: What Is Being Started, Built and Finished in {LATEST_YEAR}"),
+    ("ROW-ytd-mix", [("ytd-mix", 6), ("ytd-multi-unit", 6)]),
+    ("MARKDOWN-ytd-mix", (MIX_NOTE, 16)),
+    ("HEADER-market", "Current Pipeline and Intended Market"),
+    ("ROW-market", [("ytd-pipeline", 6), ("market-units", 6)]),
+    ("MARKDOWN-market", (MARKET_NOTE, 16)),
 ]
 
 KPI_HEIGHT = 25
@@ -363,6 +646,9 @@ TABS = [
     ("TAB-trend", "Ten-Year Trend", ["HEADER-trend", "ROW-trend", "ROW-per-1000"]),
     ("TAB-periods", "Before vs From 2020", ["HEADER-periods", "ROW-periods", "ROW-MARKDOWN-periods"]),
     ("TAB-mix", "Mix and Sources", ["ROW-starts-mix", "ROW-MARKDOWN-source"]),
+    ("TAB-ytd", "This Year So Far", ["HEADER-ytd", "ROW-ytd-kpi", "ROW-ytd", "ROW-MARKDOWN-ytd"]),
+    ("TAB-ytd-mix", "This Year's Mix", ["HEADER-ytd-mix", "ROW-ytd-mix", "ROW-MARKDOWN-ytd-mix"]),
+    ("TAB-market", "Pipeline and Intended Market", ["HEADER-market", "ROW-market", "ROW-MARKDOWN-market"]),
 ]
 
 
@@ -373,9 +659,17 @@ TITLE_OVERRIDES = {
     "kpi-completions": "Homes completed",
     "kpi-under-construction": "Under construction",
     "kpi-per-1000": "Starts per 1,000 households",
+    "ytd-starts": f"{YTD_LABEL} Housing Starts",
+    "ytd-completions": f"{YTD_LABEL} Housing Completions",
+    "ytd-under-construction": f"Under Construction, {MONTH_LABEL}",
+    "month-starts": f"{MONTH_FULL} Starts",
+    "month-completions": f"{MONTH_FULL} Completions",
 }
 # Taller than CHART_HEIGHT where a chart is alone in its tab.
-HEIGHTS = {"starts-mix": 72}
+HEIGHTS = {"trend": 50, "per-1000": 50, "starts-mix": 72, "ytd-starts": 26, "ytd-completions": 26, "ytd-under-construction": 26,
+           "month-starts": 26, "month-completions": 26, "ytd-shortfall": 50,
+           "ytd-mix": 62, "ytd-multi-unit": 62, "market-units": 62, "ytd-full-year": 50,
+           "ytd-pipeline": 62}
 
 
 def build_position_json(chart_ids: dict) -> dict:

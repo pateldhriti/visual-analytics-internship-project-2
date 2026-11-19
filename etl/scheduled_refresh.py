@@ -62,6 +62,8 @@ EXTRACT_STEPS = [
     "extract_cmhc_starts_completions.py",
     "extract_windsor_starts_completions.py",
     "extract_peer_cma_context.py",
+    "extract_cma_canada.py",
+    "extract_windsor_intended_market.py",
 ]
 # Steps run with extra arguments: the ten-year tables were downloaded and
 # checked above, so the extract must not download them again after the guard.

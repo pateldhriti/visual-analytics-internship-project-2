@@ -4577,6 +4577,846 @@
    ]
   }
  },
+ "cmhc_rms_canada_2019": {
+  "path": "data/raw/cmhc/rmr-canada-2019-en.xlsx",
+  "sheets": {
+   "Table 1.0": [
+    [
+     "#.# Rental Market Indicators"
+    ],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over"
+    ],
+    [
+     "Provinces and Major Centres"
+    ],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS"
+    ],
+    [
+     "Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [
+     "October #"
+    ],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe"
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental vs. Ownership"
+    ]
+   ],
+   "Table 4.2": [
+    [
+     "#.# Rental Condominium Apartments"
+    ],
+    [
+     "Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental vs. Ownership"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_canada_2020": {
+  "path": "data/raw/cmhc/rmr-canada-2020-en.xlsx",
+  "sheets": {
+   "Index": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Canada, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [
+     "Special note: With this release, # data has been revised to reflect more accurate geocoding. This revision does not change overall CMA or centre-level estimates, but may result in changes to some zone-level estimates."
+    ],
+    []
+   ],
+   "Table 1.0": [
+    [],
+    [],
+    [
+     "#.# Rental Market Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental - October #"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe",
+     ""
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental"
+    ]
+   ],
+   "Table 4.2": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 5.0": [
+    [],
+    [
+     "#.# Rental Arrears - Privately Initiated Row (Townhouse) and Apartment Structures of Three Units and Over - Provinces and Major Centres#"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+     "Arrears Rate Compared to Last Year"
+    ],
+    [
+     "Percentage of structures among those in arrears"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_canada_2021": {
+  "path": "data/raw/cmhc/rmr-canada-2021-en.xlsx",
+  "sheets": {
+   "Index": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Canada, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.0": [
+    [],
+    [],
+    [
+     "#.# Rental Market Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental - October #"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe",
+     ""
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental"
+    ]
+   ],
+   "Table 4.2": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 5.0": [
+    [],
+    [
+     "#.# Rental Arrears - Privately Initiated Row (Townhouse) and Apartment Structures of Three Units and Over - Provinces and Major Centres#"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+     "Arrears Rate Compared to Last Year"
+    ],
+    [
+     "Percentage of structures among those in arrears"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_canada_2022": {
+  "path": "data/raw/cmhc/rmr-canada-2022-en.xlsx",
+  "sheets": {
+   "Index": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Canada, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.0": [
+    [],
+    [],
+    [
+     "#.# Rental Market Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental - October #"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe",
+     ""
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental"
+    ]
+   ],
+   "Table 4.2": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 5.0": [
+    [],
+    [
+     "#.# Rental Arrears - Privately Initiated Row (Townhouse) and Apartment Structures of Three Units and Over - Provinces and Major Centres#"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+     "Arrears Rate Compared to Last Year"
+    ],
+    [
+     "Percentage of Structures Among Those in Arrears"
+    ]
+   ],
+   "Table 6.0": [
+    [],
+    [
+     "#.# Average Rent and Average Change in Rent for Turnover and Non-turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Turnover units",
+     "Non-turnover units"
+    ],
+    [
+     "Average rent ($)",
+     "Year-over-year average change in rent# (%)",
+     "Average rent ($)",
+     "Year-over-year average change in rent# (%)"
+    ]
+   ],
+   "Table 6.1": [
+    [],
+    [
+     "#.# Percent Difference in Rent for Turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Average difference (%) in rent# between turnover and non turnover units",
+     "Quartile of the difference (%) in rent# per structure between turnover and non turnover units"
+    ],
+    [
+     "Centre",
+     "#-#-# #:#:#",
+     "#-#-# #:#:#",
+     "Oct-#"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_canada_2023": {
+  "path": "data/raw/cmhc/rmr-canada-2023-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Canada, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.0": [
+    [],
+    [],
+    [
+     "#.# Rental Market Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental - October #"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe"
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental"
+    ]
+   ],
+   "Table 4.2": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 5.0": [
+    [],
+    [
+     "#.# Rental Arrears - Privately Initiated Row (Townhouse) and Apartment Structures of Three Units and Over - Provinces and Major Centres#"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+     "Arrears Rate Compared to Last Year"
+    ],
+    [
+     "Percentage of structures among those in arrears"
+    ]
+   ],
+   "Table 6.0": [
+    [],
+    [
+     "#.# Average Rent and Average Change in Rent for Turnover and Non-turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Turnover units",
+     "Non-turnover units"
+    ],
+    [
+     "Average rent ($)",
+     "Year-over-year average change in rent# (%)",
+     "Average rent ($)",
+     "Year-over-year average change in rent# (%)"
+    ]
+   ],
+   "Table 6.1": [
+    [],
+    [
+     "#.# Percent Difference in Rent for Turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Average difference (%) in rent# between turnover and non turnover units",
+     "Quartile of the difference (%) in rent# per structure between turnover and non turnover units"
+    ],
+    [
+     "Centre",
+     "#-#-# #:#:#",
+     "#-#-# #:#:#",
+     "Oct-#"
+    ]
+   ]
+  }
+ },
+ "cmhc_rms_canada_2024": {
+  "path": "data/raw/cmhc/rmr-canada-2024-en.xlsx",
+  "sheets": {
+   "Table of Contents": [
+    [
+     "CMHC HOUSING MARKET INFORMATION"
+    ],
+    [
+     "Rental Market Survey"
+    ],
+    [
+     "Canada, #"
+    ],
+    [],
+    [
+     "© # Canada Mortgage and Housing Corporation"
+    ],
+    [],
+    [],
+    []
+   ],
+   "Table 1.0": [
+    [],
+    [],
+    [
+     "#.# Rental Market Indicators - Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Turnover Rates (%)",
+     "Average Rent Two Bedroom ($) (New and Existing Structures)",
+     "Percentage Change of Average Rent Two Bedroom From Fixed Sample (Existing Structures Only)"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 4.1": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments and Private Apartments in the RMS, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental - October #"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Universe"
+    ],
+    [
+     "Centre",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Rental Condo Apts",
+     "Apts in the RMS",
+     "Percentage of Condo Apts in Rental"
+    ]
+   ],
+   "Table 4.2": [
+    [],
+    [],
+    [
+     "#.# Rental Condominium Apartments, Vacancy Rates (%), Average Rents ($) and Percentage of Condominium Apartments in Rental"
+    ],
+    [],
+    [],
+    [
+     "Vacancy Rates (%)",
+     "Average Rent Two Bedroom ($)",
+     "Rental Condo Apts.",
+     "Percentage of Condo Apts in Rental"
+    ],
+    [
+     "Centre",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#",
+     "Oct-#"
+    ]
+   ],
+   "Table 5.0": [
+    [],
+    [
+     "#.# Rental Arrears - Privately Initiated Row (Townhouse) and Apartment Structures of Three Units and Over - Provinces and Major Centres#"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+     "Arrears Rate Compared to Last Year"
+    ],
+    [
+     "Percentage of structures among those in arrears"
+    ]
+   ],
+   "Table 6.0": [
+    [],
+    [
+     "#.# Average Rent and Average Change in Rent for Turnover and Non-turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Turnover units",
+     "Non-turnover units"
+    ],
+    [
+     "Average rent ($)",
+     "Year-over-year average change in rent# (%)",
+     "Average rent ($)",
+     "Year-over-year average change in rent# (%)"
+    ]
+   ],
+   "Table 6.1": [
+    [],
+    [
+     "#.# Contribution of Turnover Units to the Year-To-Year Percentage Change in Average Rent"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Year-over-year percentage change in average rent Two Bedroom (%) (Existing Structures, turnover and non turnover units)",
+     "Contribution of turnover units# to Year-over-year percentage change in average rent for Two Bedroom (%) (Existing Structures)"
+    ],
+    [
+     "Centre",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#",
+     "Oct-# to Oct-#"
+    ]
+   ],
+   "Table 6.2": [
+    [],
+    [
+     "#.# Percent Difference in Rent for Turnover Units, Two Bedrooms Only"
+    ],
+    [],
+    [
+     "Privately Initiated Apartment Structures of Three Units and Over - Provinces and Major Centres"
+    ],
+    [],
+    [],
+    [
+     "Average difference (%) in rent# between turnover and non turnover units",
+     "Quartile of the difference (%) in rent# per structure between turnover and non turnover units"
+    ],
+    [
+     "Centre",
+     "#-#-# #:#:#",
+     "#-#-# #:#:#",
+     "Oct-#"
+    ]
+   ]
+  }
+ },
+ "cmhc_windsor_intended_market": {
+  "path": "data/raw/cmhc/windsor-starts-intended-market.csv",
+  "columns": [
+   "Windsor � Historical Starts by Intended Market"
+  ]
+ },
+ "cmhc_windsor_starts_market_ytd": {
+  "path": "data/raw/cmhc/windsor-starts-intended-market-ytd.csv",
+  "columns": [
+   "Windsor � Starts by Intended Market by Zone"
+  ]
+ },
+ "cmhc_windsor_completions_market_ytd": {
+  "path": "data/raw/cmhc/windsor-completions-intended-market-ytd.csv",
+  "columns": [
+   "Windsor � Completions by Intended Market by Zone"
+  ]
+ },
  "cmhc_quarterly_starts": {
   "path": "data/raw/cmhc/quarterly-starts-completions-under-construction-06-26-en.xlsx",
   "sheets": {
