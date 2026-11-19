@@ -100,7 +100,13 @@ def story2(conn) -> dict:
         WHERE dwelling_type_label = 'Combined' AND period_year = (SELECT MAX(period_year) FROM warehouse.v_story2_turnover_by_bedroom)""")}
     units = _scalar(conn, """SELECT value FROM warehouse.v_dashboard1_rental_trend
                              WHERE metric = 'universe' ORDER BY period_year DESC LIMIT 1""")
+    two_vo = _one(conn, """SELECT rent_vacant_units AS vacant, rent_occupied_units AS occupied
+                           FROM warehouse.v_story2_rent_vacant_occupied WHERE unit_size = '2 Bedroom'""")
+    q1 = _one(conn, """SELECT pct_of_rental_stock AS share, vacancy_rate_pct AS vacancy
+                       FROM warehouse.v_story2_income_quintiles WHERE income_quintile = 'Q1'""")
     return {
+        "vacantTwoBed": two_vo["vacant"], "occupiedTwoBed": two_vo["occupied"],
+        "q1SharePct": q1["share"], "q1VacancyPct": q1["vacancy"],
         "firstYear": rent[0]["year"], "latestYear": rent[-1]["year"], "units": units,
         "rentFirst": rent[0]["rent"], "rentLatest": rent[-1]["rent"],
         "rentChangePct": round(100 * (rent[-1]["rent"] / rent[0]["rent"] - 1), 1),

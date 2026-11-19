@@ -113,7 +113,7 @@ const RULES = [
   },
   {
     term: "Apartments or apartments plus row houses",
-    text: "Windsor's own figures (Story 2) include apartments and row houses. The comparison with other cities (Story 4) uses apartments only, because that is what CMHC publishes for every city, so the two can differ slightly. Story 4's ten-year figures (from Statistics Canada's republication of the same survey) include row houses again, and are labelled so.",
+    text: "Story 2's headline figures and its Rent and Vacancy tabs include apartments and row houses. Its zone, turnover, market-trend and prices-by-unit-size charts use apartments only, as CMHC's Windsor report does, so they can differ slightly from the headline figures. The comparison with other cities (Story 4) uses apartments only, because that is what CMHC publishes for every city. Story 4's ten-year figures (from Statistics Canada's republication of the same survey) include row houses again, and are labelled so.",
   },
 ];
 

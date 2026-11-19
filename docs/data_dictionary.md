@@ -19,14 +19,16 @@ Row counts are from the local warehouse, checked again on 13 November 2026 after
 | `dim_zone` | warehouse | 13 | [Dimensions](#1-dimensions) |
 | `dim_dwelling_type` | warehouse | 3 | [Dimensions](#1-dimensions) |
 | `fact_shelter_cost` | warehouse | 90,720 | [Section 2.1](#21-fact_shelter_cost) |
-| `fact_rental_market` | warehouse | 2,385 | [Section 2.2](#22-fact_rental_market) |
+| `fact_rental_market` | warehouse | 2,655 | [Section 2.2](#22-fact_rental_market) |
 | `fact_windsor_starts_completions` | warehouse | 1,935 | [Section 2.3](#23-fact_windsor_starts_completions) |
 | `fact_starts_completions` | warehouse | 50 | `docs/data_dictionary_supply.md` |
 | `fact_census_profile` | warehouse | 360 | `docs/data_dictionary_census_comparison.md`, section 1 |
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
 | `fact_peer_cma_context` | warehouse | 1,054 | [Section 2.4](#24-fact_peer_cma_context) |
+| `fact_cma_canada` | warehouse | 1,008 | [Section 2.5](#25-fact_cma_canada) |
+| `fact_windsor_intended_market` | warehouse | 29 | [Section 2.6](#26-fact_windsor_intended_market) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
-| `v_*` views (43) | warehouse | — | [Section 4](#4-views) |
+| `v_*` views (59) | warehouse | — | [Section 4](#4-views) |
 | `windsor_shelter_cost_long` | public (warehouse on `whva`) | 90,720 | [Section 5](#5-story-1-source-tables) |
 | `windsor_shelter_cost` | public | 30,240 | [Section 5](#5-story-1-source-tables) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
@@ -171,6 +173,30 @@ Notes: In Story 1's scope, the only suppressed cells (40) are the median/average
 | `period_year` | Year | 2021 for Census rows (incomes are for 2020); 2016 to the last full calendar year for construction; 2024 and 2025 (October) for rental units; 2015 to the latest October survey for rents and vacancy |
 | `value` | The figure | households, people, dollars, % or units, by indicator |
 
+### 2.5 `fact_cma_canada`
+
+**Source:** every Canadian CMA in the Census Profile 2021 (characteristics 1492, renters spending 30%+ on shelter, and 1416, renter households), StatCan 34-10-0133-01 and 34-10-0130-01 (October 2-bedroom apartment rent and vacancy, 2019 onward), CMHC Rental Market Survey, Canada, 2021 (Table 5.0, rental universe) and 2019-2025 (Table 1.0, apartment vacancy and 2-bedroom rent, the later report's revised figure kept) (`etl/extract_cma_canada.py`). **Grain:** one row per CMA × indicator × year. **Used by:** Story 4 tabs "Windsor in 2021", "All Canadian Cities, 2021" and "Since 2019, with Toronto"; Story 2 "Market Trends".
+
+| Column | Meaning | Values / unit |
+|---|---|---|
+| `cma_code` | Last 3 digits of the CMA's DGUID | e.g. `559` Windsor, `535` Toronto |
+| `cma_name` | CMA name as in the Census | e.g. `Kitchener - Cambridge - Waterloo` |
+| `indicator` | What is measured | `renter_burden_pct` (%), `renter_households`, `average_rent_2br_apartments` ($, StatCan), `vacancy_rate` (%, apartments and row houses, StatCan), `rental_universe` (units, 2021), `vacancy_rate_apartments` (%, CMHC Table 1.0), `average_rent_2br_rms` ($, CMHC Table 1.0) |
+| `period_year` | October survey year, or 2021 for Census rows (incomes for 2020) | 2019-2025 |
+| `value` | The figure | by indicator |
+
+### 2.6 `fact_windsor_intended_market`
+
+**Source:** CMHC Housing Market Information Portal, Windsor (CMA), starts and completions by intended market, exported by hand (`etl/extract_windsor_intended_market.py`; the files are listed in `etl/fetch_raw_data.py`). **Grain:** one row per period × activity × market. **Used by:** Story 3 "Pipeline and Intended Market".
+
+| Column | Meaning | Values / unit |
+|---|---|---|
+| `period_label` | Full year, or the current year so far | `2023`-`2025`, e.g. `Jan-Sep 2026` |
+| `is_ytd` | The current year so far | true / false |
+| `activity` | | `Starts`, `Completions` |
+| `intended_market` | As CMHC names it | `Homeowner`, `Rental`, `Condo`, `Co-Op`, `Unknown`, `All` |
+| `units` | Housing units | count |
+
 ---
 
 ## 3. `raw.load_audit`
@@ -219,7 +245,23 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story3_supply_per_1000_households` | province × period: starts total; the per-1,000 rate is deliberately NULL because the source has no Windsor figure | Story 3 (earlier version) |
 | `v_story3_windsor_supply_annual` | year × activity × dwelling type: Windsor units (flags partial years) | Story 3 |
 | `v_story3_period_comparison` | period (2016-2020, 2021-2025) x activity (starts, completions) x dwelling type: average units a year, total units, share of the period's total; only complete five-year periods | Story 3 "Before vs From 2020" tab; home/story-page charts |
-| `v_story3_windsor_supply_per_1000_households` | year: Windsor starts and completions per 1,000 households (2021 household count) | Story 3 |
+| `v_story3_windsor_supply_per_1000_households` | year: Windsor starts and completions per 1,000 households (2021 household count); the current partial year flagged `is_partial_year` | Story 3 |
+| `v_story3_latest_month` | one row: the latest month, year-to-date label, starts and completions so far, units under construction this and last month | Story 3 "This Year So Far" |
+| `v_story3_ytd_by_year` | year × activity × dwelling type: the same months each year, multi-unit share | Story 3 "This Year's Mix" |
+| `v_story3_ytd_shortfall` | comparison year × activity: how far this year so far is below the same months of each of the last three years (%) | Story 3 "This Year So Far" |
+| `v_story3_pipeline` | stage (started, completed, under construction) × dwelling type: units and share of the stage | Story 3 "This Year's Mix", "Pipeline and Intended Market" |
+| `v_story3_intended_market` | period × activity × market: units and share, with the portal's display names and order | Story 3 "Pipeline and Intended Market" |
+| `v_story2_income_quintiles` | renter income quintile: share of rental units affordable, their vacancy rate (CMHC 3.1.8) | Story 2 "Income and New Supply" |
+| `v_story2_new_stock` | zone × unit size: units added to the survey universe in the year to October 2025 (CMHC 3.1.7) | Story 2 "Income and New Supply" |
+| `v_story2_turnover_change` | unit size: apartment turnover Oct-24 and Oct-25, change, CMHC's significance test | Story 2 "Turnover" |
+| `v_story2_rent_vacant_occupied` | unit size: apartment rent of vacant and occupied units, October 2025 (CMHC 1.1.9) | Story 2 "Market Trends" |
+| `v_story2_stock_by_unit_size` | unit size: apartment units and share, October 2025 (CMHC 1.1.3) | Story 2 "Market Trends" |
+| `v_story2_market_history` | year 2019-2025: Windsor 2-bedroom apartment rent and apartment vacancy (CMHC Table 1.0) | Story 2 "Market Trends" |
+| `v_story2_bedroom_oct` | unit size × survey (Oct-24, Oct-25): apartment rent and vacancy | Story 2 "Prices and Availability" |
+| `v_story4_cma_canada` | CMA: renter burden (Census 2021), October 2021 2-bedroom apartment rent and apartment vacancy (CMHC Table 1.0) | Story 4 "All Canadian Cities, 2021" |
+| `v_story4_city_history` | city (Windsor, London, Hamilton, Kitchener-Waterloo, Toronto) × year 2019-2025: 2-bedroom rent, rent as % of 2019, apartment vacancy | Story 4 "Since 2019, with Toronto" |
+| `v_story4_rental_supply_2021` | city (the same five): rental universe, renter households, units per 1,000 renter households, 2021 | Story 4 "Windsor in 2021" |
+| `v_story4_windsor_2021` | one row: Windsor's 2021 rent, renter burden, apartment vacancy, units per 1,000 renters | Story 4 "Windsor in 2021" |
 | `v_story4_vacancy_comparison` | market × period: vacancy rate | Story 4 |
 | `v_story4_rent_comparison` | market × period: average 2-bedroom rent | Story 4; Story 5 through `v_story5_peer_affordability` |
 | `v_story4_rent_history` | city × year (2015 onward): October 2-bedroom rent and vacancy rate (apartments and row houses), yearly rent change, rent as % of 2015, `period_date` (1 October of the year, for trendline tiles) | Story 4 ten-year section |
