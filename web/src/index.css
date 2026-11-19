@@ -3860,3 +3860,108 @@ rect.hl-fill-empty:hover {
   margin: 0 0 20px;
   color: var(--ink-muted);
 }
+
+/* Hide / show the sidebar on desktop (components/Sidebar.jsx). Phones
+   (860px and narrower) keep the slide-in menu, so none of this applies. */
+.sidebar-hide,
+.sidebar-show {
+  display: none;
+}
+
+@media (min-width: 861px) {
+  .app-sidebar,
+  .app-content {
+    transition:
+      transform 0.22s ease,
+      margin-left 0.22s ease;
+  }
+
+  .sidebar-hide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 22px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d9c9ad;
+    border-radius: 8px;
+    background: #fffaf3;
+    color: #2d2a32;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .sidebar-hide:hover,
+  .sidebar-show:hover {
+    background: #f6ead6;
+  }
+
+  html.sidebar-collapsed .app-sidebar {
+    transform: translateX(-100%);
+  }
+
+  html.sidebar-collapsed .app-content {
+    margin-left: 0;
+  }
+
+  html.sidebar-collapsed .sidebar-show {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 35;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid #d9c9ad;
+    border-radius: 8px;
+    background: #fffaf3;
+    color: #2d2a32;
+    font:
+      600 0.92rem "Source Sans 3",
+      system-ui,
+      sans-serif;
+    box-shadow: 0 2px 8px rgba(45, 42, 50, 0.12);
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 861px) and (prefers-reduced-motion: reduce) {
+  .app-sidebar,
+  .app-content {
+    transition: none;
+  }
+}
+
+/* What a story's data covers, as one line of text (components/FilterBar.jsx). */
+.scope-line {
+  margin: 22px 0 28px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.scope-line-title {
+  font-weight: 700;
+  color: #2d2a32;
+}
+
+.scope-line-label {
+  font-weight: 600;
+  color: #3f3a44;
+}
+
+/* 2030 outlook chart (StoryHighlights): the range of scenarios as a band. */
+.hl-band {
+  fill: var(--hl-windsor);
+  opacity: 0.14;
+}
+
+.hl-swatch--band {
+  background: var(--hl-windsor);
+  opacity: 0.25;
+}

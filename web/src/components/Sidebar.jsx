@@ -86,9 +86,55 @@ const NAV_SECTIONS = [
   },
 ];
 
+// Desktop only: the sidebar can be hidden so the page uses the full width.
+// The choice is remembered in this browser (localStorage; ignored if the
+// browser blocks it). Phones keep their own slide-in menu.
+const COLLAPSE_KEY = "sidebar-collapsed";
+const DESKTOP = "(min-width: 861px)";
+
+function readCollapsed() {
+  try {
+    return window.localStorage.getItem(COLLAPSE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(readCollapsed);
   const toggleRef = useRef(null);
+  const asideRef = useRef(null);
+  const showRef = useRef(null);
+  const hideRef = useRef(null);
+
+  // Hidden sidebar: shift the page over (CSS on <html>), and take the
+  // sidebar out of the tab order while it is off screen on a desktop.
+  useEffect(() => {
+    document.documentElement.classList.toggle("sidebar-collapsed", collapsed);
+    try {
+      window.localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0");
+    } catch {
+      // storage blocked: the choice just is not remembered
+    }
+    const desktop = window.matchMedia(DESKTOP);
+    const apply = () => {
+      if (collapsed && desktop.matches) asideRef.current?.setAttribute("inert", "");
+      else asideRef.current?.removeAttribute("inert");
+    };
+    apply();
+    desktop.addEventListener("change", apply);
+    return () => desktop.removeEventListener("change", apply);
+  }, [collapsed]);
+
+  const hide = () => {
+    setCollapsed(true);
+    requestAnimationFrame(() => showRef.current?.focus());
+  };
+  const show = () => {
+    setCollapsed(false);
+    requestAnimationFrame(() => hideRef.current?.focus());
+  };
 
   // Escape closes the phone menu and returns focus to its button.
   useEffect(() => {
@@ -127,7 +173,34 @@ export default function Sidebar() {
         </button>
       </header>
 
-      <aside id="primary-sidebar" className={`app-sidebar ${open ? "app-sidebar--open" : ""}`}>
+      <button
+        ref={showRef}
+        type="button"
+        className="sidebar-show"
+        aria-controls="primary-sidebar"
+        aria-expanded={!collapsed}
+        onClick={show}
+      >
+        <span aria-hidden="true">☰</span> Menu
+      </button>
+
+      <aside
+        ref={asideRef}
+        id="primary-sidebar"
+        className={`app-sidebar ${open ? "app-sidebar--open" : ""}`}
+      >
+        <button
+          ref={hideRef}
+          type="button"
+          className="sidebar-hide"
+          aria-controls="primary-sidebar"
+          aria-expanded={!collapsed}
+          aria-label="Hide menu"
+          title="Hide menu"
+          onClick={hide}
+        >
+          <span aria-hidden="true">«</span>
+        </button>
         <NavLink to="/" className="brand sidebar-brand" onClick={() => setOpen(false)}>
           <span className="brand-mark" aria-hidden="true">
             W
