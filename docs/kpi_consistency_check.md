@@ -55,3 +55,7 @@ Since the first check, several KPI cards were added: trendline tiles on the Over
 | Renters who cannot afford a 2-bedroom, rent share of income, homes completed 2023-2025 | Story 5, Story 1 and 5 pages | 61%, 36%, 5,247 | Consistent |
 
 The Methodology page's note on apartments and row houses now also covers Story 4's ten-year figures.
+
+### Follow-up, 19 November 2026
+
+The renter-vs-owner bar (Overview and Story 1) showed renters at **34.5%** beside the **34.8%** tiles. Its formula divided by every household, including the "not applicable" ones with zero or negative income; every other figure, and Statistics Canada's published rate, leaves them out. The formula (`etl/setup_superset_dashboard.py`) now does the same, and the bar shows 34.8%. The earlier checks read only the big-number cards, so they missed it.

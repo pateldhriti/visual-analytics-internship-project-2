@@ -82,10 +82,14 @@ BASELINE_ADHOC_FILTERS = [
 
 # Share of households spending 30%+ of income on shelter, as a 0-1 fraction
 # (formatted as a percentage by y_axis_format below, not multiplied here).
+# Households with no shelter-cost ratio ("Not applicable": zero or negative
+# income) are left out of the denominator, as in StatCan's published rates
+# and every other Story 1 figure (renters 34.8%; with them included, 34.5%).
 PERCENT_BURDENED_SQL = (
     "SUM(CASE WHEN shelter_cost_ratio = 'Spending 30% or more of income on shelter costs' "
-    "THEN value ELSE 0 END) / NULLIF(SUM(CASE WHEN shelter_cost_ratio = "
-    "'Total - Shelter-cost-to-income ratio' THEN value ELSE 0 END), 0)"
+    "THEN value ELSE 0 END) / NULLIF(SUM(CASE WHEN shelter_cost_ratio IN ("
+    "'Spending less than 30% of income on shelter costs', "
+    "'Spending 30% or more of income on shelter costs') THEN value ELSE 0 END), 0)"
 )
 
 

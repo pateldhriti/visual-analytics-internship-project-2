@@ -45,6 +45,11 @@ DATASET_INCOME_BAND = dataset_id("v_story1_burden_by_income_band")
 DATASET_HOUSEHOLD_TYPE = dataset_id("v_story1_burden_by_household_type")
 DATASET_SEVERITY = dataset_id("v_story1_burden_severity")
 DATASET_SEVERITY_BREAKDOWN = dataset_id("v_story1_burden_severity_breakdown")
+DATASET_GAP = dataset_id("v_story1_affordability_gap")
+DATASET_INCOME_TENURE = dataset_id("v_story1_burden_by_income_tenure")
+DATASET_HOUSEHOLD_TENURE = dataset_id("v_story1_burden_by_household_type_tenure")
+DATASET_DISTRIBUTION = dataset_id("v_story1_burden_distribution")
+DATASET_VALIDATION = dataset_id("v_story1_validation")
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 
 NEW_CHARTS = {
@@ -140,6 +145,187 @@ NEW_CHARTS = {
 
 # The legacy dist_bar charts are drawn with the ECharts bar chart (superset_compat).
 upgrade_legacy_bars(NEW_CHARTS)
+
+
+# --- The dashboard's four sections: gap, income, household type and
+# severity, validation (each a question card over its chart). ---------------
+
+def gap_tile(slice_name, sql, label, number_format, subheader):
+    return {
+        "slice_name": slice_name,
+        "description": (
+            "How much greater the renter burden (34.8%) is than the owner burden (10.9%): "
+            "the share of households spending 30% or more of income on shelter. StatCan "
+            "98-10-0252-01, Windsor CMA, 2021 Census -- warehouse.v_story1_affordability_gap."
+        ),
+        "dataset_id": DATASET_GAP,
+        "viz_type": "big_number_total",
+        "params": {
+            "metric": {"expressionType": "SQL", "sqlExpression": sql, "label": label},
+            "adhoc_filters": [],
+            "y_axis_format": number_format,
+            "header_font_size": 0.5,
+            "subheader_font_size": 0.15,
+            "subtitle": subheader,
+            "subheader": subheader,
+            "color_scheme": COLOR_SCHEME,
+        },
+    }
+
+
+SHARE_30 = {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct) / 100.0",
+            "label": "Share spending 30%+ on shelter"}
+
+SECTION_CHARTS = {
+    "kpi-gap": gap_tile(
+        "Renter-Owner Burden Gap", "MAX(renter_owner_gap_pts)", "Burden gap", ",.1f",
+        "percentage points: renter burden minus owner burden",
+    ),
+    "kpi-ratio": gap_tile(
+        "Renter-Owner Burden Ratio", "MAX(renter_owner_ratio)", "Burden ratio", ",.2f",
+        "times: renter burden relative to owner burden",
+    ),
+    "income-tenure": {
+        "slice_name": "Burden by Income Group and Tenure",
+        "description": (
+            "Share of renter and owner households in each 2020 income group spending 30% or more "
+            "of income on shelter. Households with no shelter-cost ratio are left out, as StatCan "
+            "does. StatCan 98-10-0252-01, Windsor CMA, 2021 Census -- "
+            "warehouse.v_story1_burden_by_income_tenure."
+        ),
+        "dataset_id": DATASET_INCOME_TENURE,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            # Invisible zero-width spaces in front of each band make the
+            # categories sort from the highest income to the lowest.
+            "x_axis": {"expressionType": "SQL", "label": "Household income (2020)",
+                       "sqlExpression": "REPEAT(CHR(8203), 12 - income_band_sort_order) || income_band"},
+            "metrics": [SHARE_30],
+            "groupby": ["tenure"],
+            "adhoc_filters": [],
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": True,
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_title": "",
+            "y_axis_title": "Households spending 30%+ of income",
+            "y_axis_title_margin": 40,
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 1],
+        },
+    },
+    "household-tenure": {
+        "slice_name": "Burden by Household Type and Tenure",
+        "description": (
+            "Share of renter and owner households spending 30% or more of income on shelter, for "
+            "families (census-family households: couples and one-parent families) and "
+            "non-families (non-census-family households: mostly people living alone). StatCan 98-10-0252-01, Windsor CMA, 2021 "
+            "Census -- warehouse.v_story1_burden_by_household_type_tenure."
+        ),
+        "dataset_id": DATASET_HOUSEHOLD_TENURE,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            # Short labels so both fit under their bars.
+            "x_axis": {"expressionType": "SQL", "label": "Household type",
+                       "sqlExpression": "CASE household_type WHEN 'Census-family households' "
+                                        "THEN 'Families' ELSE 'Non-families' END"},
+            "metrics": [SHARE_30],
+            "groupby": ["tenure"],
+            "adhoc_filters": [{"clause": "WHERE", "expressionType": "SQL",
+                               "sqlExpression": "parent_member_id = 1"}],
+            "row_limit": 50,
+            "color_scheme": COLOR_SCHEME,
+            "show_value": True,
+            "show_legend": True,
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ".1%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 0.5],
+        },
+    },
+    "severity-tenure": {
+        "slice_name": "Burden Severity by Tenure",
+        "description": (
+            "Every renter and owner household with a shelter-cost ratio, split into those spending "
+            "under 30%, 30% to under 100%, and 100% or more of income on shelter (the last derived: "
+            "30%+ minus the 30%-to-under-100% band). Each bar sums to 100%. StatCan 98-10-0252-01, "
+            "Windsor CMA, 2021 Census -- warehouse.v_story1_burden_distribution."
+        ),
+        "dataset_id": DATASET_DISTRIBUTION,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            "x_axis": "tenure",
+            # One metric per band, in this order, so the bars stack from
+            # under 30% to 100% or more.
+            "metrics": [
+                {"expressionType": "SQL", "label": label,
+                 "sqlExpression": f"MAX(CASE WHEN category = '{category}' THEN pct_of_households END) / 100.0"}
+                for category, label in [("Under 30%", "Under 30%"),
+                                        ("30% to under 100%", "30% to under 100%"),
+                                        ("100% or more", "100% or more")]
+            ],
+            "groupby": [],
+            "adhoc_filters": [],
+            "row_limit": 10,
+            "stack": True,
+            "orientation": "horizontal",
+            "color_scheme": COLOR_SCHEME,
+            "show_value": False,
+            "show_legend": True,
+            "legendOrientation": "top",
+            "rich_tooltip": True,
+            "y_axis_format": ".0%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "truncateYAxis": True,
+            "y_axis_bounds": [0, 1],
+        },
+    },
+    "validation-table": {
+        "slice_name": "Calculated vs Census Published",
+        "description": (
+            "Our renter and owner burden rates (StatCan 98-10-0252-01) next to the rates the Census "
+            "Profile publishes for Windsor CMA (98-401-X2021002, items 1492 and 1484), and the "
+            "difference in percentage points. warehouse.v_story1_validation."
+        ),
+        "dataset_id": DATASET_VALIDATION,
+        "viz_type": "table",
+        "params": {
+            "query_mode": "aggregate",
+            "groupby": [{"expressionType": "SQL", "sqlExpression": "tenure", "label": "Tenure"}],
+            "metrics": [
+                {"expressionType": "SQL", "sqlExpression": "MAX(calculated_rate_pct)", "label": "Calculated burden (%)"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(published_rate_pct)", "label": "Census published (%)"},
+                {"expressionType": "SQL", "sqlExpression": "MAX(difference_pts)", "label": "Difference (points)"},
+            ],
+            "all_columns": [],
+            "adhoc_filters": [],
+            "row_limit": 10,
+            "order_desc": True,
+            "include_search": False,
+            "show_cell_bars": False,
+            "color_scheme": COLOR_SCHEME,
+        },
+    },
+}
+
+INTRO_MARKDOWN = """This dashboard examines who faces the greatest housing-cost burden in Windsor by
+tenure, income and household type, and measures the affordability gap between renters and owners.
+*Windsor CMA, 2021 Census (2020 incomes), Statistics Canada 98-10-0252-01.*
+"""
+QUESTIONS = {
+    "gap": "How much greater is housing-cost burden for renters than owners?",
+    "income": "How does housing-cost burden vary across household income groups?",
+    "household": "Which household types experience greater housing-cost burden?",
+    "severity": "How severe is housing-cost burden among renters compared with owners?",
+    "validation": "Do our calculated affordability rates match Statistics Canada's published values?",
+}
 
 VALIDATION_MARKDOWN = """**Validated against StatCan's own published figures.** The renter (34.8%)
 and owner (10.9%) burden rates above were reproduced from two StatCan
@@ -346,6 +532,16 @@ def link_chart_to_dashboard(session, headers, chart_id: int, dashboard_id: int) 
     add_chart_to_dashboard(session, headers, chart_id, dashboard_id)
 
 
+def unlink_chart_from_dashboard(session, headers, chart_id: int, dashboard_id: int) -> None:
+    """Take this dashboard off a chart's dashboard list, keeping its others."""
+    resp = session.get(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers)
+    resp.raise_for_status()
+    ids = [d["id"] for d in resp.json()["result"].get("dashboards", [])]
+    if dashboard_id in ids:
+        session.put(f"{SUPERSET_URL}/api/v1/chart/{chart_id}", headers=headers,
+                    json={"dashboards": [i for i in ids if i != dashboard_id]}).raise_for_status()
+
+
 def chart_node(node_id: str, parent_id: str, chart_id: int, width: int, height: int = 25) -> dict:
     # Default height (not used by any chart that passes its own, e.g. the
     # width=12 bar/table rows below) -- 25 is for big_number_total KPI
@@ -390,90 +586,58 @@ def markdown_node(node_id: str, parent_id: str, code: str, width: int = 12, heig
     }
 
 
-# One screen per tab (etl/dashboard_tabs.py).
+# One screen per tab (etl/dashboard_tabs.py), one section each: a question
+# card above every chart.
 TABS = [
-    ("TAB-tenure", "Renters vs Owners", ["HEADER-gap-kpis", "ROW-kpi", "ROW-tenure-bar"]),
-    ("TAB-income", "By Income", ["HEADER-income", "ROW-income"]),
-    ("TAB-household", "By Household Type", ["HEADER-household", "ROW-household"]),
-    ("TAB-severity", "How Far Over 30%", ["HEADER-severity", "ROW-severity", "ROW-severity-breakdown"]),
-    ("TAB-notes", "Data Notes", ["HEADER-validation", "ROW-validation"]),
+    ("TAB-gap", "Affordability Gap", ["ROW-intro", "HEADER-gap", "ROW-gap", "ROW-tenure-bar"]),
+    ("TAB-income", "By Income", ["HEADER-income", "ROW-income-question", "ROW-income"]),
+    ("TAB-household", "Household Type and Severity",
+     ["HEADER-household", "ROW-household-questions", "ROW-household"]),
+    ("TAB-validation", "Data Validation", ["HEADER-validation", "ROW-validation-question",
+                                           "ROW-validation", "ROW-notes"]),
 ]
+
+# Top-to-bottom: (row id, [(node id, chart key or None, markdown or None, width, height)])
+LAYOUT_ROWS = [
+    ("ROW-intro", [("MARKDOWN-intro", None, INTRO_MARKDOWN, 12, 16)]),
+    ("HEADER-gap", "Affordability Gap: Renters vs Owners"),
+    ("ROW-gap", [("CHART-kpi-gap", "kpi-gap", None, 4, 50), ("CHART-kpi-ratio", "kpi-ratio", None, 4, 50),
+                 ("MARKDOWN-q-gap", None, QUESTIONS["gap"], 4, 50)]),
+    ("ROW-tenure-bar", [("CHART-tenure-bar", "tenure-bar", None, 12, 50)]),
+    ("HEADER-income", "Who Faces the Greatest Housing Cost Burden?"),
+    ("ROW-income-question", [("MARKDOWN-q-income", None, QUESTIONS["income"], 12, 10)]),
+    ("ROW-income", [("CHART-income-tenure", "income-tenure", None, 12, 80)]),
+    ("HEADER-household", "Household Type and Severity"),
+    ("ROW-household-questions", [("MARKDOWN-q-household", None, QUESTIONS["household"], 6, 10),
+                                 ("MARKDOWN-q-severity", None, QUESTIONS["severity"], 6, 10)]),
+    ("ROW-household", [("CHART-household-tenure", "household-tenure", None, 6, 75),
+                       ("CHART-severity-tenure", "severity-tenure", None, 6, 75)]),
+    ("HEADER-validation", "Data Validation"),
+    ("ROW-validation-question", [("MARKDOWN-q-validation", None, QUESTIONS["validation"], 12, 10)]),
+    ("ROW-validation", [("CHART-validation-table", "validation-table", None, 8, 24)]),
+    ("ROW-notes", [("MARKDOWN-validation", None, VALIDATION_MARKDOWN, 12, 46)]),
+]
+LAYOUT_CHART_KEYS = [key for _, items in LAYOUT_ROWS if isinstance(items, list)
+                     for _, key, *_ in items if key]
 
 
 def build_position_json(chart_ids: dict) -> dict:
     position = {
         "DASHBOARD_VERSION_KEY": "v2",
         "ROOT_ID": {"type": "ROOT", "id": "ROOT_ID", "children": ["GRID_ID"]},
-        "GRID_ID": {
-            "type": "GRID",
-            "id": "GRID_ID",
-            "children": [
-                "HEADER-gap-kpis",
-                "ROW-kpi",
-                "ROW-tenure-bar",
-                "HEADER-income",
-                "ROW-income",
-                "HEADER-household",
-                "ROW-household",
-                "HEADER-severity",
-                "ROW-severity",
-                "ROW-severity-breakdown",
-                "HEADER-validation",
-                "ROW-validation",
-            ],
-            "parents": ["ROOT_ID"],
-        },
+        "GRID_ID": {"type": "GRID", "id": "GRID_ID", "children": [row_id for row_id, _ in LAYOUT_ROWS],
+                    "parents": ["ROOT_ID"]},
     }
-
-    position["HEADER-gap-kpis"] = header_node("HEADER-gap-kpis", "Key Figures: Renters vs Owners")
-    position["ROW-kpi"] = row_node("ROW-kpi", ["CHART-kpi-renter", "CHART-kpi-owner", "CHART-kpi-total"])
-    position["CHART-kpi-renter"] = chart_node(
-        "CHART-kpi-renter", "ROW-kpi", chart_ids["kpi-renter"], 4
-    )
-    position["CHART-kpi-owner"] = chart_node("CHART-kpi-owner", "ROW-kpi", chart_ids["kpi-owner"], 4)
-    position["CHART-kpi-total"] = chart_node("CHART-kpi-total", "ROW-kpi", chart_ids["kpi-total"], 4)
-
-    position["ROW-tenure-bar"] = row_node("ROW-tenure-bar", ["CHART-tenure-bar"])
-    position["CHART-tenure-bar"] = chart_node(
-        "CHART-tenure-bar", "ROW-tenure-bar", chart_ids["tenure-bar"], 12, 62
-    )
-
-    position["HEADER-income"] = header_node("HEADER-income", "Burden by Household Income")
-    position["ROW-income"] = row_node("ROW-income", ["CHART-income-band"])
-    position["CHART-income-band"] = chart_node(
-        "CHART-income-band", "ROW-income", chart_ids["income-band"], 12, 85
-    )
-
-    position["HEADER-household"] = header_node("HEADER-household", "Burden by Household Type")
-    position["ROW-household"] = row_node("ROW-household", ["CHART-household-type"])
-    position["CHART-household-type"] = chart_node(
-        "CHART-household-type", "ROW-household", chart_ids["household-type"], 12, 85
-    )
-
-    position["HEADER-severity"] = header_node("HEADER-severity", "How Far Over the 30% Line?")
-    position["ROW-severity"] = row_node(
-        "ROW-severity", ["CHART-severity-renter", "CHART-severity-owner"]
-    )
-    position["CHART-severity-renter"] = chart_node(
-        "CHART-severity-renter", "ROW-severity", chart_ids["kpi-severity-renter"], 6
-    )
-    position["CHART-severity-owner"] = chart_node(
-        "CHART-severity-owner", "ROW-severity", chart_ids["kpi-severity-owner"], 6
-    )
-
-    position["ROW-severity-breakdown"] = row_node(
-        "ROW-severity-breakdown", ["CHART-severity-breakdown"]
-    )
-    position["CHART-severity-breakdown"] = chart_node(
-        "CHART-severity-breakdown", "ROW-severity-breakdown", chart_ids["severity-breakdown"], 12, 62
-    )
-
-    position["HEADER-validation"] = header_node("HEADER-validation", "Validation and Data Notes")
-    position["ROW-validation"] = row_node("ROW-validation", ["MARKDOWN-validation"])
-    position["MARKDOWN-validation"] = markdown_node(
-        "MARKDOWN-validation", "ROW-validation", VALIDATION_MARKDOWN, height=60
-    )
-
+    for row_id, items in LAYOUT_ROWS:
+        if isinstance(items, str):
+            position[row_id] = header_node(row_id, items)
+            continue
+        position[row_id] = row_node(row_id, [node_id for node_id, *_ in items])
+        for node_id, key, code, width, height in items:
+            if key:
+                position[node_id] = chart_node(node_id, row_id, chart_ids[key], width, height)
+            else:
+                position[node_id] = markdown_node(node_id, row_id, code, width, height)
     return add_tabs(position, TABS)
 
 
@@ -484,9 +648,9 @@ def build_position_json(chart_ids: dict) -> dict:
 # every chart its scope does not exclude.
 FILTERS = [
     ("NATIVE_FILTER-story1-tenure", "Tenure", "DATASET_TENURE", "tenure",
-     ["tenure-bar", "kpi-total", "severity-breakdown"]),
-    ("NATIVE_FILTER-story1-household", "Household Type", "DATASET_HOUSEHOLD_TYPE", "household_type",
-     ["household-type"]),
+     ["tenure-bar", "income-tenure", "household-tenure", "severity-tenure", "validation-table"]),
+    ("NATIVE_FILTER-story1-household", "Household Type", "DATASET_HOUSEHOLD_TENURE", "household_type",
+     ["household-tenure"]),
 ]
 
 
@@ -542,7 +706,9 @@ def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> 
 if __name__ == "__main__":
     session, headers = get_session()
     print("Logged in to Superset.")
-    charts = match_bar_order(prefix_names({**BASE_CHARTS, **NEW_CHARTS}))
+    # The earlier Story 1 charts are still kept up to date (the overview
+    # dashboard shows some of them) but are no longer on this dashboard.
+    charts = match_bar_order(prefix_names({**BASE_CHARTS, **NEW_CHARTS, **SECTION_CHARTS}))
 
     chart_ids = {}
     tenure_bar = find_existing(session, headers, "chart", "slice_name", named(TENURE_BAR_NAME))
@@ -554,9 +720,13 @@ if __name__ == "__main__":
         chart_ids[key] = ensure_chart(session, headers, spec)
         print(f"Chart ready: {spec['slice_name']} (id={chart_ids[key]})")
 
-    dashboard_id = ensure_dashboard(session, headers, build_position_json(chart_ids), chart_ids)
-    for chart_id in chart_ids.values():
+    on_dashboard = {key: chart_ids[key] for key in LAYOUT_CHART_KEYS}
+    dashboard_id = ensure_dashboard(session, headers, build_position_json(chart_ids), on_dashboard)
+    for chart_id in on_dashboard.values():
         link_chart_to_dashboard(session, headers, chart_id, dashboard_id)
-    print(f"Dashboard ready: id={dashboard_id}, {len(chart_ids)} charts, 5 tabs.")
+    for key, chart_id in chart_ids.items():
+        if key not in on_dashboard:
+            unlink_chart_from_dashboard(session, headers, chart_id, dashboard_id)
+    print(f"Dashboard ready: id={dashboard_id}, {len(on_dashboard)} charts, {len(TABS)} tabs.")
     print(f"Finished: {finish_dashboard(session, headers, dashboard_id)}")
     print(f"View it at: {SUPERSET_URL}/superset/dashboard/{DASHBOARD_SLUG}/")

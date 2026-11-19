@@ -92,6 +92,16 @@ PROJECT_LABEL_COLORS = {
     "Under Construction": PALETTE[2],
     "Owner": PALETTE[0],
     "Renter": PALETTE[1],
+    # Story 1 severity bands: distinct from the tenure colours above.
+    "Under 30%": PALETTE[2],
+    "30% to under 100%": PALETTE[3],
+    "100% or more": "#b03a2e",
+    # Story 5 "Windsor 2030" scenarios: the central case in the project blue,
+    # weaker income growth orange, stronger green, slower rents grey.
+    "Rents 2020-2025 pace, incomes +3%": PALETTE[0],
+    "Rents 2020-2025 pace, incomes +2%": PALETTE[1],
+    "Rents 2020-2025 pace, incomes +4%": PALETTE[2],
+    "Rents 2015-2020 pace, incomes +3%": "#5f6b7d",
 }
 
 NO_SERIES_VIZ = {"big_number_total", "big_number", "table", "handlebars", "markdown"}
