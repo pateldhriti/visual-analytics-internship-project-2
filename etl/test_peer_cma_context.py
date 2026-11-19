@@ -170,7 +170,9 @@ def _table_zip(tmp_path, pid: str, header: str, lines: list[str]):
     return path
 
 
-def test_rent_history_keeps_row_and_apartment_rents_from_2015(tmp_path):
+def test_rent_history_keeps_both_rent_series_from_2015(tmp_path):
+    """Apartments and row houses as "average_rent" (Story 4's ten years), and
+    apartments only as "average_rent_apartments" (Story 2's 2-bedroom trend)."""
     header = '"REF_DATE","GEO","DGUID","Type of structure","Type of unit","VALUE","STATUS"\n'
     both = "Row and apartment structures of three units and over"
     lines = [
@@ -182,9 +184,10 @@ def test_rent_history_keeps_row_and_apartment_rents_from_2015(tmp_path):
         f'"2025","Toronto, Ontario","2011S0503535","{both}","Two bedroom units","2000",""\n',
     ]
     rows = ex.extract_rent_history(_table_zip(tmp_path, "34100133", header, lines))
-    assert [(r["period_year"], r["category"], r["value"]) for r in rows] == [
-        (2015, "2 Bedroom", 823.0),
-        (2025, "2 Bedroom", 1451.0),
+    assert sorted((r["indicator"], r["period_year"], r["category"], r["value"]) for r in rows) == [
+        ("average_rent", 2015, "2 Bedroom", 823.0),
+        ("average_rent", 2025, "2 Bedroom", 1451.0),
+        ("average_rent_apartments", 2025, "2 Bedroom", 1454.0),
     ]
     assert {r["source_table"] for r in rows} == {"34-10-0133-01"}
 

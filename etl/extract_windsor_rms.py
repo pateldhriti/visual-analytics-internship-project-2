@@ -76,6 +76,10 @@ SHEETS = {
     "Table 3.1.6": ("turnover_rate", "Combined", "rate"),
     "Table 1.1.1": ("vacancy_rate", "Apartment", "rate"),
     "Table 1.1.2": ("average_rent", "Apartment", "rate_no_yoy"),
+    # Apartment-only units and turnover: Story 2's zone, unit-size and
+    # turnover-change charts (the scope CMHC's Windsor report leads with).
+    "Table 1.1.3": ("universe", "Apartment", "universe"),
+    "Table 1.1.6": ("turnover_rate", "Apartment", "rate"),
 }
 
 
@@ -178,7 +182,7 @@ def parse_new_stock_sheet(ws) -> list[dict]:
     return rows
 
 
-def parse_vacant_occupied_sheet(ws) -> list[dict]:
+def parse_vacant_occupied_sheet(ws, dwelling_type: str = "Combined") -> list[dict]:
     """Table 3.1.9: 5-column bedroom groups [vacant-unit rent value/
     reliability, occupied-unit rent value/reliability, Y/N significance
     flag]. Single snapshot (October 2025) -- the Y/N flag goes in
@@ -194,7 +198,7 @@ def parse_vacant_occupied_sheet(ws) -> list[dict]:
             occupied_value = ws.cell(row=r, column=base_col + 2).value
             occupied_reliability = ws.cell(row=r, column=base_col + 3).value
             significance = ws.cell(row=r, column=base_col + 4).value
-            common = {"dwelling_type": "Combined", "zone": zone,
+            common = {"dwelling_type": dwelling_type, "zone": zone,
                       "bedroom_type": bedroom_type, "period_label": "Oct-25"}
             rows.append({**common, "metric_type": "rent_vacant_units",
                          "value": vacant_value, "reliability_letter": vacant_reliability,
@@ -276,7 +280,8 @@ def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> d
     expected_standard_rows = len(SHEETS) * ZONE_ROWS * len(BEDROOM_TYPES) * 2  # x2 for Oct-24/Oct-25
 
     new_stock_rows = parse_new_stock_sheet(wb["Table 3.1.7"])
-    vacant_occupied_rows = parse_vacant_occupied_sheet(wb["Table 3.1.9"])
+    vacant_occupied_rows = (parse_vacant_occupied_sheet(wb["Table 3.1.9"])
+                            + parse_vacant_occupied_sheet(wb["Table 1.1.9"], "Apartment"))
     quintile_rows = parse_income_quintile_sheet(wb["Table 3.1.8"])
 
     all_rows.extend(new_stock_rows)
@@ -290,7 +295,7 @@ def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> d
     expected_rows = (
         expected_standard_rows
         + ZONE_ROWS * len(BEDROOM_TYPES) * 3  # 3.1.7: 3 metrics/cell
-        + ZONE_ROWS * len(BEDROOM_TYPES) * 2  # 3.1.9: 2 metrics/cell
+        + ZONE_ROWS * len(BEDROOM_TYPES) * 2 * 2  # 3.1.9 and 1.1.9: 2 metrics/cell
         + 9 * len(QUINTILE_LABELS) * len(BEDROOM_TYPES) * 2  # 3.1.8: 9 zones x 7 quintile rows x 2 metrics
     )
     output_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -299,7 +304,7 @@ def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> d
     return {
         "source_xlsx": str(source_xlsx),
         "output_csv": str(output_csv),
-        "sheets_read": list(SHEETS) + ["Table 3.1.7", "Table 3.1.9", "Table 3.1.8"],
+        "sheets_read": list(SHEETS) + ["Table 3.1.7", "Table 3.1.9", "Table 1.1.9", "Table 3.1.8"],
         "expected_rows": expected_rows,
         "actual_rows": len(df),
         "match": expected_rows == len(df),

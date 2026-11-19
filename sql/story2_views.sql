@@ -198,7 +198,7 @@ WHERE f.metric_type = 'average_rent'
 -- Windsor City rollups and the Story 4 comparator CMAs are excluded by
 -- the dimension's own classification, not a hand-maintained name list):
 -- average rent, vacancy rate, rental stock (universe) and turnover for
--- the latest survey (Oct-25), Combined dwelling types, Total bedroom type.
+-- the latest survey (Oct-25), apartments (CMHC's Tables 1.1.x), Total bedroom type.
 -- Built for Dashboard 3's zone-level section -- the 4 metrics side by
 -- side, so a zone's rent can be read against its vacancy and size rather
 -- than in isolation. share_of_zone_stock_pct is each zone's share of the
@@ -224,7 +224,7 @@ WITH zone_metrics AS (
     JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
     WHERE z.zone_level = 'zone'
       AND p.period_label = 'Oct-25'
-      AND d.dwelling_type_label = 'Combined'
+      AND d.dwelling_type_label = 'Apartment'
       AND b.bedroom_type_label = 'Total'
       AND f.metric_type IN ('average_rent', 'vacancy_rate', 'universe', 'turnover_rate')
     GROUP BY z.zone_label, p.period_label
@@ -303,7 +303,7 @@ WITH base AS (
     JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
     JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
     WHERE z.zone_level IN ('zone', 'cma_total')
-      AND d.dwelling_type_label = 'Combined'
+      AND d.dwelling_type_label = 'Apartment'
       AND b.bedroom_type_label = 'Total'
       AND p.period_label IN ('Oct-24', 'Oct-25')
       AND f.metric_type IN ('average_rent', 'vacancy_rate', 'universe', 'turnover_rate')
@@ -546,7 +546,7 @@ WITH base AS (
     JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
     JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
     WHERE z.zone_level IN ('zone', 'cma_total')
-      AND d.dwelling_type_label = 'Combined'
+      AND d.dwelling_type_label = 'Apartment'
       AND p.period_label IN ('Oct-24', 'Oct-25')
       AND f.metric_type IN ('average_rent', 'vacancy_rate', 'universe', 'turnover_rate')
       AND f.income_band_key IS NULL
@@ -709,3 +709,167 @@ SELECT
             || TO_CHAR(priciest_rent - cheapest_rent, 'FM$9,999') || ' a month.'
     END AS overview_takeaway
 FROM zones;
+
+
+-- ---------------------------------------------------------------------------
+-- Story 2 tabs "Market Trends" and "Income and New Supply": CMHC Rental
+-- Market Survey, Windsor, October 2025 unless stated; apartments and row
+-- houses combined (CMHC publishes these tables for the combined universe).
+-- ---------------------------------------------------------------------------
+
+-- v_story2_income_quintiles: for each renter income quintile, how many
+-- rental units it can afford (rent at most 30% of the quintile's upper
+-- income) and the vacancy rate among those units (CMHC Table 3.1.8).
+-- Q5 has no upper income, so CMHC publishes no count for it.
+CREATE OR REPLACE VIEW warehouse.v_story2_income_quintiles AS
+SELECT
+    ib.band_label AS income_quintile,
+    MAX(f.value) FILTER (WHERE f.metric_type = 'quintile_universe') AS affordable_units,
+    ROUND(100.0 * MAX(f.value) FILTER (WHERE f.metric_type = 'quintile_universe')
+          / MAX(t.total_units), 2) AS pct_of_rental_stock,
+    MAX(f.value) FILTER (WHERE f.metric_type = 'quintile_vacancy_rate') AS vacancy_rate_pct
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
+CROSS JOIN LATERAL (
+    SELECT f2.value AS total_units
+    FROM warehouse.fact_rental_market f2
+    JOIN warehouse.dim_income_band ib2 ON ib2.income_band_key = f2.income_band_key
+    WHERE f2.metric_type = 'quintile_universe' AND f2.zone_key = f.zone_key
+      AND f2.bedroom_type_key = f.bedroom_type_key AND ib2.band_label = 'Total'
+) t
+WHERE f.metric_type IN ('quintile_universe', 'quintile_vacancy_rate')
+  AND z.zone_label = 'Windsor CMA'
+  AND b.bedroom_type_label = 'Total'
+  AND ib.scheme = 'cmhc_quintile' AND ib.band_label IN ('Q1', 'Q2', 'Q3', 'Q4', 'Q5')
+GROUP BY ib.band_label;
+
+-- v_story2_new_stock: rental units added to the survey universe in the
+-- last year (CMHC "new" structures), by zone and unit size.
+CREATE OR REPLACE VIEW warehouse.v_story2_new_stock AS
+SELECT
+    z.zone_label,
+    b.bedroom_type_label AS unit_size,
+    b.bedroom_type_key AS unit_size_sort_order,
+    f.value AS new_units
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+WHERE f.metric_type = 'new_stock_universe'
+  AND z.zone_label LIKE 'Zone %'
+  AND b.bedroom_type_label <> 'Total';
+
+-- v_story2_turnover_change: turnover by unit size in the last two surveys,
+-- the change in percentage points, and CMHC's own test of whether the change
+-- is statistically significant ("-" = no significant change).
+CREATE OR REPLACE VIEW warehouse.v_story2_turnover_change AS
+WITH t AS (
+    SELECT
+        b.bedroom_type_label AS unit_size,
+        b.bedroom_type_key AS unit_size_sort_order,
+        MAX(f.value) FILTER (WHERE p.period_label = 'Oct-24') AS turnover_oct24,
+        MAX(f.value) FILTER (WHERE p.period_label = 'Oct-25') AS turnover_oct25,
+        MAX(f.yoy_trend) FILTER (WHERE p.period_label = 'Oct-25') AS yoy_trend
+    FROM warehouse.fact_rental_market f
+    JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+    JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+    JOIN warehouse.dim_period p ON p.period_key = f.period_key
+    JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+    WHERE f.metric_type = 'turnover_rate' AND z.zone_label = 'Windsor CMA'
+      AND d.dwelling_type_label = 'Apartment'
+      AND p.period_label IN ('Oct-24', 'Oct-25')
+    GROUP BY b.bedroom_type_label, b.bedroom_type_key
+)
+SELECT
+    unit_size,
+    unit_size_sort_order,
+    turnover_oct24,
+    turnover_oct25,
+    ROUND(turnover_oct25 - turnover_oct24, 1) AS change_pts,
+    CASE yoy_trend
+        WHEN '↑' THEN 'Significant rise'
+        WHEN '↓' THEN 'Significant fall'
+        WHEN '-' THEN 'Not significant'
+        ELSE 'N/A'
+    END AS cmhc_trend
+FROM t;
+
+-- v_story2_rent_vacant_occupied: average rent of vacant units (roughly what
+-- a new tenant pays) against occupied units, by unit size.
+CREATE OR REPLACE VIEW warehouse.v_story2_rent_vacant_occupied AS
+SELECT
+    b.bedroom_type_label AS unit_size,
+    b.bedroom_type_key AS unit_size_sort_order,
+    MAX(f.value) FILTER (WHERE f.metric_type = 'rent_vacant_units') AS rent_vacant_units,
+    MAX(f.value) FILTER (WHERE f.metric_type = 'rent_occupied_units') AS rent_occupied_units
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type IN ('rent_vacant_units', 'rent_occupied_units')
+  AND z.zone_label = 'Windsor CMA'
+  AND d.dwelling_type_label = 'Apartment'
+  AND b.bedroom_type_label <> 'Total'
+GROUP BY b.bedroom_type_label, b.bedroom_type_key;
+
+-- v_story2_stock_by_unit_size: the rental universe by unit size, October 2025.
+CREATE OR REPLACE VIEW warehouse.v_story2_stock_by_unit_size AS
+SELECT
+    b.bedroom_type_label AS unit_size,
+    b.bedroom_type_key AS unit_size_sort_order,
+    f.value AS units,
+    ROUND(100.0 * f.value / SUM(f.value) OVER (), 2) AS pct_of_units
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type = 'universe' AND z.zone_label = 'Windsor CMA'
+  AND d.dwelling_type_label = 'Apartment'
+  AND p.period_label = 'Oct-25' AND b.bedroom_type_label <> 'Total';
+
+-- v_story2_market_history: Windsor's October 2-bedroom apartment rent
+-- (apartments only, the scope CMHC quotes for 2-bedroom rent) and vacancy
+-- rate (apartments and row houses; StatCan publishes no apartment-only
+-- vacancy series), 2019 onward. CMHC's survey republished by StatCan
+-- (34-10-0133-01, 34-10-0130-01).
+CREATE OR REPLACE VIEW warehouse.v_story2_market_history AS
+SELECT
+    period_year,
+    MAKE_DATE(period_year, 10, 1) AS period_date,
+    -- 2-bedroom apartment rent and apartment vacancy: CMHC Rental Market
+    -- Survey, Canada, Table 1.0, the latest figure CMHC published for each
+    -- October (2022 as revised in the 2023 report)
+    (SELECT c.value FROM warehouse.fact_cma_canada c
+     WHERE c.cma_code = '559' AND c.indicator = 'average_rent_2br_rms'
+       AND c.period_year = p.period_year) AS rent_2br_apartments,
+    -- apartment vacancy, CMHC Rental Market Survey, Canada (Table 1.0)
+    (SELECT c.value FROM warehouse.fact_cma_canada c
+     WHERE c.cma_code = '559' AND c.indicator = 'vacancy_rate_apartments'
+       AND c.period_year = p.period_year) AS vacancy_rate_pct
+FROM warehouse.fact_peer_cma_context p
+WHERE cma_name = 'Windsor CMA' AND period_year >= 2019
+  AND source_table = '34-10-0133-01'
+GROUP BY period_year;
+
+-- v_story2_bedroom_oct: Windsor's average rent and vacancy rate by unit
+-- size in the last two surveys, apartments (CMHC Tables 1.1.1 and 1.1.2).
+CREATE OR REPLACE VIEW warehouse.v_story2_bedroom_oct AS
+SELECT
+    b.bedroom_type_label AS unit_size,
+    b.bedroom_type_key AS unit_size_sort_order,
+    p.period_label,
+    MAX(f.value) FILTER (WHERE f.metric_type = 'average_rent') AS average_rent,
+    MAX(f.value) FILTER (WHERE f.metric_type = 'vacancy_rate') AS vacancy_rate_pct
+FROM warehouse.fact_rental_market f
+JOIN warehouse.dim_zone z ON z.zone_key = f.zone_key
+JOIN warehouse.dim_bedroom_type b ON b.bedroom_type_key = f.bedroom_type_key
+JOIN warehouse.dim_period p ON p.period_key = f.period_key
+JOIN warehouse.dim_dwelling_type d ON d.dwelling_type_key = f.dwelling_type_key
+WHERE f.metric_type IN ('average_rent', 'vacancy_rate')
+  AND z.zone_label = 'Windsor CMA'
+  AND d.dwelling_type_label = 'Apartment'
+  AND p.period_label IN ('Oct-24', 'Oct-25')
+  AND b.bedroom_type_label <> 'Total'
+GROUP BY b.bedroom_type_label, b.bedroom_type_key, p.period_label;

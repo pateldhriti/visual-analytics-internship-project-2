@@ -240,3 +240,92 @@ SELECT
     CASE WHEN c.is_windsor THEN ROUND(100.0 * c.rent_2025 / p.peer_2025, 1) END AS windsor_pct_of_peer_rent_2025
 FROM by_city c
 CROSS JOIN peer p;
+
+
+-- ---------------------------------------------------------------------------
+-- v_story4_cma_canada: every Canadian CMA in 2021 -- renter cost burden
+-- (Census 2021, incomes for 2020), October 2021 2-bedroom apartment rent and
+-- vacancy rate (apartments and row houses) -- for Story 4's "All Canadian
+-- Cities, 2021" tab. Windsor and the four comparison cities are marked.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story4_cma_canada AS
+SELECT
+    cma_code,
+    REPLACE(cma_name, ' - ', '-') AS city,
+    CASE WHEN cma_code = '559' THEN 'Windsor'
+         WHEN cma_code IN ('555', '537', '539', '541') THEN 'Comparison city'
+         ELSE 'Other Canadian city' END AS city_group,
+    (cma_code = '559') AS is_windsor,
+    MAX(value) FILTER (WHERE indicator = 'renter_burden_pct') AS renter_burden_pct,
+    -- CMHC Rental Market Survey, Canada, Table 1.0 (October 2021):
+    -- 2-bedroom apartment rent and apartment vacancy
+    MAX(value) FILTER (WHERE indicator = 'average_rent_2br_rms') AS rent_2br_apartments,
+    MAX(value) FILTER (WHERE indicator = 'vacancy_rate_apartments') AS vacancy_rate_pct
+FROM warehouse.fact_cma_canada
+WHERE period_year = 2021
+GROUP BY cma_code, cma_name
+HAVING MAX(value) FILTER (WHERE indicator = 'average_rent_2br_rms') IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- Story 4 tabs "Windsor in 2021" and "Since 2019, with Toronto". Rent:
+-- October 2-bedroom, apartment structures (StatCan 34-10-0133-01); vacancy:
+-- apartment structures, CMHC Rental Market Survey, Canada, 2019-2025
+-- (Table 1.0); rental universe for 2021: the 2021 survey's Table 5.0;
+-- renter households and renter cost burden: Census 2021. The 2019 lines
+-- show Windsor, London, Hamilton, Kitchener-Waterloo and Toronto; the
+-- 2021 table lists the same five.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story4_city_history AS
+WITH cities AS (
+    -- the short names of the ten-year lines (v_story4_rent_history.city_short)
+    SELECT cma_code,
+           CASE cma_code WHEN '541' THEN 'Kitchener-Waterloo' WHEN '539' THEN 'St. Catharines'
+                         ELSE REPLACE(cma_name, ' - ', '-') END AS city
+    FROM warehouse.fact_cma_canada
+    WHERE cma_code IN ('559', '555', '537', '541', '535')
+    GROUP BY cma_code, cma_name
+),
+yearly AS (
+    SELECT c.city, c.cma_code, f.period_year,
+           MAX(f.value) FILTER (WHERE f.indicator = 'average_rent_2br_rms') AS rent_2br_apartments,
+           MAX(f.value) FILTER (WHERE f.indicator = 'vacancy_rate_apartments') AS vacancy_rate_pct
+    FROM warehouse.fact_cma_canada f
+    JOIN cities c ON c.cma_code = f.cma_code
+    WHERE f.indicator IN ('average_rent_2br_rms', 'vacancy_rate_apartments') AND f.period_year >= 2019
+    GROUP BY c.city, c.cma_code, f.period_year
+)
+SELECT
+    city,
+    (cma_code = '559') AS is_windsor,
+    period_year,
+    MAKE_DATE(period_year, 10, 1) AS period_date,
+    rent_2br_apartments,
+    ROUND(100.0 * rent_2br_apartments
+          / FIRST_VALUE(rent_2br_apartments) OVER (PARTITION BY city ORDER BY period_year), 1)
+        AS rent_index_2019,
+    vacancy_rate_pct
+FROM yearly;
+
+CREATE OR REPLACE VIEW warehouse.v_story4_rental_supply_2021 AS
+SELECT
+    cma_name AS city,
+    (cma_code = '559') AS is_windsor,
+    MAX(value) FILTER (WHERE indicator = 'rental_universe') AS rental_universe,
+    MAX(value) FILTER (WHERE indicator = 'renter_households') AS renter_households,
+    ROUND(1000.0 * MAX(value) FILTER (WHERE indicator = 'rental_universe')
+          / MAX(value) FILTER (WHERE indicator = 'renter_households'), 1) AS units_per_1000_renters,
+    cma_code  -- the table's row order
+FROM warehouse.fact_cma_canada
+WHERE period_year = 2021 AND cma_code IN ('559', '555', '537', '541', '535')
+GROUP BY cma_code, cma_name;
+
+CREATE OR REPLACE VIEW warehouse.v_story4_windsor_2021 AS
+SELECT
+    MAX(value) FILTER (WHERE indicator = 'average_rent_2br_apartments') AS rent_2br_apartments,
+    MAX(value) FILTER (WHERE indicator = 'renter_burden_pct') AS renter_burden_pct,
+    MAX(value) FILTER (WHERE indicator = 'vacancy_rate_apartments' AND period_year = 2021)
+        AS vacancy_rate_apartments_pct,
+    ROUND(1000.0 * MAX(value) FILTER (WHERE indicator = 'rental_universe')
+          / MAX(value) FILTER (WHERE indicator = 'renter_households'), 1) AS units_per_1000_renters
+FROM warehouse.fact_cma_canada
+WHERE cma_code = '559' AND period_year = 2021;

@@ -331,6 +331,33 @@ CREATE TABLE warehouse.fact_windsor_starts_completions (
 --   34-10-0154-01   starts, completions (category = 'Total' or
 --                   'Apartment and Other'; full calendar years only)
 -- Census and shelter-cost rows have period_year 2021 (incomes are for 2020).
+-- Every Canadian CMA's renter cost burden (Census 2021), October 2021
+-- 2-bedroom apartment rent and vacancy rate: Story 4's "All Canadian
+-- Cities, 2021" tab (etl/extract_cma_canada.py).
+CREATE TABLE warehouse.fact_cma_canada (
+    fact_id      BIGSERIAL PRIMARY KEY,
+    cma_code     TEXT NOT NULL,
+    cma_name     TEXT NOT NULL,
+    indicator    TEXT NOT NULL,
+    period_year  INTEGER NOT NULL,
+    value        NUMERIC,
+    UNIQUE (cma_code, indicator, period_year)
+);
+
+-- Windsor housing starts and completions by intended market (homeowner,
+-- rental, condo, co-op): each full year, and the current year so far
+-- (is_ytd). Story 3's tab "Pipeline and Intended Market"
+-- (etl/extract_windsor_intended_market.py).
+CREATE TABLE warehouse.fact_windsor_intended_market (
+    fact_id          BIGSERIAL PRIMARY KEY,
+    period_label     TEXT NOT NULL,
+    is_ytd           BOOLEAN NOT NULL,
+    activity         TEXT NOT NULL,
+    intended_market  TEXT NOT NULL,
+    units            NUMERIC,
+    UNIQUE (period_label, activity, intended_market)
+);
+
 CREATE TABLE warehouse.fact_peer_cma_context (
     fact_id      BIGSERIAL PRIMARY KEY,
     cma_code     TEXT NOT NULL,

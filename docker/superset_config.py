@@ -242,6 +242,28 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story1_burden_by_household_type_tenure](id:41)",
     "[Windsor Housing Data].[v_story1_burden_distribution](id:42)",
     "[Windsor Housing Data].[v_story1_validation](id:43)",
+    # Story 2 tabs "Market Trends" and "Income and New Supply".
+    "[Windsor Housing Data].[v_story2_income_quintiles](id:44)",
+    "[Windsor Housing Data].[v_story2_new_stock](id:45)",
+    "[Windsor Housing Data].[v_story2_turnover_change](id:46)",
+    "[Windsor Housing Data].[v_story2_rent_vacant_occupied](id:47)",
+    "[Windsor Housing Data].[v_story2_stock_by_unit_size](id:48)",
+    "[Windsor Housing Data].[v_story2_market_history](id:49)",
+    # Story 3 tabs "This Year So Far" and "This Year's Mix".
+    "[Windsor Housing Data].[v_story3_latest_month](id:50)",
+    "[Windsor Housing Data].[v_story3_ytd_by_year](id:51)",
+    "[Windsor Housing Data].[v_story3_ytd_shortfall](id:52)",
+    "[Windsor Housing Data].[v_story3_pipeline](id:53)",
+    # Story 3 tab "Who Is It Built For?".
+    "[Windsor Housing Data].[v_story3_intended_market](id:58)",
+    # Story 2 tab "Prices and Availability".
+    "[Windsor Housing Data].[v_story2_bedroom_oct](id:59)",
+    # Story 4 tab "All Canadian Cities, 2021".
+    "[Windsor Housing Data].[v_story4_cma_canada](id:54)",
+    # Story 4 tabs "Windsor in 2021" and "Since 2019, with Toronto".
+    "[Windsor Housing Data].[v_story4_city_history](id:55)",
+    "[Windsor Housing Data].[v_story4_rental_supply_2021](id:56)",
+    "[Windsor Housing Data].[v_story4_windsor_2021](id:57)",
 ]
 
 

@@ -60,6 +60,12 @@ SOURCES = [
     Source("cmhc_rms_windsor_2022", "data/raw/cmhc/rmr-windsor-2022-en.xlsx", "xlsx"),
     Source("cmhc_rms_windsor_2021", "data/raw/cmhc/rmr-windsor-2021-en.xlsx", "xlsx"),
     Source("cmhc_rms_canada_2025", "data/raw/cmhc/rmr-canada-2025-en.xlsx", "xlsx"),
+    *[Source(f"cmhc_rms_canada_{y}", f"data/raw/cmhc/rmr-canada-{y}-en.xlsx", "xlsx")
+      for y in (2019, 2020, 2021, 2022, 2023, 2024)],
+    Source("cmhc_windsor_intended_market", "data/raw/cmhc/windsor-starts-intended-market.csv", "csv"),
+    Source("cmhc_windsor_starts_market_ytd", "data/raw/cmhc/windsor-starts-intended-market-ytd.csv", "csv"),
+    Source("cmhc_windsor_completions_market_ytd", "data/raw/cmhc/windsor-completions-intended-market-ytd.csv",
+           "csv"),
     Source(
         "cmhc_quarterly_starts",
         "data/raw/cmhc/quarterly-starts-completions-under-construction-06-26-en.xlsx",

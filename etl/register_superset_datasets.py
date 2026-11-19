@@ -131,6 +131,60 @@ VIEWS = {
             "description": "Calculated burden rate minus the Census Profile's published rate. One row per tenure.",
         },
     ],
+    "v_story2_income_quintiles": [
+        {
+            "metric_name": "affordable_units",
+            "expression": "MAX(affordable_units)",
+            "verbose_name": "Affordable Rental Units",
+            "metric_type": "max",
+            "description": "Rental units each renter income quintile can afford (rent at most 30% of the quintile's upper income), Oct-25.",
+        },
+    ],
+    "v_story2_new_stock": [
+        {
+            "metric_name": "new_units",
+            "expression": "SUM(new_units)",
+            "verbose_name": "New Rental Units",
+            "metric_type": "max",
+            "description": "Rental units added to CMHC's survey universe in the last year, by zone and unit size.",
+        },
+    ],
+    "v_story2_turnover_change": [
+        {
+            "metric_name": "turnover_oct25",
+            "expression": "MAX(turnover_oct25)",
+            "verbose_name": "Turnover Rate Oct-25 (%)",
+            "metric_type": "max",
+            "description": "Share of units that changed tenants, Oct-25; the view also has Oct-24 and CMHC's significance test.",
+        },
+    ],
+    "v_story2_rent_vacant_occupied": [
+        {
+            "metric_name": "rent_vacant_units",
+            "expression": "MAX(rent_vacant_units)",
+            "verbose_name": "Rent of Vacant Units ($)",
+            "metric_type": "max",
+            "description": "Average monthly rent of vacant units, by unit size, Oct-25.",
+        },
+    ],
+    "v_story2_stock_by_unit_size": [
+        {
+            "metric_name": "units",
+            "expression": "SUM(units)",
+            "verbose_name": "Rental Units",
+            "metric_type": "max",
+            "description": "Rental universe by unit size, Oct-25.",
+        },
+    ],
+    "v_story2_market_history": [
+        {
+            "metric_name": "rent_2br_apartments",
+            "expression": "MAX(rent_2br_apartments)",
+            "verbose_name": "2-Bedroom Apartment Rent ($)",
+            "metric_type": "max",
+            "description": "Windsor October 2-bedroom apartment rent and vacancy rate, 2019 onward (StatCan 34-10-0133-01, 34-10-0130-01).",
+        },
+    ],
     "v_story2_rent_yoy_change": [
         {
             "metric_name": "avg_rent",
@@ -412,6 +466,96 @@ VIEWS = {
             "verbose_name": "2-Bedroom Rent (% of Peer Average)",
             "metric_type": "max",
             "description": "Windsor's 2-bedroom rent as a % of the four comparison cities' average (100 = average).",
+        },
+    ],
+    "v_story3_latest_month": [
+        {
+            "metric_name": "ytd_starts",
+            "expression": "MAX(ytd_starts)",
+            "verbose_name": "Starts So Far This Year",
+            "metric_type": "max",
+            "description": "Windsor starts from January to the latest published month. One row.",
+        },
+    ],
+    "v_story3_ytd_by_year": [
+        {
+            "metric_name": "ytd_units",
+            "expression": "SUM(ytd_units)",
+            "verbose_name": "Units, January to Latest Month",
+            "metric_type": "max",
+            "description": "Starts or completions in the same months of each year since 2021, by dwelling type.",
+        },
+    ],
+    "v_story3_ytd_shortfall": [
+        {
+            "metric_name": "shortfall_pct",
+            "expression": "MAX(shortfall_pct)",
+            "verbose_name": "Behind by (%)",
+            "metric_type": "max",
+            "description": "How far this year's starts or completions so far are below the same months of a previous year.",
+        },
+    ],
+    "v_story3_pipeline": [
+        {
+            "metric_name": "pipeline_units",
+            "expression": "SUM(units)",
+            "verbose_name": "Units",
+            "metric_type": "max",
+            "description": "This year's starts and completions so far and units under construction, by dwelling type.",
+        },
+    ],
+    "v_story2_bedroom_oct": [
+        {
+            "metric_name": "bedroom_oct_rent",
+            "expression": "MAX(average_rent)",
+            "verbose_name": "Average Monthly Rent ($)",
+            "metric_type": "max",
+            "description": "Windsor apartment rent by unit size, Oct-24 and Oct-25. One row per unit size and survey.",
+        },
+    ],
+    "v_story3_intended_market": [
+        {
+            "metric_name": "intended_market_units",
+            "expression": "SUM(units)",
+            "verbose_name": "Housing Starts",
+            "metric_type": "sum",
+            "description": "Windsor housing starts by intended market (homeowner, rental, condo). One row per year and market.",
+        },
+    ],
+    "v_story4_city_history": [
+        {
+            "metric_name": "rent_index_2019",
+            "expression": "MAX(rent_index_2019)",
+            "verbose_name": "2-Bedroom Rent Index (2019 = 100)",
+            "metric_type": "max",
+            "description": "October 2-bedroom apartment rent as a % of the city's 2019 rent. One row per city and year.",
+        },
+    ],
+    "v_story4_rental_supply_2021": [
+        {
+            "metric_name": "units_per_1000_renters",
+            "expression": "MAX(units_per_1000_renters)",
+            "verbose_name": "Rental Units per 1,000 Renter Households",
+            "metric_type": "max",
+            "description": "CMHC rental universe (Oct 2021) per 1,000 renter households (Census 2021). One row per city.",
+        },
+    ],
+    "v_story4_windsor_2021": [
+        {
+            "metric_name": "windsor_rent_2021",
+            "expression": "MAX(rent_2br_apartments)",
+            "verbose_name": "Windsor 2-Bedroom Rent, Oct 2021 ($)",
+            "metric_type": "max",
+            "description": "Windsor's October 2021 2-bedroom apartment rent. One row.",
+        },
+    ],
+    "v_story4_cma_canada": [
+        {
+            "metric_name": "renter_burden_pct_canada",
+            "expression": "MAX(renter_burden_pct)",
+            "verbose_name": "Renters Spending 30%+ on Shelter (%)",
+            "metric_type": "max",
+            "description": "Share of renter households spending 30% or more of income on shelter, Census 2021. One row per Canadian CMA.",
         },
     ],
     "v_story3_period_comparison": [

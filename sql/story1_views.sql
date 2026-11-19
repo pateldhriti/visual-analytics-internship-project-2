@@ -239,14 +239,17 @@ SELECT
     t.tenure_name AS tenure,
     SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
         AS burdened_households,
-    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
-                                                         'Spending 30% or more of income on shelter costs'))
+    -- Households with a shelter-cost ratio: StatCan's published total minus
+    -- "Not applicable" (each count is randomly rounded to a multiple of 5, so
+    -- this is closer than adding the rounded under-30% and 30%+ counts)
+    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio')
+        - COALESCE(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Not applicable'), 0)
         AS total_households,
     ROUND(100.0
         * SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
-        / NULLIF(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN (
-              'Spending less than 30% of income on shelter costs',
-              'Spending 30% or more of income on shelter costs')), 0), 1) AS burden_rate_pct
+        / NULLIF(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio')
+                 - COALESCE(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Not applicable'), 0), 0), 2)
+        AS burden_rate_pct
 FROM warehouse.fact_shelter_cost f
 JOIN warehouse.dim_tenure t ON t.tenure_key = f.tenure_key
 JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
@@ -269,14 +272,17 @@ SELECT
     t.tenure_name AS tenure,
     SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
         AS burdened_households,
-    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
-                                                         'Spending 30% or more of income on shelter costs'))
+    -- Households with a shelter-cost ratio: StatCan's published total minus
+    -- "Not applicable" (each count is randomly rounded to a multiple of 5, so
+    -- this is closer than adding the rounded under-30% and 30%+ counts)
+    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio')
+        - COALESCE(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Not applicable'), 0)
         AS total_households,
     ROUND(100.0
         * SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
-        / NULLIF(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN (
-              'Spending less than 30% of income on shelter costs',
-              'Spending 30% or more of income on shelter costs')), 0), 1) AS burden_rate_pct
+        / NULLIF(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Total - Shelter-cost-to-income ratio')
+                 - COALESCE(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Not applicable'), 0), 0), 2)
+        AS burden_rate_pct
 FROM warehouse.fact_shelter_cost f
 JOIN warehouse.dim_tenure t ON t.tenure_key = f.tenure_key
 JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
