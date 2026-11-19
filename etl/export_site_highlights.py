@@ -67,6 +67,13 @@ def build(conn) -> dict:
                homes_completed_2016_2020 AS built, homes_built_per_home_needed AS ratio
         FROM warehouse.v_story5_supply_vs_demand ORDER BY homes_built_per_home_needed""")
 
+    outlook = rows(conn, """
+        SELECT city_short AS city, is_windsor, scenario, rent_pace, yearly_income_growth_pct AS income_growth,
+               yearly_rent_rise_pct AS rent_rise,
+               is_central_scenario AS central, year, projected_rent_2br AS rent, income_needed,
+               pct_renters_priced_out AS pct
+        FROM warehouse.v_story5_rent_outlook ORDER BY is_windsor DESC, city_short, scenario, year""")
+
     mix = rows(conn, """
         SELECT dwelling_type, period, avg_units_per_year AS per_year, pct_of_total AS share
         FROM warehouse.v_story3_period_comparison WHERE activity = 'Starts'
@@ -83,8 +90,41 @@ def build(conn) -> dict:
             "vacancy": [by_year.get(y, {}).get("vacancy_rate") for y in years],
         })
 
+    # Windsor's 2030 outlook: the central scenario each year, the lowest and
+    # highest of all six scenarios (the range band), every 2030 scenario, and
+    # each city's central-scenario share in the first and last year.
+    windsor = [r for r in outlook if r["is_windsor"]]
+    out_years = sorted({r["year"] for r in windsor})
+    central = {r["year"]: r for r in windsor if r["central"]}
+    outlook_data = {
+        "years": out_years,
+        "central": [central[y]["pct"] for y in out_years],
+        "low": [min(r["pct"] for r in windsor if r["year"] == y) for y in out_years],
+        "high": [max(r["pct"] for r in windsor if r["year"] == y) for y in out_years],
+        "rent": [central[y]["rent"] for y in out_years],
+        "incomeNeeded": central[out_years[-1]]["income_needed"],
+        # the central scenario's yearly rent rise: the income growth needed
+        # just to keep the share priced out from rising
+        "rentRise": central[out_years[-1]]["rent_rise"],
+        "scenarios": [
+            {"scenario": r["scenario"], "rentPace": r["rent_pace"], "incomeGrowth": r["income_growth"],
+             "rent": r["rent"], "incomeNeeded": r["income_needed"], "pct": r["pct"], "central": r["central"]}
+            for r in sorted((r for r in windsor if r["year"] == out_years[-1]), key=lambda r: r["pct"])
+        ],
+        "cities": [
+            {"city": city, "isWindsor": rows_[0]["is_windsor"],
+             "first": next(r["pct"] for r in rows_ if r["year"] == out_years[0]),
+             "last": next(r["pct"] for r in rows_ if r["year"] == out_years[-1])}
+            for city, rows_ in (
+                (c, [r for r in outlook if r["city"] == c and r["central"]])
+                for c in dict.fromkeys(r["city"] for r in outlook)
+            )
+        ],
+    }
+
     return {
         "generated": date.today().isoformat(),
+        "outlook": outlook_data,
         "affordability": {
             "pct": afford["pct"], "cannot": afford["cannot"], "renters": afford["renters"],
             "rent": afford["rent"], "incomeNeeded": afford["income_needed"],
@@ -121,6 +161,11 @@ def check(data: dict) -> None:
     for s in data["rentHistory"]["series"]:
         if any(v is None for v in s["rent"]):
             raise ValueError(f"{s['city']}: a year has no 2-bedroom rent")
+    o = data["outlook"]
+    if len(o["cities"]) != 5 or len(o["scenarios"]) != 6 or not o["years"]:
+        raise ValueError("Expected the 2030 outlook for five cities and six scenarios")
+    if any(not (lo <= c <= hi) for lo, c, hi in zip(o["low"], o["central"], o["high"])):
+        raise ValueError("The central outlook scenario must lie inside the scenario range")
 
 
 def main() -> None:

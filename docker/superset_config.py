@@ -233,6 +233,15 @@ PUBLIC_DATASOURCE_NAMES = [
     "[Windsor Housing Data].[v_story5_renter_burden_by_age](id:30)",
     "[Windsor Housing Data].[v_story5_rental_stock](id:31)",
     "[Windsor Housing Data].[v_story5_city_profile](id:32)",
+    # Story 5 tab 8, "Windsor 2030" (the rent outlook scenarios).
+    "[Windsor Housing Data].[v_story5_rent_outlook](id:38)",
+    # Story 1's sections: gap, income x tenure, household type x tenure,
+    # severity, validation (etl/finalize_story1_layout.py).
+    "[Windsor Housing Data].[v_story1_affordability_gap](id:39)",
+    "[Windsor Housing Data].[v_story1_burden_by_income_tenure](id:40)",
+    "[Windsor Housing Data].[v_story1_burden_by_household_type_tenure](id:41)",
+    "[Windsor Housing Data].[v_story1_burden_distribution](id:42)",
+    "[Windsor Housing Data].[v_story1_validation](id:43)",
 ]
 
 

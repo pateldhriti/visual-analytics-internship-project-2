@@ -59,6 +59,7 @@ DATASET_BURDEN_BY_AGE = dataset_id("v_story5_renter_burden_by_age")
 DATASET_RENTAL_STOCK = dataset_id("v_story5_rental_stock")
 DATASET_CITY_PROFILE = dataset_id("v_story5_city_profile")
 DATASET_WINDSOR_VS_PEERS = dataset_id("v_story5_windsor_vs_peers")
+DATASET_RENT_OUTLOOK = dataset_id("v_story5_rent_outlook")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
 DASHBOARD_TITLE = named("Story 5: How do affordability, rental conditions, and supply fit together?")
@@ -156,6 +157,12 @@ COLUMN_LABELS = {
         "pct_renters_who_cannot_afford_2br": "% cannot afford 2-bed",
         "pct_renters_spending_30pct_plus": "% spending 30%+",
         "pct_households_renting": "% of households renting",
+    },
+    DATASET_RENT_OUTLOOK: {
+        "scenario": "Scenario",
+        "projected_rent_2br": "2-bed rent, 2030",
+        "income_needed": "Income needed",
+        "pct_renters_priced_out": "% of renters priced out",
     },
 }
 COLUMN_FIELDS = {"id", "column_name", "verbose_name", "type", "is_dttm", "filterable", "groupby",
@@ -602,6 +609,85 @@ CHARTS = {
             "average_rent_2br",
         ),
     },
+    # --- 8. Windsor 2030: rent trend (Story 4) x renter incomes (Story 1) -----
+    "outlook-kpi": kpi(
+        "Story 5: Windsor Renters Who Could Be Priced Out of a 2-Bedroom by 2030",
+        "Share of Windsor renter households who could not afford the average 2-bedroom in 2030 under "
+        "the 30% rule, if rents keep rising at their 2020-2025 pace and incomes grow 3% a year. A "
+        "scenario, not a forecast. warehouse.v_story5_rent_outlook.",
+        DATASET_RENT_OUTLOOK,
+        "MAX(pct_renters_priced_out) / 100.0",
+        "Could be priced out by 2030",
+        ".0%",
+        "of Windsor renters could not afford an average 2-bedroom by 2030 (rents at the 2020-2025 pace, incomes +3% a year)",
+        [sql_filter("is_windsor AND is_central_scenario AND year = 2030")],
+    ),
+    "outlook-windsor": {
+        "slice_name": "Story 5: Windsor Renters Priced Out of a 2-Bedroom, 2025 to 2030, by Scenario",
+        "description": (
+            "Share of Windsor renter households who could not afford the average 2-bedroom (apartments "
+            "and row houses) each year to 2030 under the 30% rule. Rents rise at Windsor's own "
+            "2020-2025 pace (6.9% a year) or 2015-2020 pace (4.8%); 2020 Census incomes grow an assumed "
+            "2%, 3% or 4% a year. warehouse.v_story5_rent_outlook."
+        ),
+        "dataset_id": DATASET_RENT_OUTLOOK,
+        "viz_type": "echarts_timeseries_line",
+        "params": {
+            "x_axis": {"expressionType": "SQL", "sqlExpression": "CAST(year AS TEXT)", "label": "Year"},
+            "metrics": [{"expressionType": "SQL", "sqlExpression": "MAX(pct_renters_priced_out) / 100.0",
+                         "label": "Renters priced out"}],
+            "groupby": ["scenario"],
+            "adhoc_filters": [sql_filter(
+                "is_windsor AND (rent_pace = '2020-2025 pace' OR yearly_income_growth_pct = 3)"
+            )],
+            "row_limit": 200,
+            "color_scheme": COLOR_SCHEME,
+            "show_legend": True,
+            "legendType": "plain",  # four long names: wrap rather than page
+            "legendOrientation": "bottom",  # wrapped on top it covered the axis
+            "rich_tooltip": True,
+            "markerEnabled": True,
+            "markerSize": 6,
+            "seriesType": "line",
+            "y_axis_format": ".0%",
+            "x_axis_title": "",
+            "y_axis_title": "",
+            "truncateYAxis": True,
+            "y_axis_bounds": [0.4, 0.75],
+        },
+    },
+    "outlook-cities": {
+        "slice_name": "Story 5: Renters Priced Out of a 2-Bedroom in 2030, by City",
+        "description": (
+            "Share of renter households in each city who could not afford its average 2-bedroom in "
+            "2030 under the 30% rule, if each city's rent keeps rising at its own 2020-2025 pace and "
+            "incomes grow 3% a year. warehouse.v_story5_rent_outlook."
+        ),
+        "dataset_id": DATASET_RENT_OUTLOOK,
+        "viz_type": "echarts_timeseries_bar",
+        "params": {
+            **city_bar_params("MAX(pct_renters_priced_out) / 100.0", "Renters priced out, 2030", ".0%", upper=1),
+            "adhoc_filters": [sql_filter("is_central_scenario AND year = 2030")],
+        },
+    },
+    "outlook-scenarios": {
+        "slice_name": "Story 5: Windsor in 2030 under Each Scenario",
+        "description": (
+            "Windsor's projected 2030 2-bedroom rent, the income it needs under the 30% rule and the "
+            "share of renter households who could not afford it, for each rent pace and income growth. "
+            "warehouse.v_story5_rent_outlook."
+        ),
+        "dataset_id": DATASET_RENT_OUTLOOK,
+        "viz_type": "table",
+        "params": {
+            **table_params(
+                ["scenario", "projected_rent_2br", "income_needed", "pct_renters_priced_out"],
+                {"projected_rent_2br": "$,.0f", "income_needed": "$,.0f", "pct_renters_priced_out": ",.1f"},
+                "pct_renters_priced_out",
+            ),
+            "adhoc_filters": [sql_filter("is_windsor AND year = 2030")],
+        },
+    },
     # --- 6. Census renters by age x Story 1 x Story 4 ------------------------
     "young-vs-all": {
         "slice_name": "Story 5: Young Renters vs All Renters Spending 30%+ on Shelter, by City",
@@ -754,6 +840,21 @@ of renters spending 30%+. The differences come from incomes, not vacancy (tab 2)
 *Units are counted in 2025 and households in 2021, and some units are vacant, so the share
 outside purpose-built rentals is an estimate.*
 """,
+    "outlook": """**What it shows.** If Windsor's 2-bedroom rent keeps rising at its 2020-2025 pace
+(6.9% a year) it reaches about **$2,030 a month by 2030**, which needs a household income of
+about **$81,000**. With renter incomes growing 3% a year, about **63% of renter households**
+could not afford it, up from about **52%** in 2025. Across the scenarios, 2030 lands between
+**51%** (rents at the slower 2015-2020 pace, incomes +4%) and **68%** (2020-2025 pace, incomes +2%).
+Just to stop the share rising, incomes would need to grow as fast as rents: **about 6.9% a year**.
+
+**Against the other cities**, Windsor is still cheap, but its share priced out rises almost as
+fast as Kitchener-Cambridge-Waterloo's (+11 points), because its rents rose fastest after 2020
+and its renters earn among the least.
+
+*Scenarios, not forecasts. No year-by-year renter income exists, so income growth is assumed
+(2%: keeps pace with inflation; 4%: strong wage growth). The 2025 share (52%) assumes incomes
+grew since 2020, so it is lower than tab 1's 61%, which uses 2020 incomes as they were.*
+""",
     "young": """**What it shows.** In Windsor, **46.5%** of renter households led by someone aged 15-24
 (2,680 households) spend 30% or more of their income on shelter, against **34.8%** of all
 renters: the most burdened age group, ahead of renters aged 85 and over (44.9%). Young renters
@@ -796,6 +897,10 @@ LAYOUT = [
     ("header", "HEADER-stock", "7. How big is the rental market? (Story 2 + Story 4 + Census renters)"),
     ("chart-row", "ROW-stock", [("rental-stock", 6, 58)], ("MARKDOWN-stock", NOTES["stock"], 6, 58)),
     ("chart-row", "ROW-profile", [("city-profile", 12, 44)]),
+    ("header", "HEADER-outlook", "8. Windsor 2030: how many renters could be priced out? (Story 1 + Story 2 + Story 4)"),
+    ("chart-row", "ROW-outlook", [("outlook-kpi", 3, 50), ("outlook-windsor", 9, 50)]),
+    ("chart-row", "ROW-outlook-cities", [("outlook-cities", 6, 52)], ("MARKDOWN-outlook", NOTES["outlook"], 6, 52)),
+    ("chart-row", "ROW-outlook-table", [("outlook-scenarios", 12, 38)]),
 ]
 
 # Card titles shown on this dashboard: the chart names keep their "Story 5:"
@@ -805,6 +910,7 @@ TITLE_OVERRIDES = {
     "kpi-rent-income": "2-bed rent / renter income",
     "kpi-completions": "Completed 2023-2025",
     "kpi-build-rate": "Yearly build rate",
+    "outlook-kpi": "Priced out by 2030",
     "demand-ratio": "Share of needed homes completed, 2016-2021",
 }
 
@@ -864,6 +970,7 @@ TABS = [
     ("TAB-demand", "5. Population growth", ["HEADER-demand", "ROW-demand", "ROW-demand-built"]),
     ("TAB-young", "6. Young renters", ["HEADER-young", "ROW-young", "ROW-young-age", "ROW-young-note"]),
     ("TAB-stock", "7. Rental market size", ["HEADER-stock", "ROW-stock", "ROW-profile"]),
+    ("TAB-outlook", "8. Windsor 2030", ["HEADER-outlook", "ROW-outlook", "ROW-outlook-cities", "ROW-outlook-table"]),
 ]
 
 

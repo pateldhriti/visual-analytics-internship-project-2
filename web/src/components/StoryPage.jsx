@@ -136,18 +136,7 @@ export default function StoryPage({
           Home.jsx's full-bleed hero banner). */}
       {highlights && <div className="story-highlights-band">{highlights}</div>}
 
-      <motion.div {...reveal(fadeIn)} className="story-dashboard-band" id="dashboard">
-        <div className="story-dashboard-slot">
-          {dashboard ?? (
-            <p className={isHorizon ? "horizon-note" : "placeholder-note"}>
-              {isHorizon
-                ? "This story's dashboard is still being built -- check back once the combined view is live."
-                : "Embedded dashboard goes here — not yet built."}
-            </p>
-          )}
-        </div>
-      </motion.div>
-
+      {/* The story's text comes before the dashboard: read first, then explore. */}
       <PageContainer>
         {narrative?.length > 0 ? (
           <motion.div {...reveal(staggerParent)} className="story-narrative">
@@ -164,7 +153,21 @@ export default function StoryPage({
               : "Full narrative write-up goes here — not yet drafted."}
           </motion.p>
         )}
+      </PageContainer>
 
+      <motion.div {...reveal(fadeIn)} className="story-dashboard-band" id="dashboard">
+        <div className="story-dashboard-slot">
+          {dashboard ?? (
+            <p className={isHorizon ? "horizon-note" : "placeholder-note"}>
+              {isHorizon
+                ? "This story's dashboard is still being built -- check back once the combined view is live."
+                : "Embedded dashboard goes here — not yet built."}
+            </p>
+          )}
+        </div>
+      </motion.div>
+
+      <PageContainer>
         {connections?.length > 0 && (
           <motion.section
             {...reveal(fadeUp)}

@@ -202,3 +202,138 @@ FROM warehouse.v_story1_burden_severity
 UNION ALL
 SELECT tenure, '100% or more' AS category, unaccounted_pct_of_burdened AS pct_of_burdened
 FROM warehouse.v_story1_burden_severity;
+
+
+-- ---------------------------------------------------------------------------
+-- Story 1 sections "Affordability gap", "Who faces the greatest burden?",
+-- "How severe?" and "Data validation". Same filters as the views above:
+-- all housing suitability and dwelling conditions, households with a
+-- shelter-cost ratio (spending under 30% plus spending 30% or more; the
+-- "not applicable" households have none).
+-- ---------------------------------------------------------------------------
+
+-- v_story1_affordability_gap: how much greater the renter burden is than the
+-- owner burden, as a difference in percentage points and as a ratio.
+CREATE OR REPLACE VIEW warehouse.v_story1_affordability_gap AS
+WITH rates AS (
+    SELECT
+        100.0 * MAX(burdened_households) FILTER (WHERE tenure = 'Renter')
+              / MAX(total_households) FILTER (WHERE tenure = 'Renter') AS renter_rate,
+        100.0 * MAX(burdened_households) FILTER (WHERE tenure = 'Owner')
+              / MAX(total_households) FILTER (WHERE tenure = 'Owner') AS owner_rate
+    FROM warehouse.v_story1_burden_by_tenure
+)
+SELECT
+    ROUND(renter_rate, 1) AS renter_burden_rate_pct,
+    ROUND(owner_rate, 1) AS owner_burden_rate_pct,
+    ROUND(renter_rate - owner_rate, 1) AS renter_owner_gap_pts,
+    ROUND(renter_rate / owner_rate, 2) AS renter_owner_ratio
+FROM rates;
+
+-- v_story1_burden_by_income_tenure: burden rate by income bracket, for
+-- renters and owners separately.
+CREATE OR REPLACE VIEW warehouse.v_story1_burden_by_income_tenure AS
+SELECT
+    ib.band_label AS income_band,
+    ib.member_id AS income_band_sort_order,
+    t.tenure_name AS tenure,
+    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
+        AS burdened_households,
+    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                                                         'Spending 30% or more of income on shelter costs'))
+        AS total_households,
+    ROUND(100.0
+        * SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
+        / NULLIF(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN (
+              'Spending less than 30% of income on shelter costs',
+              'Spending 30% or more of income on shelter costs')), 0), 1) AS burden_rate_pct
+FROM warehouse.fact_shelter_cost f
+JOIN warehouse.dim_tenure t ON t.tenure_key = f.tenure_key
+JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
+WHERE f.housing_suitability = 'Total - Housing suitability'
+  AND f.dwelling_condition = 'Total - Dwelling condition'
+  AND f.statistic = 'Number of private households'
+  AND f.household_type_key = 1
+  AND ib.scheme = 'statcan_bracket' AND ib.member_id BETWEEN 2 AND 12
+  AND t.tenure_name IN ('Renter', 'Owner')
+GROUP BY ib.band_label, ib.member_id, t.tenure_name;
+
+-- v_story1_burden_by_household_type_tenure: burden rate by household type,
+-- for renters and owners separately (same household-type tree as
+-- v_story1_burden_by_household_type).
+CREATE OR REPLACE VIEW warehouse.v_story1_burden_by_household_type_tenure AS
+SELECT
+    ht.household_type_key,
+    ht.household_type_label AS household_type,
+    ht.parent_member_id,
+    t.tenure_name AS tenure,
+    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
+        AS burdened_households,
+    SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN ('Spending less than 30% of income on shelter costs',
+                                                         'Spending 30% or more of income on shelter costs'))
+        AS total_households,
+    ROUND(100.0
+        * SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs')
+        / NULLIF(SUM(f.value) FILTER (WHERE f.shelter_cost_ratio IN (
+              'Spending less than 30% of income on shelter costs',
+              'Spending 30% or more of income on shelter costs')), 0), 1) AS burden_rate_pct
+FROM warehouse.fact_shelter_cost f
+JOIN warehouse.dim_tenure t ON t.tenure_key = f.tenure_key
+JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
+JOIN warehouse.dim_household_type ht ON ht.household_type_key = f.household_type_key
+WHERE f.housing_suitability = 'Total - Housing suitability'
+  AND f.dwelling_condition = 'Total - Dwelling condition'
+  AND f.statistic = 'Number of private households'
+  AND ib.scheme = 'statcan_bracket' AND ib.band_label = 'Total - Total income of household'
+  AND t.tenure_name IN ('Renter', 'Owner')
+GROUP BY ht.household_type_key, ht.household_type_label, ht.parent_member_id, t.tenure_name;
+
+-- v_story1_burden_distribution: every household of each tenure split into
+-- spending under 30%, 30% to under 100%, and 100% or more (the last is the
+-- 30%-or-more total minus the 30%-to-under-100% band, which StatCan does
+-- not publish as its own row). Shares add to 100% per tenure.
+CREATE OR REPLACE VIEW warehouse.v_story1_burden_distribution AS
+WITH counts AS (
+    SELECT
+        t.tenure_name AS tenure,
+        SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending less than 30% of income on shelter costs') AS under_30,
+        SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = '30% to less than 100%') AS from_30_to_99,
+        SUM(f.value) FILTER (WHERE f.shelter_cost_ratio = 'Spending 30% or more of income on shelter costs') AS over_30
+    FROM warehouse.fact_shelter_cost f
+    JOIN warehouse.dim_tenure t ON t.tenure_key = f.tenure_key
+    JOIN warehouse.dim_income_band ib ON ib.income_band_key = f.income_band_key
+    WHERE f.housing_suitability = 'Total - Housing suitability'
+      AND f.dwelling_condition = 'Total - Dwelling condition'
+      AND f.statistic = 'Number of private households'
+      AND f.household_type_key = 1
+      AND ib.scheme = 'statcan_bracket' AND ib.band_label = 'Total - Total income of household'
+      AND t.tenure_name IN ('Renter', 'Owner')
+    GROUP BY t.tenure_name
+)
+SELECT tenure, category, category_sort_order, households,
+       ROUND(100.0 * households / (under_30 + over_30), 1) AS pct_of_households
+FROM counts
+CROSS JOIN LATERAL (VALUES
+    ('Under 30%', 1, under_30),
+    ('30% to under 100%', 2, from_30_to_99),
+    ('100% or more', 3, over_30 - from_30_to_99)
+) AS c (category, category_sort_order, households);
+
+-- v_story1_validation: our burden rates (from 98-10-0252-01) next to the
+-- rates Statistics Canada publishes in the Census Profile (98-401-X2021002,
+-- characteristics 1492 tenant and 1484 owner) for Windsor CMA.
+CREATE OR REPLACE VIEW warehouse.v_story1_validation AS
+WITH published AS (
+    SELECT
+        CASE characteristic_id WHEN 1492 THEN 'Renter' WHEN 1484 THEN 'Owner' END AS tenure,
+        value AS published_rate_pct
+    FROM warehouse.fact_census_profile
+    WHERE characteristic_id IN (1484, 1492) AND measure_type = 'rate' AND sex = 'total'
+)
+SELECT
+    b.tenure,
+    b.burden_rate_pct AS calculated_rate_pct,
+    p.published_rate_pct,
+    ROUND(b.burden_rate_pct - p.published_rate_pct, 1) AS difference_pts
+FROM warehouse.v_story1_burden_by_tenure b
+JOIN published p ON p.tenure = b.tenure;

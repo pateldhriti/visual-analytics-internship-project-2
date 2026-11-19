@@ -26,7 +26,7 @@ Row counts are from the local warehouse, checked again on 13 November 2026 after
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
 | `fact_peer_cma_context` | warehouse | 1,054 | [Section 2.4](#24-fact_peer_cma_context) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
-| `v_*` views (37) | warehouse | — | [Section 4](#4-views) |
+| `v_*` views (43) | warehouse | — | [Section 4](#4-views) |
 | `windsor_shelter_cost_long` | public (warehouse on `whva`) | 90,720 | [Section 5](#5-story-1-source-tables) |
 | `windsor_shelter_cost` | public | 30,240 | [Section 5](#5-story-1-source-tables) |
 | `raw.*` source tables | raw | ~5 million | Exact copies of `data/raw` files; columns are the source's own (`docs/data_architecture.md`) |
@@ -201,6 +201,11 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story1_burden_by_household_type` | household type: burden rate % | Story 1 |
 | `v_story1_burden_severity` | tenure: burdened split into 30%–<100% and 100%+ | Story 1 |
 | `v_story1_burden_severity_breakdown` | tenure × band (long form of the above) | Story 1 |
+| `v_story1_affordability_gap` | one row: renter and owner burden rates, the gap in percentage points and the renter/owner ratio | Story 1 "Affordability Gap" tiles |
+| `v_story1_burden_by_income_tenure` | income bracket × tenure (renter, owner): burden rate % | Story 1 "By Income" |
+| `v_story1_burden_by_household_type_tenure` | household type × tenure: burden rate % | Story 1 "Household Type and Severity" |
+| `v_story1_burden_distribution` | tenure × band (under 30%, 30% to under 100%, 100% or more): households and % of the tenure's households (adds to 100%) | Story 1 "Household Type and Severity" |
+| `v_story1_validation` | tenure: our burden rate, the Census Profile's published rate (98-401-X2021002 items 1492, 1484), difference | Story 1 "Data Validation" |
 | `v_story2_rent_yoy_change` | bedroom type × survey year: average rent and change from the year before ($, %), `period_date` (1 October, for trendline tiles) | Story 2 |
 | `v_story2_rent_growth` | bedroom type: rent in the first vs last survey year, growth ($, %) | Story 2 |
 | `v_story2_vacancy_trend` | dwelling type × bedroom type × survey year: vacancy rate, `period_date` (1 October) | Story 2 |
@@ -232,6 +237,7 @@ Each story's measures are defined once as a view (`sql/*.sql`, applied by `etl/a
 | `v_story5_supply_vs_demand` | city: 2016–2021 population growth, homes needed, homes completed 2016–2020, built per home needed | Story 5 (Story 3 + Census population) |
 | `v_story5_renter_burden_by_age` | city × age group: renter households, share spending 30%+ on shelter, the all-renter share and the gap | Story 5 (Census renters by age + Story 1 + Story 4) |
 | `v_story5_rental_stock` | city: purpose-built rental units (Oct-24, Oct-25), renter households, units per 100 renters | Story 5 (CMHC rental units + Census renters) |
+| `v_story5_rent_outlook` | city × rent pace (2015-2020, 2020-2025) × income growth (2%, 3%, 4%) × year 2025-2030: projected 2-bedroom rent, income needed, renter households who could not afford it (%), central-scenario flag | Story 5 "8. Windsor 2030"; Story 5 page |
 | `v_story5_city_profile` | city: rent, vacancy, units per 100 renters, renter income, rent share, burden (all and 15–24), starts per 1,000, share of needed homes built | Story 5 (all stories) |
 
 ## 5. Story 1 source tables

@@ -86,6 +86,51 @@ VIEWS = {
             "description": "Share of each tenure's burdened households in each band: 30% to under 100% of income on shelter, or 100% or more (derived).",
         },
     ],
+    "v_story1_affordability_gap": [
+        {
+            "metric_name": "renter_owner_gap_pts",
+            "expression": "MAX(renter_owner_gap_pts)",
+            "verbose_name": "Renter-Owner Burden Gap (points)",
+            "metric_type": "max",
+            "description": "Renter burden rate minus owner burden rate, in percentage points. One row.",
+        },
+    ],
+    "v_story1_burden_by_income_tenure": [
+        {
+            "metric_name": "burden_rate_income_tenure",
+            "expression": "MAX(burden_rate_pct)",
+            "verbose_name": "Burden Rate (%)",
+            "metric_type": "max",
+            "description": "Share of households spending 30%+ of income on shelter. One row per income band and tenure.",
+        },
+    ],
+    "v_story1_burden_by_household_type_tenure": [
+        {
+            "metric_name": "burden_rate_household_tenure",
+            "expression": "MAX(burden_rate_pct)",
+            "verbose_name": "Burden Rate (%)",
+            "metric_type": "max",
+            "description": "Share of households spending 30%+ of income on shelter. One row per household type and tenure.",
+        },
+    ],
+    "v_story1_burden_distribution": [
+        {
+            "metric_name": "pct_of_households",
+            "expression": "MAX(pct_of_households)",
+            "verbose_name": "Share of Households (%)",
+            "metric_type": "max",
+            "description": "Share of each tenure's households spending under 30%, 30% to under 100%, or 100% or more of income on shelter.",
+        },
+    ],
+    "v_story1_validation": [
+        {
+            "metric_name": "difference_pts",
+            "expression": "MAX(difference_pts)",
+            "verbose_name": "Difference (points)",
+            "metric_type": "max",
+            "description": "Calculated burden rate minus the Census Profile's published rate. One row per tenure.",
+        },
+    ],
     "v_story2_rent_yoy_change": [
         {
             "metric_name": "avg_rent",
@@ -349,6 +394,15 @@ VIEWS = {
             "verbose_name": "Value",
             "metric_type": "avg",
             "description": "Windsor CMA rent, vacancy, rental stock or turnover each October (filter to one metric).",
+        },
+    ],
+    "v_story5_rent_outlook": [
+        {
+            "metric_name": "pct_renters_priced_out",
+            "expression": "MAX(pct_renters_priced_out)",
+            "verbose_name": "Renters Priced Out of a 2-Bedroom (%)",
+            "metric_type": "max",
+            "description": "Share of renter households who could not afford the projected 2-bedroom rent under the 30% rule. One row per city, rent pace, income growth and year: filter to one scenario.",
         },
     ],
     "v_story5_windsor_vs_peers": [

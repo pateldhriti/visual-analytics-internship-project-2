@@ -21,6 +21,14 @@ def _data():
         "supply": [{"city": c} for c in CITIES],
         "rentHistory": {"years": [2015, 2016], "series": [{"city": c, "rent": [900, 950]} for c in CITIES]},
         "startsMix": [{"type": t} for t in ("Total", "Singles", "Semis", "Row", "Apartment and Other")],
+        "outlook": {
+            "years": [2025, 2030],
+            "central": [52.0, 63.1],
+            "low": [49.1, 51.2],
+            "high": [54.7, 68.4],
+            "cities": [{"city": c} for c in CITIES],
+            "scenarios": [{"scenario": str(i)} for i in range(6)],
+        },
     }
 
 
@@ -46,6 +54,13 @@ def test_a_missing_year_fails():
     data = copy.deepcopy(_data())
     data["rentHistory"]["series"][2]["rent"][1] = None
     with pytest.raises(ValueError, match="Hamilton"):
+        check(data)
+
+
+def test_an_outlook_central_case_outside_its_range_fails():
+    data = copy.deepcopy(_data())
+    data["outlook"]["central"][1] = 70.0
+    with pytest.raises(ValueError, match="inside the scenario range"):
         check(data)
 
 
