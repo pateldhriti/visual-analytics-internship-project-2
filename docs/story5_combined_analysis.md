@@ -156,6 +156,24 @@ Windsor has about **44 purpose-built rental units for every 100 renter household
 
 The dashboard ends with one table that puts every measure for the five cities side by side: rent, vacancy, rental units per 100 renters, median renter income, rent as a share of income, renters and young renters spending 30%+, starts per 1,000 households, and the share of needed homes built.
 
+### 8. Windsor 2030: how many renters could be priced out? (Story 1 + Story 2 + Story 4)
+
+The combined question with a simple projection. Each city's October 2-bedroom rent (apartments and row houses, StatCan 34-10-0133-01) is grown from 2025 to 2030 at that city's own compound yearly rise, either the 2015-2020 pace or the faster 2020-2025 pace. Renter incomes (2021 Census, for 2020, by $10,000 band) are grown by an assumed 2%, 3% or 4% a year, because no year-by-year renter income exists. A household is priced out when the rent is more than 30% of its income (income below 40 times the monthly rent), counted the same way as section 1 (`warehouse.v_story5_rent_outlook`).
+
+| Windsor, 2030 | Rent | Income needed | Renters priced out |
+|---|---|---|---|
+| Rents at the 2020-2025 pace (6.9% a year), incomes +3% (central) | $2,028 | $81,133 | **63.1%** |
+| Rents at the 2020-2025 pace, incomes +2% | $2,028 | $81,133 | 68.4% |
+| Rents at the 2020-2025 pace, incomes +4% | $2,028 | $81,133 | 57.2% |
+| Rents at the 2015-2020 pace (4.8% a year), incomes +3% | $1,830 | $73,202 | 56.8% |
+| Rents at the 2015-2020 pace, incomes +4% | $1,830 | $73,202 | 51.2% |
+
+In the central case the share of Windsor renters who could not afford an average 2-bedroom rises from **52.0% in 2025 to 63.1% in 2030**, +11 points. Across all six scenarios 2030 lands between 51% and 68%. Just to stop the share rising, incomes would need to grow as fast as rents: about **6.9% a year**. Among the five cities, only Kitchener-Cambridge-Waterloo's share rises faster (+11.7 points; Hamilton +5.5, St. Catharines-Niagara +8.1, London +9.1).
+
+The 2025 share (52%) assumes incomes grew since 2020, so it is lower than section 1's 61%, which uses 2020 incomes as they were. Check: with no income growth the method gives exactly section 1's 60.7% and the same 45,605 renter households.
+
+*Scenarios, not forecasts: every household's income is assumed to grow at the same rate, the renter population and its make-up stay as in 2021, and the 2020-2025 pace includes the post-pandemic jump, so the truth is likely between the two rent paces. "Priced out" means unable to afford the average 2-bedroom under the 30% rule, not losing a home.*
+
 ### Together
 
 - **Renters:** Windsor's low rents reflect low renter incomes, so most renters still cannot afford an average 2-bedroom.
@@ -163,6 +181,7 @@ The dashboard ends with one table that puts every measure for the five cities si
 - **Building:** Windsor builds more slowly than any comparison city and, from 2016 to 2021, finished only 0.59 homes for every home its population growth needed. New supply is unlikely to keep easing rents without more construction.
 - **Young renters:** nearly half of renter households aged 15–24 spend 30% or more on shelter, the highest of any age group, although less than in the comparison cities.
 - **Rental market:** purpose-built rentals house at most about half of Windsor's renters, so the rest of the market is outside CMHC's survey.
+- **2030:** if rents keep rising as in 2020-2025 and incomes grow 3% a year, the share of Windsor renters who cannot afford an average 2-bedroom rises by about 11 points by 2030; only incomes growing as fast as rents (6.9% a year) would hold it steady.
 
 ## Dashboard
 

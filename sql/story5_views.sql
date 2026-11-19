@@ -489,3 +489,86 @@ SELECT
 FROM w CROSS JOIN a
 UNION ALL
 SELECT 'Average of the 4 comparison cities', 100, 100, 100, 100, 100, 100, 100, 100;
+
+
+-- ---------------------------------------------------------------------------
+-- v_story5_rent_outlook (Story 5: "Windsor 2030: how many renters could be
+-- priced out?")
+-- Projects each city's October 2-bedroom rent (apartments and row houses,
+-- StatCan 34-10-0133-01) from 2025 to 2030 at that city's own compound
+-- yearly rise of 2015-2020 (the slower pace) or of 2020-2025 (the faster
+-- pace), and counts the renter households who could not afford it under the
+-- 30% rule (yearly income below 40 x the monthly rent), the same way as
+-- v_story5_peer_affordability.
+--
+-- Incomes are the 2021 Census renter incomes (for 2020), by $10,000 band;
+-- no year-by-year renter income exists, so they are grown by an assumed
+-- 2%, 3% or 4% a year. Comparing a household's grown income with the rent
+-- is the same as comparing its 2020 income with the rent's threshold
+-- shrunk by that growth, which is what the band count uses. Every household
+-- is assumed to move with the band's growth, and the share renting stays as
+-- in 2021: these are scenarios, not forecasts.
+-- One row per city x rent pace x income growth x year (2025-2030).
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW warehouse.v_story5_rent_outlook AS
+WITH pace AS (
+    SELECT city, city_short, is_windsor, rent_2025,
+           '2015-2020 pace' AS rent_pace,
+           POWER(rent_2020 / rent_2015, 1.0 / 5) - 1 AS yearly_rise
+    FROM warehouse.v_story4_period_comparison
+    UNION ALL
+    SELECT city, city_short, is_windsor, rent_2025,
+           '2020-2025 pace',
+           POWER(rent_2025 / rent_2020, 1.0 / 5) - 1
+    FROM warehouse.v_story4_period_comparison
+),
+scenario AS (
+    SELECT p.*, g.income_growth, y.year,
+           p.rent_2025 * POWER(1 + p.yearly_rise, y.year - 2025) AS projected_rent,
+           POWER(1 + g.income_growth, y.year - 2020) AS income_factor
+    FROM pace p
+    CROSS JOIN (VALUES (0.02), (0.03), (0.04)) AS g (income_growth)
+    CROSS JOIN generate_series(2025, 2030) AS y (year)
+),
+bands AS (
+    SELECT c.cma_name, b.band_lower, b.band_upper, c.value AS households
+    FROM warehouse.fact_peer_cma_context c
+    JOIN warehouse.v_story5_income_bands b ON b.band_label = c.category
+    WHERE c.period_year = 2021 AND c.indicator = 'households' AND c.tenure = 'Renter'
+),
+counted AS (
+    SELECT
+        s.city, s.city_short, s.is_windsor, s.rent_pace, s.yearly_rise, s.income_growth, s.year,
+        s.projected_rent,
+        s.projected_rent * 12 / 0.30 AS income_needed,
+        -- the same threshold in 2020 dollars, for counting the 2020 bands
+        s.projected_rent * 12 / 0.30 / s.income_factor AS threshold_2020,
+        SUM(b.households) AS renter_households,
+        SUM(b.households * CASE
+            WHEN b.band_upper IS NOT NULL AND b.band_upper <= s.projected_rent * 12 / 0.30 / s.income_factor THEN 1
+            WHEN b.band_lower >= s.projected_rent * 12 / 0.30 / s.income_factor THEN 0
+            ELSE (s.projected_rent * 12 / 0.30 / s.income_factor - b.band_lower) / (b.band_upper - b.band_lower)
+        END) AS renters_priced_out
+    FROM scenario s
+    JOIN bands b ON b.cma_name = s.city
+    GROUP BY s.city, s.city_short, s.is_windsor, s.rent_pace, s.yearly_rise, s.income_growth, s.year,
+             s.projected_rent, s.income_factor
+)
+SELECT
+    city,
+    city_short,
+    is_windsor,
+    rent_pace,
+    ROUND(100 * yearly_rise, 1) AS yearly_rent_rise_pct,
+    ROUND(100 * income_growth) AS yearly_income_growth_pct,
+    -- scenario name for charts, e.g. "Rents 2020-2025 pace, incomes +3%"
+    'Rents ' || rent_pace || ', incomes +' || ROUND(100 * income_growth) || '%' AS scenario,
+    (rent_pace = '2020-2025 pace' AND income_growth = 0.03) AS is_central_scenario,
+    year,
+    MAKE_DATE(year, 10, 1) AS period_date,
+    ROUND(projected_rent) AS projected_rent_2br,
+    ROUND(income_needed) AS income_needed,
+    renter_households,
+    ROUND(renters_priced_out) AS renters_priced_out,
+    ROUND(100.0 * renters_priced_out / renter_households, 1) AS pct_renters_priced_out
+FROM counted;

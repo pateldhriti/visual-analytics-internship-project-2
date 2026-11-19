@@ -519,6 +519,180 @@ function RentHistoryLine() {
   }
 }
 
+// --- 2030 outlook: Windsor renters who could be priced out -----------------
+
+// Windsor's central scenario as a line, with the range of all six scenarios
+// (rent pace x income growth) as a band behind it.
+function OutlookChart() {
+  const o = data.outlook;
+  const [ref, width] = useWidth();
+  const tooltip = useTooltip(ref);
+  const [hoverYear, setHoverYear] = useState(null);
+  const narrow = width < 520;
+  const height = 320;
+  const m = { top: 24, right: narrow ? 64 : 150, bottom: 34, left: 48 };
+  const first = o.years[0];
+  const lastYear = o.years[o.years.length - 1];
+  const x = scale(first, lastYear, m.left, width - m.right);
+  const y = scale(40, 75, height - m.bottom, m.top);
+  const line = o.central.map((v, i) => `${i ? "L" : "M"}${x(o.years[i])},${y(v)}`).join("");
+  const band =
+    o.high.map((v, i) => `${i ? "L" : "M"}${x(o.years[i])},${y(v)}`).join("") +
+    [...o.low]
+      .reverse()
+      .map((v, i) => `L${x(o.years[o.years.length - 1 - i])},${y(v)}`)
+      .join("") +
+    "Z";
+  const last = o.years.length - 1;
+  const colW = x(o.years[1]) - x(o.years[0]) || 1;
+
+  return (
+    <div className="hl-chart hl-chart--wide" ref={ref}>
+      {width > 0 && (
+        <svg
+          width={width}
+          height={height}
+          role="img"
+          aria-label={`Share of Windsor renter households who could not afford an average 2-bedroom, ${first} to ${lastYear}: ${pct(o.central[0], 1)} rising to ${pct(o.central[last], 1)} in the central scenario, between ${pct(o.low[last], 1)} and ${pct(o.high[last], 1)} across all scenarios in ${lastYear}`}
+        >
+          {[40, 50, 60, 70].map((v) => (
+            <g key={v}>
+              <line x1={m.left} x2={width - m.right} y1={y(v)} y2={y(v)} className="hl-grid" />
+              <text
+                x={m.left - 8}
+                y={y(v)}
+                className="hl-axis"
+                textAnchor="end"
+                dominantBaseline="middle"
+              >
+                {v}%
+              </text>
+            </g>
+          ))}
+          {o.years.map((yr) => (
+            <text key={yr} x={x(yr)} y={height - 10} className="hl-axis" textAnchor="middle">
+              {yr}
+            </text>
+          ))}
+          <path d={band} className="hl-band" />
+          {hoverYear !== null && (
+            <line
+              x1={x(hoverYear)}
+              x2={x(hoverYear)}
+              y1={m.top}
+              y2={height - m.bottom}
+              className="hl-crosshair"
+            />
+          )}
+          <motion.path
+            d={line}
+            className="hl-line hl-line--windsor"
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.4, ease: "easeInOut" }}
+          />
+          {o.central.map((v, i) => (
+            <circle
+              key={o.years[i]}
+              cx={x(o.years[i])}
+              cy={y(v)}
+              r={hoverYear === o.years[i] ? 6 : 3.5}
+              className="hl-fill-windsor hl-point"
+            />
+          ))}
+          <text
+            x={width - m.right + 8}
+            y={y(o.central[last])}
+            dominantBaseline="middle"
+            className="hl-label hl-label--windsor"
+          >
+            {pct(o.central[last])}
+            {narrow ? "" : " central case"}
+          </text>
+          {!narrow && (
+            <>
+              <text
+                x={width - m.right + 8}
+                y={y(o.high[last])}
+                dominantBaseline="middle"
+                className="hl-label"
+              >
+                {pct(o.high[last])} worst case
+              </text>
+              <text
+                x={width - m.right + 8}
+                y={y(o.low[last])}
+                dominantBaseline="middle"
+                className="hl-label"
+              >
+                {pct(o.low[last])} best case
+              </text>
+            </>
+          )}
+          {o.years.map((yr, i) => (
+            <rect
+              key={yr}
+              x={x(yr) - colW / 2}
+              y={m.top}
+              width={colW}
+              height={height - m.top - m.bottom}
+              className="hl-hit"
+              aria-label={`${yr}: ${pct(o.central[i], 1)} in the central case, ${pct(o.low[i], 1)} to ${pct(o.high[i], 1)} across scenarios; average 2-bedroom ${fmtMoney(o.rent[i])}`}
+              tabIndex={0}
+              role="img"
+              onMouseEnter={(e) => showYear(e.currentTarget, i)}
+              onFocus={(e) => showYear(e.currentTarget, i)}
+              onMouseLeave={hideYear}
+              onBlur={hideYear}
+            />
+          ))}
+        </svg>
+      )}
+      <ul className="hl-legend">
+        <li>
+          <span className="hl-swatch hl-swatch--line hl-fill-windsor" /> Central case: rents rise as
+          in 2020-2025, incomes +3% a year
+        </li>
+        <li>
+          <span className="hl-swatch hl-swatch--band" /> Range across all six scenarios
+        </li>
+      </ul>
+      {tooltip.node}
+    </div>
+  );
+
+  function showYear(target, i) {
+    setHoverYear(o.years[i]);
+    tooltip.show(
+      target,
+      <>
+        <strong>October {o.years[i]}</strong>
+        <span className="hl-tip-row hl-tip-row--windsor">
+          <span>Central case</span>
+          <span>{pct(o.central[i], 1)}</span>
+        </span>
+        <span className="hl-tip-row">
+          <span>All scenarios</span>
+          <span>
+            {pct(o.low[i], 1)} to {pct(o.high[i], 1)}
+          </span>
+        </span>
+        <span className="hl-tip-row">
+          <span>2-bedroom rent (central)</span>
+          <span>{fmtMoney(o.rent[i])}</span>
+        </span>
+      </>,
+      { y: m.top + 10 }
+    );
+  }
+
+  function hideYear() {
+    setHoverYear(null);
+    tooltip.hide();
+  }
+}
+
 // --- 4. houses: homes built per home needed -----------------------------------
 
 function HouseIcon({ x, y, size, fill, className }) {
@@ -909,6 +1083,56 @@ function buildFindings() {
         </p>
       ),
     },
+    outlook: (() => {
+      const o = data.outlook;
+      const last = o.years.length - 1;
+      const windsor = o.cities.find((c) => c.isWindsor);
+      const rise = (c) => c.last - c.first;
+      const fasterRise = o.cities.filter((c) => !c.isWindsor && rise(c) > rise(windsor));
+      return {
+        story: "/stories/integrated-analysis",
+        title: `By ${o.years[last]}, ${pct(o.central[last])} of Windsor renters could be priced out of a 2-bedroom`,
+        chart: <OutlookChart />,
+        linkLabel: "Explore the 2030 scenarios (Story 5)",
+        source:
+          "Scenarios, not forecasts. 2-bedroom rent (apartments and row houses, StatCan 34-10-0133-01) grown at Windsor's 2015-2020 or 2020-2025 pace; Census 2021 renter incomes (2020) grown an assumed 2%, 3% or 4% a year; a household is priced out when the rent is over 30% of its income.",
+        table: (
+          <DataTable
+            caption={`Windsor in ${o.years[last]} under each scenario`}
+            head={["Scenario", "2-bed rent", "Income needed", "Renters priced out"]}
+            rows={o.scenarios.map((s) => [
+              s.scenario,
+              fmtMoney(s.rent),
+              fmtMoney(s.incomeNeeded),
+              pct(s.pct, 1),
+            ])}
+          />
+        ),
+        body: (
+          <>
+            <p>
+              If Windsor&rsquo;s 2-bedroom rent keeps rising as it did from 2020 to 2025, it reaches
+              about <strong>{fmtMoney(o.rent[last])}</strong> a month by {o.years[last]}, which
+              needs a household income of about <strong>{fmtMoney(o.incomeNeeded)}</strong>. With
+              renter incomes growing 3% a year, the share who could not afford it rises from{" "}
+              <strong>{pct(o.central[0])}</strong> to <strong>{pct(o.central[last])}</strong>;
+              across all scenarios {o.years[last]} lands between {pct(o.low[last])} and{" "}
+              {pct(o.high[last])}.
+            </p>
+            <p>
+              Windsor&rsquo;s share rises {Math.round(rise(windsor))} points
+              {fasterRise.length
+                ? `, faster than every other city except ${fasterRise.map((c) => c.city).join(" and ")}`
+                : ", faster than any other city"}
+              . Just to stop the share rising, renter incomes would need to grow as fast as rents:
+              about <strong>{pct(o.rentRise, 1)} a year</strong>. Its {o.years[0]} figure assumes
+              incomes grew since 2020, so it is lower than the {pct(data.affordability.pct)} above,
+              which uses 2020 incomes as they were.
+            </p>
+          </>
+        ),
+      };
+    })(),
     mix: {
       story: "/stories/housing-supply",
       title: `Apartments went from ${pct(apt.before.share)} to ${pct(apt.after.share)} of what Windsor starts`,

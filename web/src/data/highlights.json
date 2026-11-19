@@ -1,5 +1,137 @@
 {
-  "generated": "2026-11-12",
+  "generated": "2026-11-18",
+  "outlook": {
+    "years": [
+      2025,
+      2026,
+      2027,
+      2028,
+      2029,
+      2030
+    ],
+    "central": [
+      52,
+      54.1,
+      56.2,
+      58.5,
+      60.8,
+      63.1
+    ],
+    "low": [
+      49.1,
+      49.5,
+      49.9,
+      50.4,
+      50.8,
+      51.2
+    ],
+    "high": [
+      54.7,
+      57.5,
+      60.4,
+      63.3,
+      65.8,
+      68.4
+    ],
+    "rent": [
+      1451,
+      1552,
+      1659,
+      1774,
+      1897,
+      2028
+    ],
+    "incomeNeeded": 81133,
+    "rentRise": 6.9,
+    "scenarios": [
+      {
+        "scenario": "Rents 2015-2020 pace, incomes +4%",
+        "rentPace": "2015-2020 pace",
+        "incomeGrowth": 4,
+        "rent": 1830,
+        "incomeNeeded": 73202,
+        "pct": 51.2,
+        "central": false
+      },
+      {
+        "scenario": "Rents 2015-2020 pace, incomes +3%",
+        "rentPace": "2015-2020 pace",
+        "incomeGrowth": 3,
+        "rent": 1830,
+        "incomeNeeded": 73202,
+        "pct": 56.8,
+        "central": false
+      },
+      {
+        "scenario": "Rents 2020-2025 pace, incomes +4%",
+        "rentPace": "2020-2025 pace",
+        "incomeGrowth": 4,
+        "rent": 2028,
+        "incomeNeeded": 81133,
+        "pct": 57.2,
+        "central": false
+      },
+      {
+        "scenario": "Rents 2015-2020 pace, incomes +2%",
+        "rentPace": "2015-2020 pace",
+        "incomeGrowth": 2,
+        "rent": 1830,
+        "incomeNeeded": 73202,
+        "pct": 62.8,
+        "central": false
+      },
+      {
+        "scenario": "Rents 2020-2025 pace, incomes +3%",
+        "rentPace": "2020-2025 pace",
+        "incomeGrowth": 3,
+        "rent": 2028,
+        "incomeNeeded": 81133,
+        "pct": 63.1,
+        "central": true
+      },
+      {
+        "scenario": "Rents 2020-2025 pace, incomes +2%",
+        "rentPace": "2020-2025 pace",
+        "incomeGrowth": 2,
+        "rent": 2028,
+        "incomeNeeded": 81133,
+        "pct": 68.4,
+        "central": false
+      }
+    ],
+    "cities": [
+      {
+        "city": "Windsor",
+        "isWindsor": true,
+        "first": 52,
+        "last": 63.1
+      },
+      {
+        "city": "Hamilton",
+        "isWindsor": false,
+        "first": 52,
+        "last": 57.5
+      },
+      {
+        "city": "Kitchener-Waterloo",
+        "isWindsor": false,
+        "first": 52.5,
+        "last": 64.2
+      },
+      {
+        "city": "London",
+        "isWindsor": false,
+        "first": 56,
+        "last": 65.1
+      },
+      {
+        "city": "St. Catharines",
+        "isWindsor": false,
+        "first": 54.9,
+        "last": 63
+      }
+    ]
+  },
   "affordability": {
     "pct": 60.7,
     "cannot": 27664,

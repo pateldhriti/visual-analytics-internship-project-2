@@ -150,7 +150,10 @@ export default function StoryIntegratedAnalysis() {
       filters={FILTERS}
       kpis={KPIS}
       highlights={
-        <StoryHighlights only={["afford", "cheap", "supply"]} here="/stories/integrated-analysis" />
+        <StoryHighlights
+          only={["afford", "cheap", "supply", "outlook"]}
+          here="/stories/integrated-analysis"
+        />
       }
       dashboard={
         <SupersetGuestEmbed
