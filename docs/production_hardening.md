@@ -256,12 +256,18 @@ A backup is only useful if it restores. `deploy/whva/restore_test.sh` restores a
 ls -t ~/backups/ | head -1
 ```
 ```powershell
-# 2. on a laptop, in the project folder (Docker running)
-scp patel3gc@whva.cs.uwindsor.ca:'~/backups/<newest>.dump' patel3gc@whva.cs.uwindsor.ca:'~/live_counts.txt' data\export\
-docker cp data\export\<newest>.dump windsor_housing_postgres:/tmp/b.dump
-docker cp data\export\live_counts.txt windsor_housing_postgres:/tmp/live_counts.txt
-docker cp deploy\whva\restore_test.sh windsor_housing_postgres:/tmp/restore_test.sh
-docker exec -u postgres windsor_housing_postgres bash -c "createdb restore_test && bash /tmp/restore_test.sh dbname=restore_test /tmp/live_counts.txt /tmp/b.dump; dropdb restore_test"
+# 2. on a laptop, in the project folder (Docker running): restore into a brand-new,
+#    temporary PostgreSQL 17 server. whva's pg_dump writes a newer backup format
+#    than our PostgreSQL 16 container can read ("unsupported version (1.16)").
+scp "patel3gc@whva.cs.uwindsor.ca:~/backups/<newest>.dump" "patel3gc@whva.cs.uwindsor.ca:~/live_counts.txt" data\export\
+docker run -d --rm --name restore_test_pg -e POSTGRES_PASSWORD=restoretest postgres:17-alpine
+docker cp data\export\<newest>.dump restore_test_pg:/tmp/b.dump
+docker cp data\export\live_counts.txt restore_test_pg:/tmp/live_counts.txt
+docker cp deploy\whva\restore_test.sh restore_test_pg:/tmp/restore_test.sh
+docker exec -u postgres restore_test_pg sh -c "apk add --no-cache bash; createdb restore_test && bash /tmp/restore_test.sh dbname=restore_test /tmp/live_counts.txt /tmp/b.dump"
+docker stop restore_test_pg            # removes the temporary server
 ```
 
-Rehearsed on 19 November 2026 with a backup of the local warehouse taken by the same `pg_dump` command as the daily job. The 1.2 MB backup restored in 2 seconds; all 17 tables matched and all 59 views ran: **PASS**.
+**Result, 20 November 2026: PASS.** The nightly backup of 20 November (`whva_warehouse_20261120T084015Z.dump`, 2.1 MB, taken at 03:40 by the timer) restored into an empty database in 2 seconds; all 18 tables matched the live `whva` schema row for row (including Story 1's `windsor_shelter_cost_long`, 90,720 rows) and all 59 views ran. Rehearsed beforehand on 19 November with a backup of the local warehouse.
+
+The uptime monitor was installed on whva on 20 November 2026; its first check found the website and apss up, each answering in about 0.03 s.
