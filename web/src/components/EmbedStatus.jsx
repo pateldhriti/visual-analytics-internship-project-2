@@ -31,7 +31,7 @@ export function EmbedError({ onRetry, openUrl }) {
             target="_blank"
             rel="noreferrer"
           >
-            Open the dashboard in a new tab ↗
+            Open the dashboard in a new tab <span aria-hidden="true">↗</span>
           </a>
         )}
       </div>
@@ -49,7 +49,8 @@ export function NarrowHint({ openUrl }) {
         <>
           , or{" "}
           <a href={openUrl} target="_blank" rel="noreferrer">
-            open it full screen ↗
+            open it full screen <span aria-hidden="true">↗</span>
+            <span className="visually-hidden"> (opens in a new tab)</span>
           </a>
         </>
       ) : null}

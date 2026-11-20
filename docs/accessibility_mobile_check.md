@@ -82,6 +82,19 @@ Since the first check, the site gained its own charts: "The story in four charts
 
 **One fix:** at phone width, the arrow at the end of long chart links ("Explore affordability by unit size (Story 5) →") wrapped onto a line of its own. The arrow is now joined to the last word with a non-breaking space (`web/src/components/StoryHighlights.jsx`, `StoryPage.jsx`).
 
+## Re-check on the live site (2026-11-20)
+
+Since 13 November the site moved to the university server in link mode (each story page opens its dashboard on apss instead of embedding it), gained a button that hides the sidebar on desktop, and renamed Story 5 to "Combined Analysis". All checks were run again, this time on the live site, <https://whva.cs.uwindsor.ca>.
+
+| Check | Result |
+|---|---|
+| axe-core 4.10.2, WCAG 2.0/2.1 A and AA, after scrolling through each page | **0 violations** on all 8 pages at 1,440 px and at 375 px |
+| Page wider than the screen at 320, 375 and 414 px | None |
+| Keyboard: Tab through a whole story page | 38 stops in reading order (skip link, sidebar toggle, sidebar links, each chart's marks, "Show the numbers", the dashboard link), every one with a visible focus outline |
+| Sidebar toggle ("Hide menu") | Operates with Enter and Space; announces its state (`aria-expanded`, `aria-controls="primary-sidebar"`); when hidden, the sidebar links leave the Tab order and the button is announced as "Menu, collapsed" |
+
+**One fix:** links that open a new tab did not say so to screen readers, and links ending in an arrow (↗, ↓, →) had the arrow read out ("north east arrow"). The arrows are now hidden from screen readers, and the new-tab links carry visually hidden text, so "Open the dashboard ↗" is announced as "Open the dashboard (opens in a new tab)" (WCAG technique G201). Files: `web/src/components/SupersetGuestEmbed.jsx`, `SupersetEmbed.jsx`, `EmbedStatus.jsx`, `StoryPage.jsx`, `StoryHighlights.jsx`. Checked on a local build: the new names are exposed and the scan still finds 0 violations.
+
 ## Not covered
 
 - **Inside the dashboards.** Charts are drawn by Superset, so their colours, keyboard support and

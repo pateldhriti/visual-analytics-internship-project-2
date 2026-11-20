@@ -57,7 +57,8 @@ function DashboardLinkCard({ title, openUrl }) {
         </p>
         {openUrl && (
           <a className="embed-button" href={openUrl} target="_blank" rel="noreferrer">
-            Open the dashboard ↗
+            Open the dashboard <span aria-hidden="true">↗</span>
+            <span className="visually-hidden"> (opens in a new tab)</span>
           </a>
         )}
       </div>
@@ -164,7 +165,8 @@ function GuestEmbed({ dashboard, fallbackDashboardId, title, height = 1100 }) {
         <span className="superset-embed-badge">Live dashboard</span>
         {openUrl && (
           <a href={openUrl} target="_blank" rel="noreferrer" className="superset-embed-link">
-            Open full dashboard ↗
+            Open full dashboard <span aria-hidden="true">↗</span>
+            <span className="visually-hidden"> (opens in a new tab)</span>
           </a>
         )}
       </div>
