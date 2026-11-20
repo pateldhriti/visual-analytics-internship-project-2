@@ -71,7 +71,7 @@ const NAV_SECTIONS = [
       },
       {
         to: "/stories/integrated-analysis",
-        label: "Story 5 · Integrated Analysis",
+        label: "Story 5 · Combined Analysis",
         icon: "integrated",
         accent: "blue",
       },

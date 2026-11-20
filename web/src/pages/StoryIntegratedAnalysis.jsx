@@ -144,7 +144,7 @@ export default function StoryIntegratedAnalysis() {
   return (
     <StoryPage
       storyLabel="Story 5"
-      title="How do affordability, rental conditions, and supply fit together?"
+      title="Combined Analysis: how do affordability, rental conditions and supply fit together?"
       intro={INTRO}
       questions={QUESTIONS}
       filters={FILTERS}
@@ -159,7 +159,7 @@ export default function StoryIntegratedAnalysis() {
         <SupersetGuestEmbed
           dashboard="story5"
           fallbackDashboardId="windsor-story-5"
-          title="Story 5: How do affordability, rental conditions, and supply fit together? (Superset dashboard)"
+          title="Story 5: Combined Analysis (Superset dashboard)"
         />
       }
       narrative={NARRATIVE}

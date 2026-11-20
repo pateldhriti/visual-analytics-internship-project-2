@@ -29,7 +29,7 @@ DASHBOARDS = {
     "windsor-story-2": "Story 2: What is happening in Windsor's rental market?",
     "windsor-story-3": "Story 3: Is Windsor building enough housing?",
     "windsor-story-4": "Story 4: How does Windsor compare to similar markets?",
-    "windsor-story-5": "Story 5: How do affordability, rental conditions, and supply fit together?",
+    "windsor-story-5": "Story 5: Combined Analysis",
 }
 DEFAULT_ORIGINS = "http://localhost:5173"
 
