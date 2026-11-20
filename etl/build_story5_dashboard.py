@@ -62,7 +62,10 @@ DATASET_WINDSOR_VS_PEERS = dataset_id("v_story5_windsor_vs_peers")
 DATASET_RENT_OUTLOOK = dataset_id("v_story5_rent_outlook")
 
 # windsor_housing here, Superset's default on the shared server (superset_compat).
-DASHBOARD_TITLE = named("Story 5: How do affordability, rental conditions, and supply fit together?")
+# "Combined Analysis", as the supervisor calls this story (it joins the
+# other four stories' data); renamed 2026-11-19 from "Story 5: How do
+# affordability, rental conditions, and supply fit together?".
+DASHBOARD_TITLE = named("Story 5: Combined Analysis \u2014 how do affordability, rental conditions and supply fit together?")
 # A fixed URL name: the website, the token API and the embedding script
 # use it instead of the dashboard id, which differs on every Superset.
 DASHBOARD_SLUG = "windsor-story-5"
@@ -1049,7 +1052,10 @@ def build_native_filters(chart_ids: dict) -> list:
 
 
 def ensure_dashboard(session, headers, position_json: dict, chart_ids: dict) -> int:
-    existing = find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE)
+    # By the fixed slug first, so a renamed title updates the same dashboard
+    # (same id, same links) instead of creating a second one.
+    existing = (find_existing(session, headers, "dashboard", "slug", DASHBOARD_SLUG)
+                or find_existing(session, headers, "dashboard", "dashboard_title", DASHBOARD_TITLE))
     # Merge into the stored metadata (Superset's frontend keeps keys of its
     # own there; dropping them makes it try to re-save on the next load).
     metadata = {}
