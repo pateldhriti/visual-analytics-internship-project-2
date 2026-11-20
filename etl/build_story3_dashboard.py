@@ -383,8 +383,10 @@ def grouped_bars(x_axis, groupby: str, sql: str, label: str, number_format: str,
         "xAxisLabelRotation": rotate,
         "truncateYAxis": True,
         "y_axis_bounds": list(y_bounds),
-        # Series in name order (Superset otherwise puts the largest first): the
-        # zero-width-space prefixes and the reference dashboard set the order.
+        # Series in name order (Superset otherwise puts the largest first). Charts
+        # flip the direction with "sort_series_ascending" where the reference
+        # dashboard needs it; zero-width-space prefixes do not affect series order
+        # on Superset 6.
         "sort_series_type": "name",
         "sort_series_ascending": True,
     }
@@ -401,18 +403,19 @@ STAGE_AXIS = {"expressionType": "SQL", "label": "Stage",
               "sqlExpression": "REPEAT(CHR(8203), 4 - stage_sort_order) || CASE stage "
                                "WHEN 'Starts so far' THEN 'YTD Starts' WHEN 'Completions so far' "
                                "THEN 'YTD Completions' ELSE 'Under Construction' END"}
-# The pipeline chart's series, named and ordered as on the reference
-# dashboard (starts, completions, then units under construction).
+# The pipeline chart's series, named as on the reference dashboard. Sorted
+# by name, Z to A, they read starts, completions, then units under
+# construction ("Jan-Sep Starts" > "Jan-Sep Completions" > "End-Sep ...").
+# Zero-width-space prefixes would not do: Superset 6 sorts series names
+# ignoring them, so on apss the order came out reversed.
 _STAGE_NAMES = {"Starts so far": f"{YTD_LABEL[:7]} Starts", "Completions so far": f"{YTD_LABEL[:7]} Completions",
                 "Under construction": f"End-{MONTH_LABEL[:3]} Under Construction"}
 PIPELINE_SERIES = {"expressionType": "SQL", "label": "Stage",
-                   "sqlExpression": "REPEAT(CHR(8203), stage_sort_order) || CASE stage "
+                   "sqlExpression": "CASE stage "
                                     + " ".join(f"WHEN '{k}' THEN '{v}'" for k, v in _STAGE_NAMES.items())
                                     + " END"}
-# SQL-expression series get no colour from finish_dashboard: name them here
-# (the zero-width spaces are part of the series name).
-PROJECT_LABEL_COLORS.update({"\u200b" * order + name: PROJECT_LABEL_COLORS[stage]
-                             for order, (stage, name) in enumerate(_STAGE_NAMES.items(), start=1)})
+# SQL-expression series get no colour from finish_dashboard: name them here.
+PROJECT_LABEL_COLORS.update({name: PROJECT_LABEL_COLORS[stage] for stage, name in _STAGE_NAMES.items()})
 PROJECT_LABEL_COLORS.update({"Homeowner": "#1FA8C9", "Rental": "#5AC189", "Condo": "#FF7F44"})
 
 
@@ -454,7 +457,8 @@ YTD_CHARTS = {
         "dataset_id": DATASET_PIPELINE,
         "viz_type": "echarts_timeseries_bar",
         "params": {**grouped_bars("dwelling_type", PIPELINE_SERIES, "SUM(units)", "Housing units", ",d", rotate=30),
-                   **AXIS_TITLES("Dwelling type", "Housing units")},
+                   **AXIS_TITLES("Dwelling type", "Housing units"),
+                   "sort_series_ascending": False},  # Z to A: starts, completions, under construction
     },
     "ytd-mix": {
         "slice_name": f"Dwelling-Type Mix Across the {LATEST_YEAR} Pipeline",

@@ -49,6 +49,12 @@ jobs:
       - name: Run pytest (raw data setup)
         working-directory: etl
         run: python -m pytest test_fetch_raw_data.py -v
+      - name: Run pytest (Canada-wide CMA extract)
+        working-directory: etl
+        run: python -m pytest test_cma_canada.py -v
+      - name: Run pytest (Windsor intended-market extract)
+        working-directory: etl
+        run: python -m pytest test_windsor_intended_market.py -v
       - name: Run pytest (university database package)
         working-directory: etl
         run: python -m pytest test_export_for_shared_db.py -v
