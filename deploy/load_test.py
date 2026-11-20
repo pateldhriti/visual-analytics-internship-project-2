@@ -118,7 +118,7 @@ def main() -> None:
               flush=True)
 
     head = ("| Visitors at once | Page views | Page views/s | Errors | Page load p50 (ms) | p95 (ms) | max (ms) "
-            "| HTML p50 (ms) | HTML p95 (ms) | Data (MB) |\n|---|---|---|---|---|---|---|---|---|---|\n")
+            "| HTML p50 (ms) | HTML p95 (ms) | Data (MB, before compression) |\n|---|---|---|---|---|---|---|---|---|---|\n")
     table = head + "".join(
         f"| {r['users']} | {r['page_views']} | {r['pages_per_s']:.1f} | {r['errors']} | {r['page_p50']:.0f} | "
         f"{r['page_p95']:.0f} | {r['page_max']:.0f} | {r['html_p50']:.0f} | {r['html_p95']:.0f} | {r['mb']:.1f} |\n"

@@ -78,9 +78,9 @@ All 224 pass (19 November 2026).
 ### 7.3 Dashboard and system checks
 
 - **Layout and filters:** an automated browser check opened every tab of the six dashboards (local and on the university's Superset), recorded errors, empty charts, overlapping cards and page height, and tried every filter on every tab. It found and led to fixes for a filter that emptied a tile (Story 3, Year = 2026), hidden axis labels and tabs taller than one screen; all 38 tabs now load without errors and fit one screen at 1440 x 1000.
-- **Backup restore:** a backup taken by the daily job restored into an empty database in 2 seconds, with all 17 tables matching and all 59 views running (rehearsed locally). **[TODO: result on whva with the nightly backup.]**
-- **Load:** **[TODO: results of `deploy/load_test.py` against the public site.]**
-- **Uptime:** **[TODO: availability over the monitoring period, from `uptime_check.sh --report`.]**
+- **Backup restore (20 November):** the nightly backup taken on whva restored into a brand-new PostgreSQL server in 2 seconds; all 18 tables matched the live database row for row and all 59 views ran: **PASS**.
+- **Load (20 November, `docs/load_test_results.md`):** with up to 10 simultaneous visitors (about 6 page views a second) the median page, with all its files, loaded in under 0.1 s and 95% under 0.5 s, with no errors. At 25 visitors the median stayed under 0.1 s but 5% of loads took over 6 s; at 50, response times collapsed (median 26 s), still without errors. The test ran from one laptop over the VPN, so whether that limit is the server or the single client is not yet separated.
+- **Uptime:** monitoring started on 20 November (every 5 minutes, website and apss). **[TODO: availability over the monitoring period, from `uptime_check.sh --report`.]**
 - **Refresh:** **[TODO: the recorded end-to-end refresh with StatCan's October 2026 data.]**
 
 ### 7.4 User testing
@@ -94,7 +94,7 @@ All 224 pass (19 November 2026).
 | G1 A visitor can follow each story to its conclusion | **[TODO: user testing]** |
 | G2 At least two combined questions use two or more datasets | Met: Story 5 answers eight combined questions from joined views |
 | G3 Every number traceable to its source | Met: every chart names its source table; data tests and the schema guard run on each refresh |
-| G4 Pages fast enough | **[TODO: load test and page timings on whva]** |
+| G4 Pages fast enough | Met for expected traffic: median page load under 0.1 s and 95% under 0.5 s with up to 10 visitors at once (target: under 3 s) |
 | G5 Refresh is repeatable | Met: one command (`etl/scheduled_refresh.py`) downloads, checks and reloads; weekly schedule |
 | G6 Free to run | Met: university services, $0 |
 | G7 Works on desktop and mobile | Partly: the website works at phone width; the dashboards keep a desktop layout inside a scrolling frame (decision D31) |

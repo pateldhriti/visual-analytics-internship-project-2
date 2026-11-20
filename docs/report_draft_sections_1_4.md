@@ -188,4 +188,4 @@ The warehouse is a star schema: shared dimensions and the fact tables below. Ful
 
 `etl/scheduled_refresh.py` runs the whole pipeline weekly: it downloads the tables that change monthly or yearly, runs the schema guard, then the extracts, the load and the views. Any failure stops the run, writes an alert to `logs/refresh_alerts.log` and, if configured, posts it to a Teams or Slack webhook; the dashboards keep the last good data. On the university side, the team's `warehouse` schema is backed up daily from whva (14 days kept, each backup checked with `pg_restore --list`), and the data is moved to the university database as one SQL package (`etl/export_for_shared_db.py`) loaded in a single transaction, so a failed load changes nothing.
 
-**[TODO: add the uptime monitoring, backup-restore test, load test and live refresh results once they are run on the university servers.]**
+An uptime check runs on whva every 5 minutes and alerts once per outage; the nightly backup was restored into a fresh database on 20 November with every table and view intact (section 7.3). **[TODO: live refresh result.]**
