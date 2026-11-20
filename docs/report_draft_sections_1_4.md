@@ -177,6 +177,7 @@ The warehouse is a star schema: shared dimensions and the fact tables below. Ful
 | `fact_shelter_cost` | income band × tenure × household type × shelter-cost category, 2021 | 90,720 | 1, 5 |
 | `fact_rental_market` | zone × unit size × survey × dwelling scope × measure | 2,655 | 2, 5 |
 | `fact_windsor_starts_completions` | month × activity × dwelling type, from January 2016 | 1,935 | 3, 5 |
+| `fact_starts_completions` | province (Ontario, Canada) × quarter × activity × dwelling type | 50 | Overview |
 | `fact_census_profile` | Census characteristic × geography | 360 | 3, 5 |
 | `fact_rental_market_comparison` | comparison city × measure × survey | 36 | 4 |
 | `fact_peer_cma_context` | city × source × measure × category × year | 1,273 | 4, 5 |
