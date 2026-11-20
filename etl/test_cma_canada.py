@@ -1,4 +1,4 @@
-"""Tests for etl/extract_cma_canada.py (no database needed).
+r"""Tests for etl/extract_cma_canada.py (no database needed).
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_cma_canada.py
 """

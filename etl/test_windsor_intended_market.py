@@ -1,4 +1,4 @@
-"""Tests for etl/extract_windsor_intended_market.py (no database needed).
+r"""Tests for etl/extract_windsor_intended_market.py (no database needed).
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_windsor_intended_market.py
 """
