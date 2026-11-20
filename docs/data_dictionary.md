@@ -24,7 +24,7 @@ Row counts are from the local warehouse, checked again on 13 November 2026 after
 | `fact_starts_completions` | warehouse | 50 | `docs/data_dictionary_supply.md` |
 | `fact_census_profile` | warehouse | 360 | `docs/data_dictionary_census_comparison.md`, section 1 |
 | `fact_rental_market_comparison` | warehouse | 36 | `docs/data_dictionary_census_comparison.md`, section 2 |
-| `fact_peer_cma_context` | warehouse | 1,054 | [Section 2.4](#24-fact_peer_cma_context) |
+| `fact_peer_cma_context` | warehouse | 1,273 | [Section 2.4](#24-fact_peer_cma_context) |
 | `fact_cma_canada` | warehouse | 1,008 | [Section 2.5](#25-fact_cma_canada) |
 | `fact_windsor_intended_market` | warehouse | 29 | [Section 2.6](#26-fact_windsor_intended_market) |
 | `load_audit` | raw | one row per load | [Section 3](#3-rawload_audit) |
