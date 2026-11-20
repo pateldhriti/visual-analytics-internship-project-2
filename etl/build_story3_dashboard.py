@@ -550,17 +550,26 @@ def _share(activity: str, market: str) -> float:
     return _M[(MARKET_YTD, activity, market)]["share_pct"]
 
 
+# The pipeline comes from StatCan's monthly table (refreshed automatically);
+# the intended-market figures from CMHC exports saved by hand, so after a
+# monthly refresh the two can cover different months. Each part of the note
+# names its own period, and the build says when they differ.
+_condo_starts = _units("Starts", "Condo")
 MARKET_NOTE = (
-    f"**Pipeline.** {YTD['latest']['under_construction']:,} units were under construction at the end of "
-    f"{MONTH_LABEL[:3]}, down from {YTD['latest']['under_construction_previous_month']:,} a month earlier. "
-    f"**Intended market.** From January to {MONTH_LABEL}, **{_units('Completions', 'Rental'):,.0f} rental "
-    f"homes** were completed (**{_share('Completions', 'Rental'):.0f}%** of completions) but only "
+    f"**Pipeline ({YTD_LABEL}).** {YTD['latest']['under_construction']:,} units were under construction at the "
+    f"end of {MONTH_LABEL[:3]}, down from {YTD['latest']['under_construction_previous_month']:,} a month earlier. "
+    f"**Intended market ({MARKET_YTD}).** **{_units('Completions', 'Rental'):,.0f} rental homes** were "
+    f"completed (**{_share('Completions', 'Rental'):.0f}%** of completions) but only "
     f"{_units('Starts', 'Rental'):,.0f} started; **{_units('Starts', 'Homeowner'):,.0f}** of the "
-    f"{_units('Starts', 'Homeowner') + _units('Starts', 'Rental'):,.0f} starts are for homeownership. "
-    f"{_units('Completions', 'Condo'):,.0f} condos were completed and none started. *CMHC reports \"-\" as nil; "
-    "co-op and not-available markets recorded no starts or completions. Source: CMHC Starts and "
-    "Completions Survey (Housing Market Information Portal), Windsor CMA.*\n"
+    f"{_M[(MARKET_YTD, 'Starts', 'Homeowner')]['total_units']:,.0f} starts are for homeownership. "
+    f"{_units('Completions', 'Condo'):,.0f} condos were completed and "
+    + (f"{_condo_starts:,.0f} started" if _condo_starts else "none started")
+    + ". *CMHC reports \"-\" as nil. Source: CMHC Starts and Completions Survey (Housing Market "
+    "Information Portal), Windsor CMA; the intended-market files are downloaded by hand (etl/README.md).*\n"
 )
+if MARKET_YTD != YTD_LABEL:
+    print(f"NOTE: the intended-market exports cover {MARKET_YTD} but StatCan's data now reaches {YTD_LABEL}; "
+          "download the two year-to-date exports again (etl/README.md, 'Files downloaded by hand').")
 
 _L, _B = YTD["latest"], YTD["behind"]
 _prev = LATEST_YEAR - 1

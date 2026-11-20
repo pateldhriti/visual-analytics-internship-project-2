@@ -1238,10 +1238,42 @@ def build_position_json(chart_ids: dict) -> dict:
         "meta": {"chartId": chart_ids["zone-rent"], "width": 7, "height": chart_height("zone-rent"),
                  "uuid": str(uuid.uuid4())},
     }
+    # Each chart's scope in its title on the dashboard: some tabs mix
+    # apartment-only charts with apartments + row houses (D56), and the same
+    # measure differs a little between the two (e.g. vacancy 3.7% vs 3.6%).
+    for key, title in SCOPE_TITLES.items():
+        node = position.get(f"CHART-{key}")
+        if node:
+            node["meta"]["sliceNameOverride"] = title
     return add_tabs(position, TABS)
 
 
 DWELLING_DEFAULT = ["Apartment", "Combined"]
+
+SCOPE_TITLES = {
+    # apartments only (CMHC Tables 1.1.x and the Canada report's Table 1.0)
+    "zone-table": "Zone Snapshot: Rent, Vacancy, Stock and Turnover (Oct-25, Apartments)",
+    "zone-explain": "What the Zone Data Says (Apartments)",
+    "zone-rent": "Average Rent by Zone (Oct-25, Apartments)",
+    "zone-stock": "Rental Stock by Zone (Oct-25, Apartments)",
+    "zone-vacancy": "Vacancy Rate by Zone (Oct-25, Apartments)",
+    "zone-rent-vacancy": "Zone Rent vs Vacancy (Oct-25, Apartments)",
+    "turnover": "Turnover Rate by Bedroom Type (Oct-25, Apartments)",
+    "turnover-change": "Turnover Change by Unit Size (Oct-24 to Oct-25, Apartments)",
+    "history-vacancy": "Vacancy Rate Trend, 2019-2025 (Apartments)",
+    "rent-vacant-occupied": "Rent of Vacant vs Occupied Units (Oct-25, Apartments)",
+    "stock-by-size": "Rental Stock by Unit Size (Oct-25, Apartments)",
+    "bedroom-rent": "Rent by Bedroom Type (Oct-24 vs Oct-25, Apartments)",
+    "bedroom-vacancy": "Vacancy by Bedroom Type (Oct-24 vs Oct-25, Apartments)",
+    # apartments and row houses (CMHC Tables 3.1.x)
+    "rent-trend": "Average Rent by Period and Bedroom Type (Oct-20 to Oct-25, Apartments + Row Houses)",
+    "vacancy-trend": "Vacancy Rate by Period and Bedroom Type (Oct-20 to Oct-25, Apartments + Row Houses)",
+    "rent-zone": "Average Rent by Zone and Bedroom Type (Oct-25, Apartments + Row Houses)",
+    "zone-vacancy-trend": "Vacancy Rate by Zone and Period (Oct-20 to Oct-25, Apartments + Row Houses)",
+    "quintile-stock": "Rental Units Affordable to Each Income Quintile (Oct-25, Apartments + Row Houses)",
+    "quintile-vacancy": "Vacancy of Units Affordable to Each Income Quintile (Oct-25, Apartments + Row Houses)",
+    "new-stock": "New Rental Stock by Zone and Unit Size (Oct-25, Apartments + Row Houses)",
+}
 
 
 def filter_scope(chart_ids: dict, keys: list) -> tuple[dict, list]:

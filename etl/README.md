@@ -250,6 +250,24 @@ On a Linux server, add to the deploying user's crontab (`crontab -e`), Mondays a
 0 6 * * 1 cd /srv/windsor-housing && .venv/bin/python etl/scheduled_refresh.py >> logs/cron.log 2>&1
 ```
 
+## Files downloaded by hand
+
+Most sources are downloaded by `fetch_raw_data.py` and the weekly refresh. These
+cannot be, and go stale until someone saves a new copy (the schema guard then
+checks them like any other file):
+
+| File in `data/raw/` | What it is | Refresh |
+|---|---|---|
+| `cmhc/windsor-starts-intended-market-ytd.csv`, `cmhc/windsor-completions-intended-market-ytd.csv` | Windsor starts and completions by intended market, this year so far (Story 3, "Pipeline and Intended Market") | **Monthly**, when StatCan adds a month: the Story 3 build prints a NOTE when these are behind. CMHC Housing Market Information Portal, Windsor (CMA) > New Housing Construction > Starts (Actual), then Completions > Intended Markets > Survey Zones; date box: Monthly, tick Cumulative, pick the latest month; Export > CSV |
+| `cmhc/windsor-starts-intended-market.csv` | Yearly starts by intended market | Each January: same page, Historical Time Periods, Annual |
+| `cmhc/rmr-canada-<year>-en.xlsx` | CMHC Rental Market Survey, Canada (Stories 2 and 4) | Each January, when CMHC publishes the October survey: add the new year's workbook and extend `RMS_YEARS` in `extract_cma_canada.py` |
+| `statcan/98-401-X2021002_English_CSV_data.csv` | Census Profile 2021 | Only for a new Census |
+| `cmhc/quarterly-starts-completions-under-construction-*.xlsx` | CMHC quarterly starts (Overview) | Quarterly |
+
+The CMHC portal names every export `TableExport.csv`: rename it to the file name above.
+After saving new files, run `schema_guard.py --update` if CMHC changed a header on purpose,
+then the refresh.
+
 ## Add a dataset
 
 There are two real paths in this project, depending on what the new data

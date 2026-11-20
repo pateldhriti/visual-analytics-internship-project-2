@@ -580,13 +580,32 @@ BOUNDARY_MARKDOWN = (
 _top = SINCE_2019[0]
 _windsor = next(r for r in SINCE_2019 if r["city"] == "Windsor")
 _toronto = next(r for r in SINCE_2019 if r["city"] == "Toronto")
+
+
+def _windsor_vac(year: int, scope: str) -> float:
+    """Windsor's October vacancy: apartments only (the 2019 lines) or apartments
+    and row houses (the Ten Years tab), read from the warehouse."""
+    from sqlalchemy import text
+
+    from apply_sql_views import get_engine
+
+    sql = ("SELECT vacancy_rate_pct FROM warehouse.v_story4_city_history WHERE city = 'Windsor' AND period_year = :y"
+           if scope == "apt" else
+           "SELECT vacancy_rate FROM warehouse.v_story4_rent_history "
+           "WHERE city_short = 'Windsor' AND period_year = :y")
+    with get_engine().connect() as conn:
+        return float(conn.execute(text(sql), {"y": year}).scalar())
+
+
 SINCE_2019_MARKDOWN = (
     f"**What it shows.** Since 2019, Windsor's 2-bedroom apartment rent rose "
     f"**{_windsor['rent_index_2019'] - 100:.0f}%**"
     + (", the most of the five cities" if _top["city"] == "Windsor" else f" ({_top['city']} the most)")
     + f"; Toronto's rose {_toronto['rent_index_2019'] - 100:.0f}%. Every city's vacancy hit its lowest "
-    "between 2021 and 2023 and was higher again by 2025. *CMHC adopted 2021 Census CMA boundaries from the 2022 survey, so "
-    "read the 2021-2022 change with caution.*\n"
+    "between 2021 and 2023 and was higher again by 2025. *Vacancy here is apartments only (CMHC's Canada "
+    f"report), so Windsor's 2019 rate is {_windsor_vac(2019, 'apt'):.1f}%, against {_windsor_vac(2019, 'both'):.1f}% "
+    "for apartments and row houses on the Ten Years tab; both are CMHC's October survey. CMHC adopted 2021 "
+    "Census CMA boundaries from the 2022 survey, so read the 2021-2022 change with caution.*\n"
 )
 
 
@@ -749,7 +768,7 @@ def build_position_json(chart_ids: dict) -> dict:
     )
 
     position["HEADER-history"] = header_node(
-        "HEADER-history", "Ten Years: How Rents and Vacancy Changed (2015 to 2025)"
+        "HEADER-history", "Ten Years: How Rents and Vacancy Changed (2015 to 2025), Apartments + Row Houses"
     )
     position["ROW-rent-history"] = row_node("ROW-rent-history", ["CHART-rent-history"])
     position["CHART-rent-history"] = chart_node(
