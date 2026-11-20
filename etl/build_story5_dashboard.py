@@ -899,7 +899,7 @@ LAYOUT = [
     ("markdown-row", "ROW-young-note", [("MARKDOWN-young", NOTES["young"], 12, 29)]),
     ("header", "HEADER-stock", "7. How big is the rental market? (Story 2 + Story 4 + Census renters)"),
     ("chart-row", "ROW-stock", [("rental-stock", 6, 50)], ("MARKDOWN-stock", NOTES["stock"], 6, 50)),
-    ("chart-row", "ROW-profile", [("city-profile", 12, 35)]),
+    ("chart-row", "ROW-profile", [("city-profile", 12, 42)]),  # all five cities, with one name wrapping
     ("header", "HEADER-outlook", "8. Windsor 2030: how many renters could be priced out? (Story 1 + Story 2 + Story 4)"),
     ("chart-row", "ROW-outlook", [("outlook-kpi", 3, 45), ("outlook-windsor", 9, 45)]),
     ("chart-row", "ROW-outlook-cities", [("outlook-cities", 6, 46)], ("MARKDOWN-outlook", NOTES["outlook"], 6, 46)),

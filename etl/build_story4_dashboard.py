@@ -689,7 +689,7 @@ def markdown_node(node_id: str, parent_id: str, code: str, width: int = 12, heig
 # One screen per tab (etl/dashboard_tabs.py).
 TABS = [
     ("TAB-snapshot", "October 2025",
-     ["HEADER-kpis", "ROW-kpi", "HEADER-vacancy", "ROW-vacancy", "HEADER-rent", "ROW-rent"]),
+     ["HEADER-kpis", "ROW-kpi", "HEADER-vacancy", "ROW-vacancy"]),
     ("TAB-growth", "Rent Growth", ["HEADER-rent-growth", "ROW-rent-growth", "ROW-note"]),
     ("TAB-history", "Ten Years", ["HEADER-history", "ROW-rent-history", "ROW-vacancy-history"]),
     ("TAB-periods", "Before vs From the Pandemic", ["ROW-periods"]),
@@ -712,8 +712,6 @@ def build_position_json(chart_ids: dict) -> dict:
                 "ROW-kpi",
                 "HEADER-vacancy",
                 "ROW-vacancy",
-                "HEADER-rent",
-                "ROW-rent",
                 "HEADER-rent-growth",
                 "ROW-rent-growth",
                 "HEADER-history",
@@ -749,16 +747,19 @@ def build_position_json(chart_ids: dict) -> dict:
         "CHART-kpi-rent-decade", "ROW-kpi", chart_ids["kpi-rent-decade"], 3
     )
 
-    position["HEADER-vacancy"] = header_node("HEADER-vacancy", "Vacancy: How Easy Is It to Find an Apartment?")
-    position["ROW-vacancy"] = row_node("ROW-vacancy", ["CHART-vacancy-by-market"])
-    position["CHART-vacancy-by-market"] = chart_node(
-        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 12, 24
+    # Vacancy and rent side by side, each tall enough for five bars: at full
+    # width and height 24, Superset 6 squeezed the five bars into ~20px and
+    # showed only one city label (it reserves more space around the plot than
+    # 3.1). Side by side keeps the tab on one screen.
+    position["HEADER-vacancy"] = header_node(
+        "HEADER-vacancy", "Vacancy and Rent: Windsor and Four Similar Ontario Cities, October 2025"
     )
-
-    position["HEADER-rent"] = header_node("HEADER-rent", "Rent: What a 2-Bedroom Apartment Costs")
-    position["ROW-rent"] = row_node("ROW-rent", ["CHART-rent-by-market"])
+    position["ROW-vacancy"] = row_node("ROW-vacancy", ["CHART-vacancy-by-market", "CHART-rent-by-market"])
+    position["CHART-vacancy-by-market"] = chart_node(
+        "CHART-vacancy-by-market", "ROW-vacancy", chart_ids["vacancy-by-market"], 6, 52
+    )
     position["CHART-rent-by-market"] = chart_node(
-        "CHART-rent-by-market", "ROW-rent", chart_ids["rent-by-market"], 12, 24
+        "CHART-rent-by-market", "ROW-vacancy", chart_ids["rent-by-market"], 6, 52
     )
 
     position["HEADER-rent-growth"] = header_node("HEADER-rent-growth", "Rent Growth: How Fast Rents Rose (Oct-24 to Oct-25)")
