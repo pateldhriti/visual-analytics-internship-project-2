@@ -69,6 +69,7 @@ WINDSOR_STARTS_COMPLETIONS_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_st
 
 
 def fetch_dim(engine, table: str, key_col: str, *value_cols: str) -> pd.DataFrame:
+    """One dimension table's key and label columns, for joining staging labels to warehouse keys."""
     cols = ", ".join([key_col, *value_cols])
     return pd.read_sql(f"SELECT {cols} FROM warehouse.{table}", engine)
 
@@ -147,6 +148,7 @@ def load_shelter_cost_facts(engine, raw_conn=None) -> dict:
 
 
 def load_census_profile_facts(engine) -> dict:
+    """Load Windsor's Census Profile characteristics into fact_census_profile; returns row counts."""
     source = pd.read_csv(CENSUS_PROFILE_LONG_CSV, dtype=str)
 
     period = fetch_dim(engine, "dim_period", "period_key", "period_label")
@@ -176,6 +178,7 @@ def load_rental_market_facts(engine) -> dict:
     # at the default, read_csv silently turns that label into a true NaN,
     # breaking its income_band_key join. Only an actually-empty field
     # should become NaN.
+    """Load the Windsor 2025 workbook's rows into fact_rental_market, joining every label to its dimension key; returns counts and unmatched labels."""
     source = pd.read_csv(RENTAL_MARKET_CSV, dtype=str, keep_default_na=False, na_values=[""])
 
     zone = fetch_dim(engine, "dim_zone", "zone_key", "zone_label")

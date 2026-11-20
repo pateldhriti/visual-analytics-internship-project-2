@@ -58,6 +58,7 @@ CENTRES = [
 
 
 def find_centre_rows(ws) -> dict:
+    """{centre name: row number} for the comparison centres listed in a sheet."""
     rows = {}
     for r in range(1, ws.max_row + 1):
         v = ws.cell(row=r, column=1).value
@@ -70,6 +71,7 @@ def find_centre_rows(ws) -> dict:
 
 
 def parse_row(ws, r: int, centre: str) -> list[dict]:
+    """Apartment vacancy, 2-bedroom rent, rent change and turnover of one centre's row, for both survey years."""
     common = {"centre": centre, "dwelling_type": "Apartment"}
     rows = []
 
@@ -119,6 +121,7 @@ def parse_row(ws, r: int, centre: str) -> list[dict]:
 
 
 def clean_value(raw):
+    """None for CMHC's ** (suppressed), the number without thousands separators otherwise."""
     if raw is None or raw == "**":
         return None
     if isinstance(raw, str):
@@ -127,6 +130,7 @@ def clean_value(raw):
 
 
 def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> dict:
+    """Read the comparison centres from the CMHC Canada workbook and write the staging CSV; returns row counts for the caller."""
     if not source_xlsx.exists():
         raise FileNotFoundError(f"Source workbook not found: {source_xlsx}")
 

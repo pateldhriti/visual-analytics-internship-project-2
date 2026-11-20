@@ -1,4 +1,4 @@
-"""Tests for etl/export_for_shared_db.py (no database needed).
+r"""Tests for etl/export_for_shared_db.py (no database needed).
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_export_for_shared_db.py
 """

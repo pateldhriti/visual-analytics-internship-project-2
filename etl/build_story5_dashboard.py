@@ -47,7 +47,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, match_bar_order, named, prefix_names, radar, scatter, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, finish_dashboard, gauge, match_bar_order, named, prefix_names, radar, scatter
 
 # Dataset ids, from etl/register_superset_datasets.py's own output.
 DATASET_RENT_AFFORDABILITY = dataset_id("v_story5_rent_affordability")
@@ -173,8 +173,8 @@ COLUMN_FIELDS = {"id", "column_name", "verbose_name", "type", "is_dttm", "filter
 
 
 def set_column_labels(session, headers) -> None:
-    for dataset_id, labels in COLUMN_LABELS.items():
-        resp = session.get(f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}", headers=headers)
+    for ds_id, labels in COLUMN_LABELS.items():
+        resp = session.get(f"{SUPERSET_URL}/api/v1/dataset/{ds_id}", headers=headers)
         resp.raise_for_status()
         columns = []
         for col in resp.json()["result"]["columns"]:
@@ -183,7 +183,7 @@ def set_column_labels(session, headers) -> None:
                 col["verbose_name"] = labels[col["column_name"]]
             columns.append(col)
         session.put(
-            f"{SUPERSET_URL}/api/v1/dataset/{dataset_id}", headers=headers, json={"columns": columns}
+            f"{SUPERSET_URL}/api/v1/dataset/{ds_id}", headers=headers, json={"columns": columns}
         ).raise_for_status()
 
 

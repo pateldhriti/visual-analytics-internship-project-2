@@ -60,6 +60,7 @@ def _ytd_label(period_line: str) -> str:
 
 
 def parse(lines) -> list[dict]:
+    """Rows of one CMHC portal export: the year rows of an annual export, or only the Windsor row of a by-zone (year-to-date) export."""
     rows_in = [[c.strip() for c in row] for row in csv.reader(lines)]
     title = rows_in[0][0] if rows_in and rows_in[0] else ""
     activity = next((a for a in ACTIVITIES if a in title), None)
@@ -87,6 +88,7 @@ def parse(lines) -> list[dict]:
 
 
 def check(rows: list[dict]) -> None:
+    """Stop if an export had no data rows, lacks the Homeowner, Rental or Condo column, or its markets do not add up to the total."""
     if not rows:
         raise ValueError("No data rows found: the export's layout has changed")
     for key in sorted({(r["period_label"], r["activity"]) for r in rows}):
@@ -100,6 +102,7 @@ def check(rows: list[dict]) -> None:
 
 
 def main() -> None:
+    """Read the three hand-downloaded exports, check them and write data/staging/windsor_intended_market.csv."""
     rows = []
     for path in SOURCE_CSVS:
         # The portal writes Windows-1252 (an en dash in the title line).

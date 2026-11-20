@@ -20,7 +20,6 @@ any other shared university service without the admin's agreement.
 import argparse
 import asyncio
 import re
-import statistics
 import time
 from datetime import datetime
 from urllib.parse import urljoin
@@ -32,6 +31,7 @@ PAGES = ["/", "/stories/affordability", "/stories/rental-market", "/stories/supp
 
 
 def pct(values: list[float], p: float) -> float:
+    """The p-th percentile of values (linear interpolation); NaN when there are none."""
     if not values:
         return float("nan")
     values = sorted(values)
@@ -41,6 +41,7 @@ def pct(values: list[float], p: float) -> float:
 
 
 async def page_view(client: httpx.AsyncClient, base: str, path: str, stats: dict) -> None:
+    """Load one page and the JavaScript and CSS it references, adding the timings and errors to stats."""
     start = time.perf_counter()
     try:
         r = await client.get(urljoin(base, path))
@@ -62,6 +63,7 @@ async def page_view(client: httpx.AsyncClient, base: str, path: str, stats: dict
 
 async def visitor(base: str, until: float, stats: dict, think: float, i: int) -> None:
     # Each visitor has its own connection pool, like a separate browser.
+    """One simulated visitor: page views across the story pages until the time is up, with a pause between them."""
     async with httpx.AsyncClient(timeout=30, follow_redirects=True, http2=False) as client:
         n = i
         while time.perf_counter() < until:
@@ -71,6 +73,7 @@ async def visitor(base: str, until: float, stats: dict, think: float, i: int) ->
 
 
 async def run(base: str, users: int, duration: float, think: float) -> dict:
+    """users visitors at once for duration seconds; returns the collected timings."""
     stats = {"requests": [], "pages": [], "errors": 0, "bytes": 0}
     start = time.perf_counter()
     await asyncio.gather(*(visitor(base, start + duration, stats, think, i) for i in range(users)))
@@ -79,6 +82,7 @@ async def run(base: str, users: int, duration: float, think: float) -> dict:
 
 
 def summary(users: int, s: dict) -> dict:
+    """Page-view counts, throughput, errors and percentiles in milliseconds for one test."""
     ms = 1000
     return {
         "users": users,
@@ -93,6 +97,7 @@ def summary(users: int, s: dict) -> dict:
 
 
 def main() -> None:
+    """Command-line entry point: one test, or one per --steps value, and an optional Markdown summary."""
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("url")
     ap.add_argument("--users", type=int, default=10, help="simultaneous visitors (ignored with --steps)")

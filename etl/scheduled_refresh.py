@@ -87,10 +87,12 @@ class RunLog:
         self._fh.flush()
 
     def close(self) -> None:
+        """Close the run's log file."""
         self._fh.close()
 
 
 def now_utc() -> str:
+    """The current time in UTC, for log lines and alerts."""
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
 
@@ -141,6 +143,7 @@ def run_script(script: str, log: RunLog, args: list[str] | None = None) -> bool:
 
 
 def download_latest(log: RunLog) -> None:
+    """Download the three StatCan tables that change monthly or yearly, before the schema guard checks them."""
     import extract_peer_cma_context as peers
     import extract_windsor_starts_completions as starts
 
@@ -154,6 +157,7 @@ def download_latest(log: RunLog) -> None:
 
 
 def run(download: bool = True, check_only: bool = False, log: RunLog | None = None) -> int:
+    """Download, guard, extract and load, stopping at the first failure; returns the exit code (0 ok, 1 download, 2 guard, 3 pipeline)."""
     log = log or RunLog(LOG_DIR / f"scheduled_refresh_{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}.log")
     log(f"Scheduled refresh started {now_utc()}")
 
@@ -195,6 +199,7 @@ def run(download: bool = True, check_only: bool = False, log: RunLog | None = No
 
 
 def main(argv: list[str]) -> int:
+    """Command-line entry point: --no-download and --check-only, with the run's own log file."""
     load_dotenv(PROJECT_ROOT / ".env")
     log = RunLog(LOG_DIR / f"scheduled_refresh_{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}.log")
     try:

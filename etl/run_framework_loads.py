@@ -24,11 +24,13 @@ AUDIT_SCHEMA_SQL = PROJECT_ROOT / "sql" / "load_audit_schema.sql"
 
 
 def ensure_audit_table(engine) -> None:
+    """Create raw.load_audit if it does not exist."""
     with engine.begin() as conn:
         conn.execute(text(AUDIT_SCHEMA_SQL.read_text(encoding="utf-8")))
 
 
 def run() -> list[dict]:
+    """Load every dataset in etl/configs/*.yaml with the ETL framework and record each load in raw.load_audit."""
     engine = get_engine()
     ensure_audit_table(engine)
 

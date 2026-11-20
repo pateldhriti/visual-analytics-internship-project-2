@@ -100,6 +100,7 @@ def extract(
     output_csv: Path = OUTPUT_CSV,
     province_filter: set[str] = PROVINCE_FILTER,
 ) -> dict:
+    """Read Ontario's and Canada's quarterly starts, completions and units under construction from the CMHC workbook into a long CSV."""
     if not source_xlsx.exists():
         raise FileNotFoundError(f"Source workbook not found: {source_xlsx}")
 

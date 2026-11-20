@@ -1,4 +1,4 @@
-"""Tests for etl/superset_compat.py (no Superset needed).
+r"""Tests for etl/superset_compat.py (no Superset needed).
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_superset_compat.py
 """

@@ -596,6 +596,7 @@ VIEWS = {
 
 
 def ensure_dataset(session, headers, database_id: int, table_name: str) -> int:
+    """The Superset dataset id for a warehouse view, creating the dataset if it does not exist."""
     existing = find_our_dataset(session, headers, table_name)
     if existing:
         return existing

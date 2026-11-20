@@ -393,9 +393,6 @@ def grouped_bars(x_axis, groupby: str, sql: str, label: str, number_format: str,
 
 
 YEAR_TEXT = {"expressionType": "SQL", "sqlExpression": "CAST(comparison_year AS TEXT)", "label": "Year"}
-DWELLING_SHORT = {"expressionType": "SQL", "label": "Dwelling type",
-                  "sqlExpression": "CASE dwelling_type WHEN 'Apartment and Other' THEN 'Apartments' "
-                                   "ELSE dwelling_type END"}
 # Stages in pipeline order (started, completed, under construction): the
 # invisible zero-width spaces in front make them sort that way (here the
 # reference dashboard's order: under construction, completions, starts).

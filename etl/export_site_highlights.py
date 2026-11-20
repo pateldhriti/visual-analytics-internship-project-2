@@ -43,6 +43,7 @@ def number(value):
 
 
 def rows(conn, sql: str) -> list[dict]:
+    """A query's rows as plain dicts, numbers made JSON-friendly."""
     return [
         {k: (v if isinstance(v, (str, bool)) else number(v)) for k, v in r._mapping.items()}
         for r in conn.execute(text(sql))
@@ -50,6 +51,7 @@ def rows(conn, sql: str) -> list[dict]:
 
 
 def build(conn) -> dict:
+    """The data behind the website's own charts, read from the warehouse views."""
     (afford,) = rows(conn, """
         SELECT pct_renters_who_cannot_afford AS pct, renters_who_cannot_afford AS cannot,
                renter_households AS renters, average_rent AS rent, income_needed,
@@ -169,6 +171,7 @@ def check(data: dict) -> None:
 
 
 def main() -> None:
+    """Write web/src/data/highlights.json and figures.json, after checking them."""
     with get_engine().connect() as conn:
         data = build(conn)
         figures = build_figures(conn)

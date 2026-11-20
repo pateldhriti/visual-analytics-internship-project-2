@@ -1,4 +1,4 @@
-"""Tests for etl/fetch_raw_data.py, with a fake downloader (no network).
+r"""Tests for etl/fetch_raw_data.py, with a fake downloader (no network).
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_fetch_raw_data.py
 """

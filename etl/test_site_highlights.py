@@ -1,4 +1,4 @@
-"""Tests for etl/export_site_highlights.py's check (no database needed).
+r"""Tests for etl/export_site_highlights.py's check (no database needed).
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_site_highlights.py
 """

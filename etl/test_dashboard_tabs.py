@@ -1,4 +1,4 @@
-"""Tests for etl/dashboard_tabs.py.
+r"""Tests for etl/dashboard_tabs.py.
 
 Run: .venv\Scripts\python.exe -m pytest etl\test_dashboard_tabs.py
 """

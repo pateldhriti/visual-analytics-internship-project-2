@@ -103,6 +103,7 @@ def is_data_row(cells: list[str]) -> bool:
 
 
 def csv_header(stream) -> list[str]:
+    """The normalized column names in a CSV's first row."""
     reader = csv.reader(stream)
     return [normalize(col) for col in next(reader, [])]
 
@@ -179,6 +180,7 @@ def compare(name: str, expected: dict, found: dict) -> list[str]:
 
 
 def load_snapshot(path: Path | None = None) -> dict:
+    """The saved structure of every source file (etl/configs/source_schemas.json)."""
     with open(path or SNAPSHOT_PATH, encoding="utf-8") as fh:
         return json.load(fh)
 
@@ -201,6 +203,7 @@ def check(sources=SOURCES, root: Path = PROJECT_ROOT, snapshot: dict | None = No
 
 
 def update(sources=SOURCES, root: Path = PROJECT_ROOT, path: Path | None = None) -> dict:
+    """Save the current structure of every source as the new snapshot (after a deliberate source change)."""
     snapshot = {source.name: {"path": source.path, **read_structure(source, root)} for source in sources}
     path = path or SNAPSHOT_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -211,6 +214,7 @@ def update(sources=SOURCES, root: Path = PROJECT_ROOT, path: Path | None = None)
 
 
 def main(argv: list[str]) -> int:
+    """Check every source against the snapshot (exit 1 on a change), or save a new snapshot with --update."""
     if "--update" in argv:
         update()
         print(f"Snapshot saved for {len(SOURCES)} sources: {SNAPSHOT_PATH.relative_to(PROJECT_ROOT)}")
