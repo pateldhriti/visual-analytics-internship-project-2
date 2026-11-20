@@ -1,0 +1,10 @@
+# Starts whva-uptime.service every 5 minutes.
+[Unit]
+Description=Check the Windsor Housing website and dashboards every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

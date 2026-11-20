@@ -229,3 +229,39 @@ sudo systemctl stop fw-rollback.timer
 sudo cp nftables-whva.conf /etc/nftables.conf && sudo systemctl enable nftables
 sudo nft list ruleset
 ```
+
+### 6.5 Uptime monitoring
+
+`deploy/whva/uptime_check.sh` checks every 5 minutes that the website (`https://whva.cs.uwindsor.ca/`) and the dashboards (`https://apss.cs.uwindsor.ca/health`) answer within 15 seconds. Each check is one line in `~/uptime/uptime.log`. When a site goes down, and again when it comes back, a line goes to `~/uptime/alerts.log`, and to a Teams or Slack webhook if `ALERT_WEBHOOK_URL` is set. That is one alert per outage, not one every 5 minutes. It needs only `curl`, already on whva.
+
+```bash
+# on whva, after copying deploy/whva/ to the home directory
+cp uptime_check.sh ~/whva/ && chmod 700 ~/whva/uptime_check.sh
+~/whva/uptime_check.sh && cat ~/uptime/uptime.log        # first check now
+cp whva-uptime.service whva-uptime.timer ~/.config/systemd/user/
+systemctl --user daemon-reload && systemctl --user enable --now whva-uptime.timer
+systemctl --user list-timers whva-uptime.timer
+~/whva/uptime_check.sh --report                          # availability and response times so far
+```
+
+Tested on 19 November 2026 against the local site, the local Superset and an address that is down: it logged every check and wrote a single alert for three failed checks.
+
+### 6.6 Restore test
+
+A backup is only useful if it restores. `deploy/whva/restore_test.sh` restores a backup into an **empty** database. It then checks that every table has the same number of rows as the live schema and that every view runs; it prints PASS or FAIL. It refuses to restore into the live `whva` database. We cannot create a scratch database on the university's server, and laptops cannot reach that server, so the test runs in two steps:
+
+```bash
+# 1. on whva: the live row counts, and copies of the newest backup and the counts
+~/whva/restore_test.sh --live-counts > ~/live_counts.txt
+ls -t ~/backups/ | head -1
+```
+```powershell
+# 2. on a laptop, in the project folder (Docker running)
+scp patel3gc@whva.cs.uwindsor.ca:'~/backups/<newest>.dump' patel3gc@whva.cs.uwindsor.ca:'~/live_counts.txt' data\export\
+docker cp data\export\<newest>.dump windsor_housing_postgres:/tmp/b.dump
+docker cp data\export\live_counts.txt windsor_housing_postgres:/tmp/live_counts.txt
+docker cp deploy\whva\restore_test.sh windsor_housing_postgres:/tmp/restore_test.sh
+docker exec -u postgres windsor_housing_postgres bash -c "createdb restore_test && bash /tmp/restore_test.sh dbname=restore_test /tmp/live_counts.txt /tmp/b.dump; dropdb restore_test"
+```
+
+Rehearsed on 19 November 2026 with a backup of the local warehouse taken by the same `pg_dump` command as the daily job. The 1.2 MB backup restored in 2 seconds; all 17 tables matched and all 59 views ran: **PASS**.

@@ -1,0 +1,12 @@
+# Checks that the website and the dashboards answer (uptime_check.sh).
+# A user unit: install in ~/.config/systemd/user/ (docs/production_hardening.md, section 6.5).
+[Unit]
+Description=Check that the Windsor Housing website and dashboards are up
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/whva/uptime_check.sh
+# Optional: alerts to a Teams or Slack incoming webhook.
+# Environment=ALERT_WEBHOOK_URL=https://...
