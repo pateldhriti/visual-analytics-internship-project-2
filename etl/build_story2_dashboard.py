@@ -1033,7 +1033,9 @@ LAYOUT = [
     ("ROW-market-note", [("md:market-note", 12)]),
     ("HEADER-income", "Income and New Supply: What Each Income Can Afford, Where New Units Are"),
     ("ROW-quintiles", [("quintile-stock", 6), ("quintile-vacancy", 6)]),
-    ("ROW-supply", [("new-stock", 5), ("zone-rent-vacancy", 7)]),
+    # The heatmap gets the wider half: on Superset 6 its 170px label margin
+    # left a grid about 30px wide at 5 columns.
+    ("ROW-supply", [("new-stock", 7), ("zone-rent-vacancy", 5)]),
     ("ROW-income-note", [("md:income-note", 12)]),
     ("ROW-turnover-change", [("turnover-change", 12)]),
     ("HEADER-prices", "Rental Prices and Availability by Bedroom Type, Oct-24 vs Oct-25 (Apartments)"),
@@ -1093,7 +1095,7 @@ CHART_HEIGHT = 55
 
 # The two added tabs fit one screen: two rows each.
 MORE_HEIGHTS = {"history-vacancy": 36, "history-rent": 36, "rent-vacant-occupied": 38, "stock-by-size": 38,
-                "quintile-stock": 42, "quintile-vacancy": 42, "new-stock": 44, "zone-rent-vacancy": 44,
+                "quintile-stock": 38, "quintile-vacancy": 38, "new-stock": 50, "zone-rent-vacancy": 50,
                 "turnover-change": 30, "bedroom-rent": 62, "bedroom-vacancy": 62}
 
 

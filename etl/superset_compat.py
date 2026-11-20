@@ -72,6 +72,14 @@ def match_bar_order(charts: dict) -> dict:
             params["x_axis_sort"] = "name" if params["x_axis_sort"] == x_label else "sum"
         if params.get("stack") is True:  # Superset 6 stacks only on "Stack"
             params["stack"] = "Stack"
+        # Superset 6 reserves room for a zoom slider and for axis titles
+        # unless told not to: about 170px of a card, which squeezed 5-8 bars
+        # into a thin strip and hid every other category label. Turn the
+        # zoom off and drop the margin of any axis that has no title.
+        params.setdefault("zoomable", False)
+        for axis in ("x", "y"):
+            if not params.get(f"{axis}_axis_title"):
+                params[f"{axis}_axis_title_margin"] = 0
     return charts
 
 
