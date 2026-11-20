@@ -44,6 +44,7 @@ LOCAL_ONLY = ["enable_dashboard_embedding.py"]  # the shared Superset's admin co
 
 
 def main(argv=None) -> int:
+    """Run every dashboard build step in order against one Superset (--env for the university's); stops at the first failure."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--env", help="settings file that overrides .env, e.g. .env.apss")
     args = parser.parse_args(argv)

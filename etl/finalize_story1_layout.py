@@ -173,10 +173,8 @@ def gap_tile(slice_name, sql, label, number_format, subheader):
     }
 
 
-SHARE_30 = {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct) / 100.0",
-            "label": "Share spending 30%+ on shelter"}
-# As on the team's reference screenshots: the rate as a plain number of
-# percent (e.g. 97.95), not formatted as a percentage.
+# The share spending 30%+ on shelter as a plain number of percent (e.g.
+# 97.95), as on the team's reference screenshots, not formatted as a percentage.
 SHARE_30_PCT = {"expressionType": "SQL", "sqlExpression": "MAX(burden_rate_pct)",
                 "label": "Share spending 30%+ on shelter (%)"}
 

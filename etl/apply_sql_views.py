@@ -36,6 +36,7 @@ VIEW_FILES = [
 
 
 def get_engine():
+    """SQLAlchemy engine for the project database, from POSTGRES_* in .env."""
     load_dotenv(PROJECT_ROOT / ".env")
     host = os.environ["POSTGRES_HOST"]
     port = os.environ["POSTGRES_PORT"]
@@ -47,6 +48,7 @@ def get_engine():
 
 
 def apply_file(engine, sql_path: Path) -> None:
+    """Run one sql/*.sql file of view definitions in a single transaction."""
     if not sql_path.exists():
         raise FileNotFoundError(f"SQL view file not found: {sql_path}")
     sql = sql_path.read_text(encoding="utf-8")
@@ -55,6 +57,7 @@ def apply_file(engine, sql_path: Path) -> None:
 
 
 def run() -> list[str]:
+    """Apply every view file in VIEW_FILES, in order; returns the files applied."""
     engine = get_engine()
     applied = []
     for sql_path in VIEW_FILES:

@@ -20,6 +20,7 @@ SEED_SQL = PROJECT_ROOT / "sql" / "warehouse_seed_dimensions.sql"
 
 
 def run_sql_file(conn, path: Path) -> None:
+    """Execute one SQL file on an open connection."""
     sql = path.read_text(encoding="utf-8")
     conn.execute(text(sql))
 

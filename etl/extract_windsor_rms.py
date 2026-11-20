@@ -58,8 +58,7 @@ SOURCE_XLSX = PROJECT_ROOT / "data" / "raw" / "cmhc" / "rmr-windsor-2025-en.xlsx
 OUTPUT_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market.csv"
 
 ZONE_ROWS = 9  # Zone 1-4, Windsor City subtotal, Zone 5-7, Windsor CMA total
-FIRST_ZONE_ROW = 8
-BEDROOM_HEADER_ROW = 6
+FIRST_ZONE_ROW = 8  # data starts here; the unit-size labels are on row 6
 BEDROOM_TYPES = ["Studio", "1 Bedroom", "2 Bedroom", "3 Bedroom +", "Total"]
 ZONE_LABELS = [
     "Zone 1 - Centre", "Zone 2 - East Inner", "Zone 3 - East Outer", "Zone 4 - West",
@@ -262,6 +261,7 @@ def clean_reliability(raw):
 
 
 def extract(source_xlsx: Path = SOURCE_XLSX, output_csv: Path = OUTPUT_CSV) -> dict:
+    """Read every extracted sheet of the Windsor 2025 workbook into one long CSV; returns row counts and checks for the caller to print."""
     if not source_xlsx.exists():
         raise FileNotFoundError(f"Source workbook not found: {source_xlsx}")
 

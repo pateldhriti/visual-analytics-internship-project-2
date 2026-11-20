@@ -47,8 +47,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw" / "cmhc"
 OUTPUT_CSV = PROJECT_ROOT / "data" / "staging" / "windsor_rental_market_historical.csv"
 
-FIRST_ZONE_ROW = 8
-BEDROOM_HEADER_ROW = 6
+FIRST_ZONE_ROW = 8  # data starts here; the unit-size labels are on row 6
 
 # Editions genuinely available (confirmed by direct download, 2015-2020 all
 # 404 -- see module docstring). Each maps to the (prior, latest) periods its
@@ -119,6 +118,7 @@ def real_zone_rows(ws) -> list[int]:
 
 def parse_rate_sheet(ws, metric_type: str, dwelling_type: str, prior_label: str, latest_label: str,
                       has_yoy: bool = True) -> list[dict]:
+    """Rate-layout sheet (vacancy, rent, turnover) of one edition: one row per zone x unit size x survey year."""
     group_width = 5 if has_yoy else 4
     rows = []
     for r in real_zone_rows(ws):
@@ -141,6 +141,7 @@ def parse_rate_sheet(ws, metric_type: str, dwelling_type: str, prior_label: str,
 
 
 def parse_universe_sheet(ws, metric_type: str, dwelling_type: str, prior_label: str, latest_label: str) -> list[dict]:
+    """Universe-layout sheet (unit counts) of one edition: one row per zone x unit size x survey year."""
     rows = []
     for r in real_zone_rows(ws):
         zone = ZONE_RENAME_MAP.get(ws.cell(row=r, column=1).value, ws.cell(row=r, column=1).value)
@@ -159,6 +160,7 @@ def parse_universe_sheet(ws, metric_type: str, dwelling_type: str, prior_label: 
 
 
 def clean_value(raw):
+    """None for CMHC's ** (suppressed), the number without thousands separators otherwise."""
     if raw is None or raw == "**":
         return None
     if isinstance(raw, str):
@@ -167,6 +169,7 @@ def clean_value(raw):
 
 
 def extract_edition(year: int, raw_dir: Path = RAW_DIR) -> pd.DataFrame:
+    """All extracted sheets of one year's Windsor workbook, tagged with the edition year."""
     source_xlsx = raw_dir / f"rmr-windsor-{year}-en.xlsx"
     if not source_xlsx.exists():
         raise FileNotFoundError(f"Source workbook not found: {source_xlsx}")
@@ -257,7 +260,7 @@ def extract(raw_dir: Path = RAW_DIR, output_csv: Path = OUTPUT_CSV, already_load
     # individual zone 1-6 is identical between editions. Replace the
     # already-kept (2022 edition's pre-split) Oct-22 Windsor CMA rows with
     # the 2023 edition's recomputed ones.
-    editions_2022, editions_2023 = editions_data[2022], editions_data[2023]
+    editions_2023 = editions_data[2023]
     revised_cma_rows = editions_2023[
         (editions_2023["period_label"] == "Oct-22") & (editions_2023["zone"] == "Windsor CMA")
     ].drop(columns=["source_edition"])

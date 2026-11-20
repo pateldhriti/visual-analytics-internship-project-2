@@ -164,6 +164,7 @@ def cma_code(dguid: str) -> str | None:
 
 
 def number(value) -> float | None:
+    """The value as a float, or None when it is empty or not a number (StatCan symbols)."""
     try:
         return float(value)
     except (TypeError, ValueError):
@@ -171,6 +172,7 @@ def number(value) -> float | None:
 
 
 def extract_shelter_cost(path: Path = SHELTER_CSV) -> list[dict]:
+    """Renter and total households by income band and shelter-cost burden for the five cities (98-10-0252-01)."""
     rows = []
     reader = pd.read_csv(path, dtype=str, encoding="utf-8-sig", chunksize=CHUNK_SIZE, low_memory=False)
     for chunk in reader:
@@ -201,6 +203,7 @@ def extract_shelter_cost(path: Path = SHELTER_CSV) -> list[dict]:
 
 
 def extract_census_profile(path: Path = PROFILE_CSV) -> list[dict]:
+    """Population 2016 and 2021, households, renter households, incomes and renter burden for the five cities (Census Profile 2021)."""
     rows = []
     with open(path, encoding="latin-1", newline="") as fh:
         reader = csv.reader(fh)
@@ -224,6 +227,7 @@ def extract_census_profile(path: Path = PROFILE_CSV) -> list[dict]:
 
 
 def extract_starts(path: Path = STARTS_ZIP) -> list[dict]:
+    """Yearly starts and completions for the five cities, all dwellings and apartments (34-10-0154-01)."""
     with zipfile.ZipFile(path) as zf, zf.open("34100154.csv") as fh:
         chunks = pd.read_csv(fh, dtype=str, encoding="utf-8-sig", chunksize=CHUNK_SIZE)
         df = pd.concat(
@@ -263,6 +267,7 @@ def download_indicators(path: Path = INDICATORS_ZIP) -> Path:
 
 
 def extract_housing_indicators_by_age(path: Path = INDICATORS_ZIP) -> list[dict]:
+    """Renter households and their shelter-cost burden by age of the household maintainer, five cities (98-10-0241-01)."""
     rows = []
     with zipfile.ZipFile(path) as zf, zf.open("98100241.csv") as fh:
         for chunk in pd.read_csv(fh, dtype=str, encoding="utf-8-sig", chunksize=CHUNK_SIZE, low_memory=False):
@@ -329,6 +334,7 @@ APARTMENT_STRUCTURE = "Apartment structures of three units and over"
 
 
 def extract_rent_history(path: Path = RENT_HISTORY_ZIP) -> list[dict]:
+    """October rents 2015 onward by unit size: apartments and row houses, and apartments only (34-10-0133-01)."""
     df = _read_table(path)
     df = df[df["Type of unit"].isin(UNIT_SIZES)]
     indicators = {RENT_STRUCTURE: "average_rent", APARTMENT_STRUCTURE: "average_rent_apartments"}
@@ -341,6 +347,7 @@ def extract_rent_history(path: Path = RENT_HISTORY_ZIP) -> list[dict]:
 
 
 def extract_vacancy_history(path: Path = VACANCY_HISTORY_ZIP) -> list[dict]:
+    """October vacancy rates 2015 onward, apartments and row houses (34-10-0130-01)."""
     return [
         _row(r["code"], "34-10-0130-01", "vacancy_rate", None, None, int(r["year"]), float(r["value"]))
         for _, r in _read_table(path).iterrows()
@@ -348,6 +355,7 @@ def extract_vacancy_history(path: Path = VACANCY_HISTORY_ZIP) -> list[dict]:
 
 
 def download_rms(directory: Path = RMS_DIR) -> Path:
+    """Download each comparison city's CMHC rental market workbook into directory, if it is not there yet."""
     directory.mkdir(parents=True, exist_ok=True)
     for slug in RMS_FILES.values():
         path = directory / f"{slug}.xlsx"

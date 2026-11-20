@@ -66,6 +66,7 @@ DWELLING_TYPE_LABELS = {
 
 
 def download_source(refresh: bool) -> Path:
+    """The StatCan 34-10-0154-01 zip: downloaded on first use, or again when refresh is true."""
     if SOURCE_ZIP.exists() and not refresh:
         return SOURCE_ZIP
     SOURCE_ZIP.parent.mkdir(parents=True, exist_ok=True)
@@ -76,12 +77,14 @@ def download_source(refresh: bool) -> Path:
 
 
 def read_windsor_rows(zip_path: Path) -> pd.DataFrame:
+    """Windsor CMA's rows of the national table, read in chunks (the file has millions of rows)."""
     with zipfile.ZipFile(zip_path) as zf, zf.open(f"{TABLE_ID}.csv") as fh:
         chunks = pd.read_csv(fh, dtype=str, encoding="utf-8-sig", chunksize=200_000)
         return pd.concat(chunk[chunk["GEO"] == GEO] for chunk in chunks)
 
 
 def reshape(source: pd.DataFrame) -> pd.DataFrame:
+    """One row per month x activity x dwelling type from January FIRST_YEAR, with year and month columns."""
     df = source.copy()
     df["period_year"] = df["REF_DATE"].str[:4].astype(int)
     df["period_month"] = df["REF_DATE"].str[5:7].astype(int)
@@ -107,6 +110,7 @@ def reshape(source: pd.DataFrame) -> pd.DataFrame:
 
 
 def main(refresh: bool = False) -> pd.DataFrame:
+    """Download if needed, reshape and write data/staging/windsor_starts_completions_monthly.csv."""
     zip_path = download_source(refresh)
     out = reshape(read_windsor_rows(zip_path))
     OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)

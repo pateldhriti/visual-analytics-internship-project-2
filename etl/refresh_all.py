@@ -61,6 +61,7 @@ SUPERSET_STEP = "register_superset_datasets.py"
 
 
 def superset_reachable() -> bool:
+    """True if the local Superset answers its /health endpoint."""
     try:
         resp = requests.get(f"{SUPERSET_URL}/health", timeout=SUPERSET_HEALTH_TIMEOUT)
         return resp.status_code == 200
@@ -69,6 +70,7 @@ def superset_reachable() -> bool:
 
 
 def run_step(script_name: str) -> float:
+    """Run one etl/ script, stopping the refresh if it fails; returns the seconds it took."""
     script_path = ETL_DIR / script_name
     start = time.monotonic()
     print(f"\n=== {script_name} ===", flush=True)
@@ -84,6 +86,7 @@ CHART_CACHE_REDIS_DB = "4"
 
 
 def clear_chart_cache() -> None:
+    """Empty Superset's chart cache in Redis, so dashboards show the new data at once."""
     try:
         result = subprocess.run(
             ["docker", "exec", REDIS_CONTAINER, "redis-cli", "-n", CHART_CACHE_REDIS_DB, "FLUSHDB"],
@@ -99,6 +102,7 @@ def clear_chart_cache() -> None:
 
 
 def main(skip_superset: bool) -> None:
+    """Run every refresh step in order, then register the datasets and clear the cache when Superset is up."""
     results = []
 
     for script_name in STEPS:

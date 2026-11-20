@@ -64,7 +64,7 @@ import uuid
 
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
-from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, match_bar_order, named, prefix_names, scatter, trendline_kpi, upgrade_legacy_bars
+from superset_compat import COLOR_SCHEME, SHARED, finish_dashboard, heatmap, match_bar_order, named, prefix_names, scatter, trendline_kpi
 
 # Dataset ids, from etl/register_superset_datasets.py's own output --
 # re-verify with `SELECT id, table_name FROM tables` if this script is
@@ -1287,12 +1287,6 @@ def filter_scope(chart_ids: dict, keys: list) -> tuple[dict, list]:
 
 
 def build_native_filters(chart_ids: dict) -> list:
-    non_kpi_bedroom_charts = [
-        chart_ids["rent-zone"],
-        chart_ids["rent-trend"],
-        chart_ids["vacancy-trend"],
-        chart_ids["turnover"],
-    ]
     zone_scope, zone_in = filter_scope(chart_ids, ZONE_CHART_KEYS)
     bedroom_scope, bedroom_in = filter_scope(
         chart_ids, ["rent-zone", "rent-trend", "vacancy-trend", "turnover", *PANEL_BY_UNIT_SIZE]

@@ -22,6 +22,7 @@ TABS_ID = "TABS-main"
 
 
 def add_tabs(position: dict, tabs: list[tuple[str, str, list[str]]], tabs_id: str = TABS_ID) -> dict:
+    """Move a dashboard's top-level rows into tabs, one screen each; returns the updated position JSON."""
     grid = position["GRID_ID"]
     top_level = list(grid["children"])
     tab_of = {}

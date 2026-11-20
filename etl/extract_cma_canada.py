@@ -148,6 +148,7 @@ def rms_table_1(years=RMS_YEARS) -> dict:
 
 
 def extract() -> list[dict]:
+    """Every CMA with a 2021 rent and vacancy: one row per CMA x indicator x year, from the Census, StatCan and CMHC sources."""
     names, values = census()
     rent = _statcan(RENT_ZIP, lambda r: r["Type of structure"] == "Apartment structures of three units and over"
                     and r["Type of unit"] == "Two bedroom units")
@@ -183,6 +184,7 @@ def extract() -> list[dict]:
 
 
 def check(rows: list[dict]) -> None:
+    """Stop if Windsor, a comparison city or Toronto is missing, has no 2021 rental universe or renter households, or fewer than 30 CMAs matched."""
     codes = {r["cma_code"] for r in rows}
     for code, name in (("559", "Windsor"), ("555", "London"), ("537", "Hamilton"),
                        ("539", "St. Catharines-Niagara"), ("541", "Kitchener-Cambridge-Waterloo"),
@@ -200,6 +202,7 @@ def check(rows: list[dict]) -> None:
 
 
 def main() -> None:
+    """Extract, check and write data/staging/cma_canada.csv."""
     rows = extract()
     check(rows)
     OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)

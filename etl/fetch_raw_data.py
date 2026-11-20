@@ -138,6 +138,7 @@ def run(refresh: bool = False, check_only: bool = False, raw: Path = RAW, fetch=
 
 
 def main(argv=None) -> int:
+    """Download the missing raw files (--refresh: all of them) and list those that must be saved by hand."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--refresh", action="store_true", help="re-download every downloadable file")
     parser.add_argument("--check", action="store_true", help="only report which files are there")

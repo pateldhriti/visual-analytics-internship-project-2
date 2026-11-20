@@ -49,6 +49,7 @@ DROP SCHEMA IF EXISTS warehouse CASCADE;
 
 
 def pg_dump(*args: str) -> str:
+    """Output of pg_dump run inside the local PostgreSQL container, without owners or privileges."""
     cmd = ["docker", "exec", CONTAINER, "pg_dump", "-U", "postgres", "-d", DATABASE,
            "--no-owner", "--no-privileges", *args]
     return subprocess.run(cmd, check=True, capture_output=True, text=True, encoding="utf-8").stdout
@@ -63,11 +64,13 @@ def move_to_warehouse(sql: str) -> str:
 
 
 def build() -> str:
+    """The whole package: the warehouse schema, Story 1's public table moved into warehouse, and read access for every user."""
     return (HEADER + pg_dump("--schema=warehouse")
             + move_to_warehouse(pg_dump(f"--table=public.{OUTSIDE_TABLE}")) + FOOTER)
 
 
 def main() -> None:
+    """Write the package to data/export/whva_warehouse.sql.gz."""
     sql = build()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(OUTPUT, "wt", encoding="utf-8") as fh:

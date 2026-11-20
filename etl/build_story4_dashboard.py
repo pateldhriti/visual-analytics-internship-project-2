@@ -35,7 +35,7 @@ import uuid
 from dashboard_tabs import add_tabs
 from setup_superset_dashboard import SUPERSET_URL, add_chart_to_dashboard, dataset_id, find_existing, get_session
 from superset_compat import (COLOR_SCHEME, finish_dashboard, match_bar_order, named, prefix_names, scatter,
-                             trendline_kpi, upgrade_legacy_bars)
+                             trendline_kpi)
 
 DATASET_VACANCY = dataset_id("v_story4_vacancy_comparison")
 DATASET_RENT = dataset_id("v_story4_rent_comparison")
