@@ -97,7 +97,7 @@ The user stories come from the proposal (section 4.3). Each one became a dashboa
 ### 3.1 Logical architecture: what the parts do
 
 ```mermaid
-flowchart LR
+flowchart TB
     S[27 source files<br/>StatCan CSV, CMHC Excel] --> G{Schema guard}
     G -- a file changed --> X[Stop and alert<br/>nothing loaded]
     G -- all match --> E[Python ETL<br/>extract, reshape, check]
@@ -170,30 +170,172 @@ flowchart TB
 
 ### 4.2 Star schema (ERD)
 
-The diagram images are `docs/diagrams/warehouse_er_diagram.png` (full) and `docs/diagrams/star_schema_simplified.png`.
+The warehouse has 8 dimension tables and 9 fact tables. Four fact tables link to the dimensions through foreign keys (Figures A and B). The other five hold city-level or construction figures and carry the city code and year directly (Figure C). The Story 5 views join everything on those shared keys: CMA, year and renter.
+
+**Figure A: Census facts (Stories 1 and 5).**
 
 ```mermaid
 erDiagram
-    dim_geography ||--o{ fact_shelter_cost : "CMA"
-    dim_income_band ||--o{ fact_shelter_cost : "income band"
-    dim_tenure ||--o{ fact_shelter_cost : "renter / owner"
-    dim_household_type ||--o{ fact_shelter_cost : "household type"
-    dim_period ||--o{ fact_shelter_cost : "Census year"
+    dim_geography ||--o{ fact_shelter_cost : "geography_key"
+    dim_period ||--o{ fact_shelter_cost : "period_key"
+    dim_income_band ||--o{ fact_shelter_cost : "income_band_key"
+    dim_household_type ||--o{ fact_shelter_cost : "household_type_key"
+    dim_tenure ||--o{ fact_shelter_cost : "tenure_key"
+    dim_household_type |o--o{ dim_household_type : "parent_member_id"
+    dim_geography ||--o{ fact_census_profile : "geography_key"
+    dim_period ||--o{ fact_census_profile : "period_key"
 
-    dim_zone ||--o{ fact_rental_market : "CMHC zone"
-    dim_bedroom_type ||--o{ fact_rental_market : "unit size"
-    dim_dwelling_type ||--o{ fact_rental_market : "apartment / row"
-    dim_period ||--o{ fact_rental_market : "October survey"
-    dim_income_band ||--o{ fact_rental_market : "renter quintile"
+    dim_geography {
+        text geography_key PK
+        text geography_name
+        text geography_level
+    }
+    dim_period {
+        serial period_key PK
+        text period_label UK
+        text period_type
+        int period_year
+        int period_month
+    }
+    dim_income_band {
+        serial income_band_key PK
+        text scheme
+        int member_id
+        text band_label
+    }
+    dim_household_type {
+        int household_type_key PK
+        text household_type_label
+        int parent_member_id FK
+    }
+    dim_tenure {
+        serial tenure_key PK
+        text tenure_name UK
+    }
+    fact_shelter_cost {
+        bigserial fact_id PK
+        text geography_key FK
+        int period_key FK
+        int income_band_key FK
+        int household_type_key FK
+        int tenure_key FK
+        text shelter_cost_ratio
+        numeric value
+        text data_quality_flag
+    }
+    fact_census_profile {
+        bigserial fact_id PK
+        text geography_key FK
+        int period_key FK
+        text characteristic_name
+        text measure_type
+        numeric value
+    }
+```
 
-    dim_bedroom_type ||--o{ fact_rental_market_comparison : "unit size"
-    dim_period ||--o{ fact_rental_market_comparison : "year"
-    dim_geography ||--o{ fact_census_profile : "CMA"
-    dim_period ||--o{ fact_windsor_starts_completions : "month"
-    dim_dwelling_type ||--o{ fact_windsor_starts_completions : "dwelling type"
-    dim_period ||--o{ fact_starts_completions : "quarter"
-    dim_period ||--o{ fact_cma_canada : "year"
-    dim_period ||--o{ fact_peer_cma_context : "year"
+**Figure B: Rental market facts (Stories 2 and 4).**
+
+```mermaid
+erDiagram
+    dim_zone ||--o{ fact_rental_market : "zone_key"
+    dim_period ||--o{ fact_rental_market : "period_key"
+    dim_bedroom_type ||--o{ fact_rental_market : "bedroom_type_key"
+    dim_dwelling_type ||--o{ fact_rental_market : "dwelling_type_key"
+    dim_tenure ||--o{ fact_rental_market : "tenure_key"
+    dim_income_band |o--o{ fact_rental_market : "income_band_key (quintile)"
+    dim_zone ||--o{ fact_rental_market_comparison : "zone_key"
+    dim_period ||--o{ fact_rental_market_comparison : "period_key"
+    dim_bedroom_type ||--o{ fact_rental_market_comparison : "bedroom_type_key"
+    dim_dwelling_type ||--o{ fact_rental_market_comparison : "dwelling_type_key"
+    dim_tenure ||--o{ fact_rental_market_comparison : "tenure_key"
+
+    dim_zone {
+        serial zone_key PK
+        text zone_label UK
+        text zone_level
+    }
+    dim_bedroom_type {
+        serial bedroom_type_key PK
+        text bedroom_type_label UK
+    }
+    dim_dwelling_type {
+        serial dwelling_type_key PK
+        text dwelling_type_label UK
+    }
+    fact_rental_market {
+        bigserial fact_id PK
+        int zone_key FK
+        int period_key FK
+        int bedroom_type_key FK
+        int dwelling_type_key FK
+        int tenure_key FK
+        int income_band_key FK
+        text metric_type
+        numeric value
+        text reliability_letter
+    }
+    fact_rental_market_comparison {
+        bigserial fact_id PK
+        int zone_key FK
+        int period_key FK
+        int bedroom_type_key FK
+        int dwelling_type_key FK
+        int tenure_key FK
+        text metric_type
+        numeric value
+        text reliability_letter
+    }
+```
+
+**Figure C: City-level and construction facts (Stories 2–5).** These have no foreign keys. Rows are keyed by CMA code or name and year, which the views use to join them with each other and with Figures A and B.
+
+```mermaid
+erDiagram
+    fact_cma_canada {
+        bigserial fact_id PK
+        text cma_code
+        text cma_name
+        text indicator
+        int period_year
+        numeric value
+    }
+    fact_peer_cma_context {
+        bigserial fact_id PK
+        text cma_code
+        text cma_name
+        text source_table
+        text indicator
+        text tenure
+        text category
+        int period_year
+        numeric value
+    }
+    fact_windsor_starts_completions {
+        bigserial fact_id PK
+        text dguid
+        int period_year
+        int period_month
+        text activity
+        text dwelling_type
+        numeric units
+    }
+    fact_windsor_intended_market {
+        bigserial fact_id PK
+        text period_label
+        boolean is_ytd
+        text activity
+        text intended_market
+        numeric units
+    }
+    fact_starts_completions {
+        bigserial fact_id PK
+        text province
+        text period_type
+        text period_label
+        text activity
+        text dwelling_type
+        numeric units
+    }
 ```
 
 | Fact table | Grain (one row is…) | Used by |
@@ -208,7 +350,7 @@ erDiagram
 | `fact_starts_completions` | Quarterly starts for Ontario and Canada (context only; the file has no Windsor rows) | Overview |
 | `fact_peer_cma_context` | One figure for Windsor or a comparison city: renter households by income band, population, households, yearly starts or completions, rents and vacancy 2015–2025, renters by age | Stories 4, 5 |
 
-**Shared dimensions are what make the stories combinable.** `dim_tenure`, `dim_income_band`, `dim_period` and the CMA (geography) appear in several fact tables, so a renter's income (Story 1) can be joined to a rent (Story 2) or to a city's construction (Story 3) through the city and the year (section 7).
+**Shared keys are what make the stories combinable.** `dim_tenure`, `dim_income_band`, `dim_period` and the CMA appear across the Census and rental facts. The city-level facts carry the same CMA code and year. So a renter's income (Story 1) can be joined to a rent (Story 2) or to a city's construction (Story 3) through the city and the year (section 7).
 
 **Views per file:**
 
