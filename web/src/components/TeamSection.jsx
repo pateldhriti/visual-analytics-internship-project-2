@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TEAM, initials } from "../lib/team.js";
+import { SUPERVISOR, TEAM, initials } from "../lib/team.js";
 import { fadeIn, staggerParent } from "../lib/motion.js";
 
 // "Meet the team": a round photo (or initials), name, role and a short bio
@@ -40,6 +40,9 @@ export default function TeamSection() {
           </motion.li>
         ))}
       </motion.ul>
+      <motion.p className="team-supervisor" variants={fadeIn}>
+        {SUPERVISOR.role}: <strong>{SUPERVISOR.name}</strong>
+      </motion.p>
     </motion.section>
   );
 }
