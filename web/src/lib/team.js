@@ -28,6 +28,9 @@ export const TEAM = [
   },
 ];
 
+// Shown under the team cards.
+export const SUPERVISOR = { name: "Dr. Andreas Maniatis", role: "Project Supervisor" };
+
 export const initials = (name) =>
   name
     .split(" ")
