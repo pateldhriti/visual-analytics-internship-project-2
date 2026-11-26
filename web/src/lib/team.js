@@ -28,8 +28,14 @@ export const TEAM = [
   },
 ];
 
-// Shown under the team cards.
-export const SUPERVISOR = { name: "Dr. Andreas Maniatis", role: "Project Supervisor" };
+// Shown in its own card above the team.
+export const SUPERVISOR = {
+  name: "Dr. Andreas Maniatis",
+  role: "Project Supervisor",
+  affiliation: "University of Windsor",
+  photo: null,
+  bio: "Professor at the University of Windsor whose research focuses on big data analytics, machine learning and AI. He guided the project's direction, asked for official data only and for stories that combine datasets, and reviewed the team's work at every sprint.",
+};
 
 export const initials = (name) =>
   name
